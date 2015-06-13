@@ -1,0 +1,52 @@
+#*In the name of Allah*#
+
+#parse ("vtl/corerebeca/Macros.vm")
+
+#ifndef __MODERE_${reactiveClassName.toUpperCase()}_H__
+\#define __MODERE_${reactiveClassName.toUpperCase()}_H__
+
+#foreach($header in $helperHeaders)
+\#include "$header"
+#end
+
+#foreach($tempReactiveClassDeclaration in $reactiveClassDeclarations)
+#if ($tempReactiveClassDeclaration.getName() != $reactiveClassName)
+\#include "${tempReactiveClassDeclaration.getName()}.h"
+class ${tempReactiveClassDeclaration.getName()};
+#end
+#end
+
+#if ($namespace)
+namespace $namespace {
+#end
+class $reactiveClassName : public ActiveclassAutomaton {
+
+
+#parse("/vtl/corerebeca/RebecClassHeader.vm")
+
+public:
+
+
+    //---------------------------------------------------------
+	long execute(long* rebs);
+    long marshal();
+	void unmarshal(long stateNo);
+	
+	inline int getStateSize();
+    char* getClassName();
+    
+	virtual void exportStateInXML(ostream &out, string tab);
+	virtual void exportStateVariablesInXML(ostream &out, string tab);
+	virtual void exportQueueContentInXML(ostream &out, string tab);
+
+protected:
+	
+	static int count, col;
+	static byte** table;
+
+    long storeLocalState(byte* currentValues);
+};
+#if ($namespace)
+}
+#end
+#endif

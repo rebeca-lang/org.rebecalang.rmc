@@ -1,0 +1,49 @@
+\#include "ProbabilisticTimedModelChecker.h"
+
+float probability;
+
+ProbabilisticTimedModelChecker::ProbabilisticTimedModelChecker(ostream &outStream
+	#ifdef EXPORT_STATE_SPACE
+	    , ostream &statespaceStream
+	#endif
+    , int hashmapSize) : TimedModelChecker(outStream
+	#ifdef EXPORT_STATE_SPACE
+    	, statespaceStream
+	#endif
+	, hashmapSize) {
+}
+
+long ProbabilisticTimedModelChecker::executeRebec(int rebecId) {
+	probability = 1;
+	return TimedModelChecker::executeRebec(rebecId);
+}
+
+
+void ProbabilisticTimedModelChecker::exportTransition(OpenBorderNode &source, OpenBorderNode &destination, 
+		string owner, string label, TIME_TYPE shift, ostream& outStream) {
+	static int accProb = 0;
+	static stringstream probabilityAggregator;
+	accProb += round(probability * $PROB_ACCURACY);
+
+	probabilityAggregator.unsetf (ios::floatfield);
+	probabilityAggregator.precision($PROB_PREC); 
+    probabilityAggregator << "<choice probability=\"" << probability << "\">" << endl;
+	TimedModelChecker::exportTransition(source, destination, owner, label, shift, probabilityAggregator); 
+	probabilityAggregator << "</choice>" << endl;
+	if(accProb == $PROB_ACCURACY) {
+	    outStream << "<probabilistictransition>" << endl << probabilityAggregator.str() <<
+			"</probabilistictransition>" << endl;
+		probabilityAggregator.str(string());
+		accProb = 0;
+	}  
+}
+#ifdef TTS
+void ProbabilisticTimedModelChecker::exportProgressOfTimeTransition(OpenBorderNode &source,
+	OpenBorderNode &destination, TIME_TYPE time, TIME_TYPE shift, ostream &outStream) {
+	stringstream temp;
+	TimedModelChecker::exportProgressOfTimeTransition(source, destination, time, shift, temp);
+	string tempValue = temp.str();
+	tempValue = tempValue.substr(1, tempValue.length() - 13);
+	outStream << "<time" << tempValue << "timetransition>" << endl; 
+}
+#endif

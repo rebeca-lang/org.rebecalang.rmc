@@ -1,0 +1,38 @@
+#ifndef __PROBABILISTIC_TIMED_MODEL_CHECKER_H_
+\#define __PROBABILISTIC_TIMED_MODEL_CHECKER_H_
+
+\#include <iostream>
+\#include <sstream>
+\#include <math.h>
+
+\#include "TimedModelChecker.h"
+
+
+class ProbabilisticTimedModelChecker : public TimedModelChecker {
+
+protected:
+	using AbstractTimedRebecaAnalyzer::exportState;
+	using AbstractTimedRebecaAnalyzer::exportTransition;
+	
+public:
+
+	ProbabilisticTimedModelChecker(std::ostream &out 
+		#ifdef EXPORT_STATE_SPACE
+		    , ostream &statespace
+		#endif
+		, int hashmapSize);
+
+	virtual long executeRebec(int rebecId);
+	
+	virtual void exportTransition(OpenBorderNode &source, OpenBorderNode &destination, 
+		string owner, string label, TIME_TYPE shift, ostream& outStream);
+		
+#ifdef TTS
+	virtual void exportProgressOfTimeTransition(OpenBorderNode &source,
+		OpenBorderNode &destination, TIME_TYPE time, TIME_TYPE shift, ostream &outStream);
+#endif
+};
+
+\#define QUEUE_TYPE std::priority_queue<OpenBorderNode, std::vector<OpenBorderNode>, std::greater<OpenBorderNode> >
+
+#endif

@@ -1,0 +1,48 @@
+#ifndef __ABSTRACT_MODEL_CHECKER_H_
+\#define __ABSTRACT_MODEL_CHECKER_H_
+
+\#include <iostream>
+\#include <time.h>
+\#include <fstream>
+
+\#include "Config.h"
+
+\#define SATISFIED 1
+\#define DEADLOCK 2
+\#define BOUND_REACHED 3
+\#define COUNTER_EXAMPLE 4
+\#define QUEUE_OVERFLOW 5
+\#define HEAP_OVERFLOW 6
+\#define UNKNOWN_PROPERTY 7
+\#define ASSERTION_FAILED 8
+\#define SEGMENTATION_FAULT 9
+
+class AbstractModelChecker {
+protected:
+	ostream &out;
+	int numberOfTransitions;
+	int numberOfStates;
+	time_t startTime;
+	
+	#ifdef EXPORT_STATE_SPACE
+	    ostream &statespace;
+	#endif
+
+    virtual void printModelCheckingOptions() = 0;
+    virtual long getConsumedMemory() = 0;
+
+    virtual const char* getModelCheckingResultName(int result);
+
+public:
+	AbstractModelChecker(ostream &outStream 
+		#ifdef EXPORT_STATE_SPACE
+		    , ostream &statespace
+		#endif
+	);
+
+	virtual void doModelChecking(char *userSelectedPropertyName, char *userSelectedPropertyType);
+	virtual void exportModelCheckingDetails(char *userSelectedPropertyName, 
+	char *userSelectedPropertyType, int result, const char* message);
+};
+
+#endif

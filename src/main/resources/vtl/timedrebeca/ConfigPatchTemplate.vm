@@ -1,0 +1,17 @@
+#*In the name of Allah*#
+
+#macro (addDefinitions)
+
+#ifdef TTS
+\#define NO_ATOMIC_EXECUTION
+#endif
+\#define TIME_TYPE int
+\#define MAX_TIME 0x7FFFFFFF
+
+class DeadlineMissedException: public Exception {
+public:
+	DeadlineMissedException(string message) : Exception(message) {}
+	~DeadlineMissedException() throw() {}
+};
+
+#end

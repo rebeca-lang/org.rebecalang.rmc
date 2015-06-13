@@ -1,0 +1,16 @@
+#ifndef __BACKWARD_BFS_STATE__
+\#define __BACKWARD_BFS_STATE__
+\#include "Types.h"
+
+struct BackwardBFSState{
+	void *current;
+	void *target;
+#if ($features.contains("DISTRIBUTED_BFS"))
+#ifdef DISTRIBUTED_BFS
+	byte targetHostId;
+#endif
+#end
+	int depth;
+};
+
+#endif

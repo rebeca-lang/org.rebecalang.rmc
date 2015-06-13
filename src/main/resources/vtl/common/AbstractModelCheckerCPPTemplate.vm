@@ -1,0 +1,58 @@
+\#include "AbstractModelChecker.h"
+
+AbstractModelChecker::AbstractModelChecker(std::ostream &outStream
+		#ifdef EXPORT_STATE_SPACE
+		    , ostream &statespaceStream
+		#endif
+	) : out(outStream)
+	#ifdef EXPORT_STATE_SPACE
+		, statespace(statespaceStream)
+	#endif 
+	{
+}
+
+void AbstractModelChecker::doModelChecking(char *userSelectedPropertyName, char *userSelectedPropertyType) {
+    startTime = time(NULL);
+    numberOfTransitions = 0;
+    numberOfStates = 0;
+}
+
+
+const char* AbstractModelChecker::getModelCheckingResultName(int id) {
+	return (
+		id == SATISFIED ? "satisfied" :
+        id == DEADLOCK ? "deadlock" :
+        id == BOUND_REACHED ? "bound reached" :
+        id == COUNTER_EXAMPLE ? "counter example" :
+        id == QUEUE_OVERFLOW ? "queue over flow" :
+        id == HEAP_OVERFLOW ? "state space explosion (heap overflow)" :
+        id == ASSERTION_FAILED ? "assertion failed" :
+        id == SEGMENTATION_FAULT ? "Runtime segmentation fault" :
+        id == UNKNOWN_PROPERTY ? "Unknown Property Name" : "Unknown result" );
+}
+
+void AbstractModelChecker::exportModelCheckingDetails(char *userSelectedPropertyName, 
+	char *userSelectedPropertyType, int result, const char* message) {
+    
+    out << "<system-info>" << std::endl;
+    out << "\t<total-spent-time>" << (time(NULL) - startTime) << "</total-spent-time>" << std::endl;
+    out << "\t<reached-states>" << numberOfStates << "</reached-states>" << std::endl;
+    out << "\t<reached-transitions>" << numberOfTransitions << "</reached-transitions>" << std::endl;
+    out << "\t<consumed-mem>" << getConsumedMemory() << "</consumed-mem>" << std::endl;
+    out << "</system-info>" << std::endl;
+    out << "<checked-property>" << std::endl;
+    out << "\t<type>" << (userSelectedPropertyType == NULL ? "" : userSelectedPropertyType) << "</type>" << std::endl;
+    out << "\t<name>" << (userSelectedPropertyName == NULL ? "System default property" : userSelectedPropertyName) << "</name>" << std::endl;
+    out << "\t<result>" << getModelCheckingResultName(result) << "</result>" << std::endl;
+    out << "\t<algorithm>Time-Shift</algorithm>"  <<  std::endl;
+    out << "<options>" << std::endl;
+    #ifdef EXPORT_STATE_SPACE
+        out << "\t<option>Export state space</option>" << std::endl;
+    #endif
+    printModelCheckingOptions();
+    out << "</options>" << std::endl;
+    if (message != NULL) {
+    	out << "\t<message>" << message << "</message>" << std::endl;
+    }
+    out  <<  "</checked-property>"  <<  std::endl;
+}

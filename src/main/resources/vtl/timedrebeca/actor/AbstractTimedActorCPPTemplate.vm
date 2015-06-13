@@ -1,0 +1,130 @@
+                                                #*In the name of Allah*#
+
+\#include "AbstractTimedActor.h"
+\#include <stdio.h>
+\#include <string.h>
+
+AbstractTimedActor::AbstractTimedActor(byte myID, char* myName, byte maxQueueLength, byte maxParamLength, vector<AbstractActor*>& rebecsRef
+		#ifdef DEBUG_LEVEL_2 
+			, ostream &out
+		#endif
+		#applyPatch($patches 'AdditionalInitializationParameters' true)
+	) : 
+	AbstractActor(myID, myName, maxQueueLength, maxParamLength, rebecsRef
+		#ifdef DEBUG_LEVEL_2 
+			, out
+		#endif
+		#applyPatch($patches 'AdditionalInitializationParameters' false)
+	) {
+    deadline = new TIME_TYPE[maxQueueLength];
+	memset (deadline, 0, sizeof(TIME_TYPE) * maxQueueLength);
+    executionTime  = new TIME_TYPE[maxQueueLength];
+	memset (executionTime,  0, sizeof(TIME_TYPE) * maxQueueLength);
+    #ifdef TTS
+        __pc = -1;
+        __res = 0;
+    #endif
+
+}
+
+AbstractTimedActor::~AbstractTimedActor (){
+}
+
+void AbstractTimedActor::setNow(TIME_TYPE now) {
+    this->_ref_now = now;
+}
+
+TIME_TYPE AbstractTimedActor::getNow() {
+    return this->_ref_now;
+}
+
+void AbstractTimedActor::addTimedBundles(byte senderId, TIME_TYPE executionTime, TIME_TYPE deadline) {
+    timeEnqueue(this->executionTime, executionTime);
+    timeEnqueue(this->deadline, deadline);
+    applyPolicy(senderId == myID);
+}
+
+void AbstractTimedActor::timeEnqueue(TIME_TYPE *queue, TIME_TYPE value) {
+	queue[queueTail] = value;
+}
+
+void AbstractTimedActor::applyPolicy(boolean isSendToSelf) {
+	int cnt;
+	for (cnt = queueTail; cnt > 0; cnt--) {
+		if (executionTime[cnt] < executionTime[cnt - 1] && !(cnt == 1 && isSendToSelf)) {
+			typedSwap(executionTime[cnt], executionTime[cnt - 1], TIME_TYPE)
+			typedSwap(deadline[cnt], deadline[cnt - 1], TIME_TYPE)
+			typedSwap(messageQueue[cnt], messageQueue[cnt - 1], byte)
+			typedSwap(senderQueue[cnt], senderQueue[cnt - 1], byte)
+			typedSwap(paramQueue[cnt], paramQueue[cnt - 1], byte*)
+		} else {
+			break;
+		}
+	}
+	
+	if (cnt > 0) {
+		while ((executionTime[cnt] == executionTime[cnt - 1]) && !(cnt == 1 && (isSendToSelf
+		#ifdef TTS
+			|| __pc != -1 
+		#endif
+		))) {
+			if (messageQueue[cnt] > messageQueue[cnt - 1]) break;
+			if (messageQueue[cnt] == messageQueue[cnt - 1]) {
+				if (senderQueue[cnt] > senderQueue[cnt - 1]) break;
+				if (senderQueue[cnt] == senderQueue[cnt - 1]) {
+					if (deadline[cnt] > deadline[cnt - 1]) break;
+					if (deadline[cnt] == deadline[cnt - 1]) {
+						int memcmpResult = memcmp(paramQueue[cnt], paramQueue[cnt - 1], maxParamLength);
+						if (memcmpResult >= 0) break;
+					}					
+				}
+			}
+			
+			typedSwap(executionTime[cnt], executionTime[cnt - 1], TIME_TYPE)
+			typedSwap(deadline[cnt], deadline[cnt - 1], TIME_TYPE)
+			typedSwap(messageQueue[cnt], messageQueue[cnt - 1], byte)
+			typedSwap(senderQueue[cnt], senderQueue[cnt - 1], byte)
+			typedSwap(paramQueue[cnt], paramQueue[cnt - 1], byte*)
+			cnt--;
+		}
+	}
+}
+
+long AbstractTimedActor::execute() {
+	_ref_currentMessageArrival = executionTime[0];
+	_ref_currentMessageDeadline = deadline[0];
+	_ref_currentMessageWaitingTime = _ref_now - _ref_currentMessageArrival;
+}
+
+void AbstractTimedActor::exportStateInXML(ostream &out, string tab) {
+	out << tab << "<rebec name=\"" << myName << "\">" << endl;
+	exportStateVariablesInXML(out, tab + "\t");
+	exportQueueContentInXML(out, tab + "\t");	
+	out << tab << '\t' << "<now>" << _ref_now << "</now>" << endl;
+	#ifdef TTS
+		char buffer[10];
+		sprintf(buffer, "%d", __pc);
+		out << tab << '\t' << "<pc>" << (__pc == -1 ? "" : buffer) << "</pc>" << endl;
+		sprintf(buffer, "%d", __res);
+		out << tab << '\t' << "<res>" << (__pc == -1 ? "" : buffer) << "</res>" << endl;
+	#endif
+	out << tab << "</rebec>" << endl;
+}
+
+void AbstractTimedActor::exportQueueContentInXML(ostream &out, string tab) {
+	out << tab << "<queue>" << endl;
+    for (int cnt = (shift ? 1 : 0); cnt < maxQueueLength && messageQueue[cnt] != 0; cnt++) {
+        out << tab << '\t' << "<message arrival=\"" << (int)executionTime[cnt] << "\" deadline=\"";
+        if (deadline[cnt] == MAX_TIME)
+        	out << "infinity";
+        else
+        	out << (int) deadline[cnt];
+        out << "\" sender=\"" << rebecs[senderQueue[cnt]]->getName()<< "\">";
+        exportAMessageInXML(out, tab, cnt);
+        out << "</message>" << endl;
+
+    }        
+	out << tab << "</queue>" << endl;	
+}
+
+#applyPatch($patches 'AdditionalBodies' '')

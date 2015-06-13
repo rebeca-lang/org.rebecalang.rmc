@@ -1,0 +1,100 @@
+                                                #*In the name of Allah*#
+
+\#include "AbstractActor.h"
+\#include <stdio.h>
+\#include <string.h>
+
+const byte AbstractActor::coeff[] = {0x01, 0x02, 0x04, 0x08, 0x10, 0x20, 0x40, 0x80};
+
+AbstractActor::AbstractActor(byte myID, char* myName, byte maxQueueLength, byte maxParamLength, vector<AbstractActor*>& rebecsRef
+		#ifdef DEBUG_LEVEL_2 
+			, ostream &out
+		#endif
+		#applyPatch($patches 'AdditionalInitializationParameters' true)
+	) : rebecs(rebecsRef) 
+		#ifdef DEBUG_LEVEL_2 
+			, analysisOutputStream(out)
+		#endif
+	{
+    this->myID = myID;
+	this->myName = myName;
+	this->maxQueueLength = maxQueueLength;
+	this->maxParamLength = maxParamLength;
+	shift = 0;
+    messageQueue = new byte[maxQueueLength];
+	memset (messageQueue, 0, sizeof(byte) * maxQueueLength);
+    senderQueue  = new byte[maxQueueLength];
+	memset (senderQueue, 0, sizeof(byte) * maxQueueLength);
+    paramQueue = new byte*[maxQueueLength];
+    memset (paramQueue, 0, sizeof(byte) * maxQueueLength);
+    #if($maxParamLength != 0)
+        for (int i = 0; i < maxQueueLength; i++) {
+            paramQueue[i] = new byte[maxParamLength];
+            memset (paramQueue[i],  0, sizeof (byte)* (maxParamLength));
+        }
+    #end
+    
+    #applyPatch($patches 'AdditionalInitializations' '')
+}
+
+AbstractActor::~AbstractActor(){
+}
+
+char* AbstractActor::activeAction(){
+	return messageNames[messageQueue[0]];
+}
+
+void AbstractActor::enqueue(byte* queue, byte message){
+	while (queueTail < maxQueueLength - 1 && queue[queueTail]) {
+        queueTail++;
+    }
+	if (queue[queueTail]) {
+		throw QueueOverflowException("Queue overflow");
+	}
+	else {
+		queue[queueTail] = message;
+	}
+}
+
+void AbstractActor::enqueue(byte **queue, byte *message, int size){
+    for (int cnt = 0; cnt < size; cnt++) {
+        queue[queueTail][cnt] = message[cnt];
+    }
+}
+
+char* AbstractActor::getName() {
+    return myName;
+}
+
+void AbstractActor::_synchmethod_assertion(/*string message*/byte id, boolean condition) {
+	if (!condition)
+		throw AssertionFailedException(/*message*/ "assertion failed");
+}
+
+void AbstractActor::_synchmethod_assertion(boolean condition) {
+	if (!condition)
+		throw AssertionFailedException(/*message*/ "assertion failed");
+}
+
+long AbstractActor::execute() {
+}
+
+#applyPatch($patches 'AdditionalBodies' '')
+
+void AbstractActor::exportQueueContentInXML(ostream &out, string tab) {
+	out << tab << "<queue>" << endl;
+    for (int cnt = (shift ? 1 : 0); cnt < maxQueueLength && messageQueue[cnt] != 0; cnt++) {
+        out << tab << '\t' << "<message sender=\"" << rebecs[senderQueue[cnt]]->getName()<< "\">";
+        exportAMessageInXML(out, tab, cnt);
+        out << "</message>" << endl;
+
+    }        
+	out << tab << "</queue>" << endl;	
+}
+
+void AbstractActor::exportStateInXML(ostream &out, string tab) {
+	out << tab << "<rebec name=\"" << myName << "\">" << endl;
+	exportStateVariablesInXML(out, tab + "\t");
+	exportQueueContentInXML(out, tab + "\t");	
+	out << tab << "</rebec>" << endl;
+}

@@ -1,0 +1,45 @@
+#ifndef __ABSTRACT_TIMED_MODEL_CHECKER_H_
+\#define __ABSTRACT_TIMED_MODEL_CHECKER_H_
+
+\#include "AbstractModelChecker.h"
+\#include "AbstractTimedRebecaAnalyzer.h"
+
+\#include <iostream>
+
+\#define DEADLINE_MISSED 10
+
+class TimedModelChecker : public AbstractModelChecker, public AbstractTimedRebecaAnalyzer {
+
+protected:
+	using AbstractTimedRebecaAnalyzer::exportState;
+	using AbstractTimedRebecaAnalyzer::exportTransition;
+	
+	virtual const char* getModelCheckingResultName(int id);
+    virtual long getConsumedMemory();
+    virtual void printCounterExample();
+    virtual void printCounterExampleTransition(TimedBFSState* parent, TimedBFSState* child);
+
+    virtual void printModelCheckingOptions();
+
+	virtual void exportModelCheckingReportExtraDetails();
+	
+public:
+
+	TimedModelChecker(std::ostream &out 
+		#ifdef EXPORT_STATE_SPACE
+		    , ostream &statespace
+		#endif
+		, int hashmapSize);
+	virtual void doModelChecking(char *userSelectedPropertyName, char *userSelectedPropertyType);
+	virtual void doTimedModelChecking(char *userSelectedPropertyName, char *userSelectedPropertyType);
+	virtual void exportModelCheckingResult(char *userSelectedPropertyName, 
+		char *userSelectedPropertyType, int result, const char* message);
+
+	#applyPatch($patches 'AdditionalSignatures' false)
+		
+	void segmentationFault();
+};
+
+\#define QUEUE_TYPE std::priority_queue<OpenBorderNode, std::vector<OpenBorderNode>, std::greater<OpenBorderNode> >
+
+#endif

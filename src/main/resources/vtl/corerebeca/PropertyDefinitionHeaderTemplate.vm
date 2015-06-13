@@ -1,0 +1,14 @@
+#*In the name of Allah*#
+
+#ifndef __PROPERTY_DEFINITION_H_
+\#define __PROPERTY_DEFINITION_H_
+
+\#include <string.h>
+
+\#include "AcAut.h"
+\#include "Types.h"
+\#include "Config.h"
+
+bool evaluate(char *ruleName);
+
+#endif

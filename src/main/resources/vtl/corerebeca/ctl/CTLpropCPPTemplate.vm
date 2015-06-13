@@ -1,0 +1,13 @@
+\#include "CTLprop.h"
+\#include "CTLMC.h"
+
+
+Operator** generatePropertyArray(char* propName) {
+	return NULL;
+	return NULL;
+}
+int propLength(char* propName) {
+	return -1;
+	return 0;
+}
+

@@ -1,0 +1,180 @@
+/***********
+TinyOS Sensing App (worst case task lengths)
+V3
+Reactive classes: CPU, Sensor, Radio, Misc
+CPU handles the interrupts (events) coming from Sensor, Radio, and Misc
+The interrupts come in periodically, modeled by "after" in Rebeca.
+Each takes a while to handle, modeled by "delay" in Rebeca.
+************/
+
+reactiveclass CPU(10)
+{
+	knownrebecs
+	{
+		Radio radio;
+		Sensor sensor;
+	}
+
+	statevars
+	{
+		int sensorTaskDelay;// = 500; // worst-case length of sensor task
+		int radioTaskDelay;// = 7; // worst-case length of radio task
+		int miscTaskDelay;// = 10; // worst-case length of misc task
+		int radioCounter;// = 0;
+		int tmp;
+    }
+
+	CPU()
+	{
+		radioCounter = 0;
+		sensorTaskDelay = 500;
+		radioTaskDelay = 7;
+		miscTaskDelay = 10;
+	}
+
+	msgsrv sensorEvent(int period)
+	{
+      	self.sensorTask(period, now - currentMessageArrival);
+    }
+
+	msgsrv sensorTask(int period, int lag)
+	{
+		// process sensor sample
+		delay(sensorTaskDelay);
+
+		// send a radio message every 3rd sample
+		radioCounter += 1;
+		if (radioCounter >= 2)
+		{
+			radioCounter = 0;
+			tmp = period*3 - lag - now + currentMessageArrival;
+			radio.radioLoop(tmp);
+		}
+
+		// check sensor deadline
+		tmp = period - lag - now + currentMessageArrival;
+		self.sensorTaskDone() deadline(tmp);
+	}
+
+	msgsrv radioEvent(int dl)
+	{
+		// process radio packet
+		delay(radioTaskDelay);
+
+		// check radio deadline
+		tmp = dl - now + currentMessageArrival;
+		self.radioTaskDone() deadline(tmp);
+	}
+
+	msgsrv miscEvent()
+	{
+		// perform misc task
+		delay(miscTaskDelay);
+	}
+
+	msgsrv sensorTaskDone()
+	{
+		// do nothing, just check the deadline
+	}
+
+	msgsrv radioTaskDone()
+	{
+		// do nothing, just check the deadline
+	}
+}
+
+reactiveclass Sensor(10)
+{
+	knownrebecs
+	{
+		CPU cpu;
+	}
+
+	statevars
+	{
+		int randomOffset;
+		int period;
+	}
+
+	Sensor(int sensorPeriod)
+	{
+		period = sensorPeriod;
+		self.sensorFirst();
+	}
+
+	msgsrv sensorFirst()
+	{
+		randomOffset = ?(100, 200, 300);
+		self.sensorLoop() after(randomOffset);
+	}
+
+	msgsrv sensorLoop()
+	{
+		cpu.sensorEvent(period);
+		self.sensorLoop() after(period);
+	}
+}
+
+reactiveclass Radio(10)
+{
+	knownrebecs
+	{
+		CPU cpu;
+	}
+
+	statevars
+    {
+		int tmp;
+    }
+
+	Radio()
+    {
+    }
+
+	msgsrv radioLoop(int dl)
+	{
+		tmp = dl - now + currentMessageArrival;
+		cpu.radioEvent(tmp);
+	}
+}
+
+reactiveclass Misc(10)
+{
+	knownrebecs
+	{
+		CPU cpu;
+    }
+
+	statevars
+	{
+		int randomOffset;
+		int period;
+	}
+
+	Misc(int miscPeriod)
+	{
+		period = miscPeriod;
+		self.miscFirst();
+	}
+
+	msgsrv miscFirst()
+	{
+		randomOffset = ?(100, 200, 300);
+		self.miscLoop() after(randomOffset);
+	}
+
+	msgsrv miscLoop()
+	{
+		cpu.miscEvent();
+		self.miscLoop() after(period);
+	}
+}
+
+main
+{
+	CPU cpu (radio, sensor):();
+	Sensor sensor(cpu):(/* sensor period = */200);
+	Radio radio(cpu):();
+	Misc misc(cpu):(/* misc period = */1200);
+}
+

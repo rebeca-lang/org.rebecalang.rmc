@@ -1,0 +1,250 @@
+reactiveclass PlaneController(4) {
+	knownrebecs {
+		Plane plane1;
+		Plane plane2;
+		Plane plane3;
+	}
+
+	statevars {
+	
+		/* boolean variable that is true if plane1 is Waiting (in the air or on the ground) */
+		boolean isWaiting1;
+		boolean isWaiting2;
+		boolean isWaiting3;
+		
+		/* boolean variable that is true if a plane1 has the signal (it is allowed to be on the railway) */
+		boolean signal1;
+		boolean signal2;
+		boolean signal3;
+		
+		/* number of planes parking at the moment */
+		short parkingCounter;
+	}
+
+	msgsrv initial() {
+		signal1 = false;	/* not allowed to land */
+		signal2 = false;
+		signal3 = false;
+		
+		isWaiting1 = false; 	/* nobody is waiting */
+		isWaiting2 = false;
+		isWaiting3 = false;
+		
+		parkingCounter = 0;
+	}
+	
+	msgsrv arrive() {
+		if (sender == plane1) {
+			if (signal2 == false && signal3 == false && parkingCounter < 2) {
+				signal1 = true;	/* plane1 allowed to land */
+				plane1.youMayLand() after(1);
+			} else {
+				isWaiting1 = true; /* else wait */
+			}
+		}
+		else if (sender == plane2) {
+			if (signal1 == false && signal3 == false && parkingCounter < 2) {
+				signal2 = true;	/* plane2 allowed to land */
+				plane2.youMayLand() after(1);
+			} else{
+				isWaiting2 = true; /* else wait */
+			}
+		}
+		else if (sender == plane3) {
+			if (signal1 == false && signal2 == false && parkingCounter < 2) {
+				signal3 = true;	/* plane3 allowed to land */
+				plane3.youMayLand() after(1);
+			} else{
+				isWaiting3 = true; /* else wait */
+			}
+		}
+	}
+	
+	msgsrv leave() {
+		if (sender == plane1) {
+			if (signal2 == false && signal3 == false) {
+				signal1 = true;	/* plane1 allowed to fly */
+				plane1.youMayFly() after(1);
+			} else {
+				isWaiting1 = true; /* else wait */
+			}
+		}
+		else if (sender == plane2) {
+			if (signal1 == false && signal3 == false) {
+				signal2 = true;	/* plane2 allowed to fly */
+				plane2.youMayFly() after(1);
+			} else {
+				isWaiting2 = true; /* else wait */
+			}
+		}
+		else if (sender == plane3) {
+			if (signal1 == false && signal2 == false) {
+				signal3 = true;	/* plane3 allowed to fly */
+				plane3.youMayFly() after(1);
+			} else{
+				isWaiting3 = true; /* else wait */
+			}
+		}
+	}
+	
+	msgsrv landed() {
+		parkingCounter = (short)(parkingCounter + 1);
+		
+		if (sender == plane1) {
+			signal1 = false;	/* plane1 not allowed to land anymore */
+			
+			/* when plane2 is waiting and plane3 is not on the rollway and there's space in a parking slot */
+			if (isWaiting2 && signal3 == false && parkingCounter < 2) {
+				signal2 = true;
+				plane2.repeat() after(1); /* tell plane2 that it shall repeat what it wants to do (land or fly away) */
+				isWaiting2 = false;
+			}
+		} else if (sender == plane2) {
+			signal2 = false;	/* plane2 not allowed to land anymore */
+			if (isWaiting3 && signal1 == false && parkingCounter < 2) {
+				signal3 = true;
+				plane3.repeat() after(1);
+				isWaiting3 = false;
+			}
+		} else if (sender == plane3) {
+			signal3 = false;	/* plane3 not allowed to land anymore */
+			if (isWaiting1 && signal2 == false && parkingCounter < 2) {
+				signal1 = true;
+				plane1.repeat() after(1);
+				isWaiting1 = false;
+			}
+		}
+	}
+	
+	msgsrv flownAway() {
+		parkingCounter = (short)(parkingCounter - 1);
+		
+		if (sender == plane1) {
+			signal1 = false; /* plane1 not allowed to fly away anymore */
+			
+			/* when plane2 is waiting and plane3 is not on the rollway */
+			if (isWaiting2 && signal3 == false) {
+				signal2 = true;
+				plane2.repeat() after(1);
+				isWaiting2 = false;
+			}
+		} else if (sender == plane2) {
+			signal2 = false;
+			if (isWaiting3 && signal1 == false) {
+				signal3 = true;
+				plane3.repeat() after(1);
+				isWaiting3 = false;
+			}
+		} else if (sender == plane3) {
+			signal3 = false;
+			if (isWaiting1 && signal2 == false) {
+				signal1 = true;
+				plane1.repeat() after(1);
+				isWaiting1 = false;
+			}
+		}
+	}
+}
+
+reactiveclass Plane(3) {
+	knownrebecs {
+		PlaneController controller;
+	}
+
+	statevars {
+		boolean onrollWay;
+		boolean wantToFly;
+		boolean wantToLand;
+		boolean parking;
+	}
+
+	msgsrv initial() {
+		onrollWay = false;
+		wantToFly = false;
+		wantToLand = false;
+		parking = false;
+		
+		self.wantToLand(); /* plane wants to land immediately when created */
+	}
+	
+	msgsrv wantToLand() {
+		wantToLand = true;
+		controller.arrive() after(1);
+	}
+
+	msgsrv youMayLand() {
+		self.land();
+	}
+	
+	msgsrv land() {
+		onrollWay = true;
+	
+		/* Plane needs some time to land */
+		int landingTime = 1;
+		delay(landingTime);
+		
+		onrollWay = false;
+		wantToLand = false;
+		controller.landed() after(1);
+		
+		/* Plane goes to the parking spot which takes 1 to 2 time units */
+		int goingToPark = ?(1,2);
+		delay(goingToPark);
+		parking = true;
+		
+		/* Plane wants to fly away after 3 to 6 time units */
+		int waitingTime = ?(3,4,5,6);
+		delay(waitingTime);
+		self.wantToFly();
+	}
+	
+	msgsrv wantToFly() {
+		wantToFly = true;
+		controller.leave() after(1);
+	}
+
+	msgsrv youMayFly() {
+		self.fly();
+	}
+	
+	msgsrv fly() {
+		parking = false;
+		
+		/* Plane goes to the rollway which takes 1 time units */
+		int gointToRollWay = 1;
+		delay(gointToRollWay);
+		onrollWay = true;
+		
+		/* Plane needs some time to take off */
+		int takingOffTime = 1;
+		delay(takingOffTime);
+		
+		onrollWay = false;
+		wantToFly = false;
+		/* tell the controller that the plane is flown away */
+		controller.flownAway() after(1);
+		
+		/* Plane flies 3 to 6 time units */
+		int flyingTime = ?(3,4,5,6);
+		delay(flyingTime);
+		
+		/* plane wants to land again after it has taken off (to simulate an ongoing process) */
+		self.wantToLand(); 
+	}
+	
+	msgsrv repeat() {
+		if(wantToLand) {
+			self.wantToLand();
+		} else {
+			self.wantToFly();
+		}
+	}
+	
+}
+
+main {
+	Plane plane1(controller):();
+	Plane plane2(controller):();
+	Plane plane3(controller):();
+	PlaneController controller(plane1, plane2, plane3):();
+}

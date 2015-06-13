@@ -1,0 +1,57 @@
+#*In the name of Allah*#
+
+#ifndef __ABSTRACT_TIMED_ACTOR_H_
+\#define __ABSTRACT_TIMED_ACTOR_H_
+
+\#include "AbstractActor.h"
+\#include <list>
+\#include <stdio.h>
+\#include <string.h>
+using namespace std;
+
+\#define typedSwap(x,y,type) { type __tempvar = x; x = y; y = __tempvar; }
+
+#applyPatch($patches 'AdditionalDeclarations' '')
+
+class AbstractTimedActor : virtual public AbstractActor {
+
+public:
+
+    AbstractTimedActor(byte myID, char *myName, byte maxQueueLength, byte maxParamQueueLength, vector<AbstractActor*>& rebecsRef
+		#ifdef DEBUG_LEVEL_2 
+			, ostream &out
+		#endif
+    	#applyPatch($patches 'AdditionalInitializationParameters' true)
+    );
+    virtual ~AbstractTimedActor();
+    void setNow(TIME_TYPE now);
+    TIME_TYPE getNow();
+
+    #ifdef TTS
+        int __pc;
+        TIME_TYPE __res;
+    #endif
+
+    TIME_TYPE* executionTime;
+    TIME_TYPE* deadline;
+    TIME_TYPE _ref_now;
+    
+    virtual long execute();
+    
+    TIME_TYPE _ref_currentMessageArrival, _ref_currentMessageDeadline, _ref_currentMessageWaitingTime;
+
+	virtual void exportStateInXML(ostream &out, string tab);
+	virtual void exportQueueContentInXML(ostream &out, string tab);
+	
+    
+protected:
+	void addTimedBundles(byte senderId, TIME_TYPE executionTime, TIME_TYPE deadline);
+
+    void timeEnqueue(TIME_TYPE *queue, TIME_TYPE value);
+    virtual void applyPolicy(boolean isSendToSelf);
+
+#applyPatch($patches 'AdditionalSignatures' '')
+
+};
+
+#endif

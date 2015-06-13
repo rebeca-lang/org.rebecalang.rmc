@@ -1,0 +1,82 @@
+                                          #*In the name of Allah*#
+#parse ("$mainPatch")
+
+\#include "Types.h"
+\#include "Config.h"
+
+\#include "CommandLineParser.h"
+
+#mainMacroPutAdditionalIncludes()
+
+\#include <signal.h>
+\#include <fstream>
+\#include <iostream>
+\#include <stdlib.h>
+using namespace std;
+
+#foreach ($fieldDeclaration in $envVariables) 
+	 $translator.translate($fieldDeclaration, "") 
+#end
+
+#mainMacroPutInstanceReference()
+
+void segmentationFaultHandler(int signum) {
+	analyzer->segmentationFault();
+	exit(0);
+}
+
+int main(int argc, char* argv[]) {
+
+	signal(SIGSEGV, segmentationFaultHandler);
+
+	CommandLineParser parser;
+	parser.addOption('h', "help", "Print this message.");
+	parser.addOption('s', "hashmapSize", "Set the size of the hashmap to \"2^value\" (default size is 20 and the value should be bigger that 20).", "value");
+	parser.addOption('o', "exportResult", "Exporting the model checking result in file \"fileName\".", "fileName");
+	
+	#mainMacroPutAdditionalCommandOptions()
+	    
+	try {
+		parser.parse(argc, argv);
+	} catch (Exception e) {
+		cout << e.getMessage() << endl;
+		parser.printHelp();
+		exit(0);
+	}
+	if (parser.hasOption('h')) {
+		parser.printHelp();
+		exit(0);
+	}
+	
+    int hashmapSize = 20;
+	ostream *result = &cout;
+
+	if (parser.hasOption('s')) {
+		int newSize = atoi(parser.getOptionValue('s').c_str());
+		hashmapSize = newSize > hashmapSize ? newSize : hashmapSize;
+	}
+	if (parser.hasOption('o')) {
+		result = new ofstream(parser.getOptionValue('o').c_str(), ofstream::out|ofstream::trunc);
+	}
+
+	for (list<string>::iterator it = parser.getEnvironmentVariables().begin(); it != parser.getEnvironmentVariables().end(); ++it) {
+		string envVar = *it;
+		int index = envVar.find("=");
+		if (index == string::npos || index == 0 || index == envVar.length() - 1)
+			continue;
+		string name = envVar.substr(0, index);
+		string value = envVar.substr(index + 1, envVar.length());
+		#foreach ($fieldDeclaration in $envVariables) 
+			#foreach ($variableDeclarator in $fieldDeclaration.getVariableDeclarators())
+				if (name == "$variableDeclarator.getVariableName()")
+					_ref_$variableDeclarator.getVariableName() = atoi(value.c_str());
+			#end 
+		#end
+    }
+	#mainMacroPutAnalyzerAllocation()
+	
+    if (parser.hasOption('o')) {
+        ((ofstream*)result)->close();
+    }
+    return 0;
+}

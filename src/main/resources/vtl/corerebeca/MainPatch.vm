@@ -1,0 +1,29 @@
+#*In the name of Allah*#
+
+#macro (mainMacroPutAdditionalIncludes)
+
+#end
+
+#macro (mainMacroPutInstanceReference)
+char *userSelectedPropertyType = NULL;
+char *userSelectedPropertyName = NULL;
+
+
+#end
+
+#macro (mainMacroPutAdditionalCommandOptions)
+	parser.addOption('n', "propertyName", "Set property name to \"value\".", "value");
+	parser.addOption('t', "propertyType", "Set property type to \"value\".", "value");
+	parser.addOption('x', "exportStatespace", "Exporting the state space in file \"fileName\".", "fileName");
+#end
+
+
+#macro (mainMacroPutAnalyzerAllocation)
+	if (parser.hasOption('n')) {
+		userSelectedPropertyName = (char *)parser.getOptionValue('n').c_str();
+	}
+	if (parser.hasOption('t')) {
+		userSelectedPropertyType = (char *)parser.getOptionValue('t').c_str();
+	}
+
+#end

@@ -1,0 +1,55 @@
+#*In the name of Allah*#
+
+#ifndef __BODERE_H_
+\#define __BODERE_H_
+
+\#include "BFSHashMap.h"
+\#include "BackwardBFSState.h"
+\#include "Types.h"
+\#include "ClaimAut.h"
+\#include "AcAut.h"
+\#include "RebecMgr.h"
+\#include <stdio.h>
+\#include <stdlib.h>
+\#include <string>
+\#include <time.h>
+\#include <list>
+\#include <iostream>
+\#include <fstream>
+\#include <map>
+
+using namespace std;
+
+
+extern ActiveclassAutomaton** rebecs;	// system model
+extern char *userSelectedPropertyName;
+extern char *userSelectedPropertyType;
+extern bool printCounterExample;
+
+BFSHashMap *bfsStorage;
+
+void printError(char *errorMessage, ostream &out);
+
+
+BFSState *b_store (BFSState* parent, long claim, byte &result, int level, int seenAcceptingStates);
+
+\#define SATISFIED 1
+\#define DEADLOCK 2
+\#define BOUND_REACHED 3
+\#define COUNTER_EXAMPLE 4
+\#define QUEUE_OVER_FLOW 5
+\#define UNKNOWN_PROPERTY 7
+\#define ASSERTION_FAILED 8
+
+\#define resultMessage(id) ( \
+        id == SATISFIED ? "satisfied" : \
+        id == DEADLOCK ? "deadlock" : \
+        id == BOUND_REACHED ? "bound reached" : \
+        id == COUNTER_EXAMPLE ? "counter example" : \
+        id == QUEUE_OVER_FLOW ? "queue over flow" : \
+        id == ASSERTION_FAILED ? "assertion failed" : \
+        id == UNKNOWN_PROPERTY ? "Unknown Property Name" : \
+        "Unknown result" )
+
+
+#endif

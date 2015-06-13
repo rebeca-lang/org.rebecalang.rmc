@@ -1,0 +1,46 @@
+#*In the name of Allah*#
+
+#parse ("vtl/timedrebeca/MainPatch.vm")
+
+#macro (mainMacroPutAdditionalIncludes)
+	#if ($aFeatures.contains("TRACE_GENERATOR")) 
+		\#include "AbstractTimedTraceGenerator.h"
+	#else
+		\#include "ProbabilisticTimedModelChecker.h"
+	#end
+#end
+
+#macro (mainMacroPutInstanceReference)
+	#if ($aFeatures.contains("TRACE_GENERATOR")) 
+		AbstractTimedTraceGenerator *analyzer;
+	#else
+		#ifdef EXPORT_STATE_SPACE
+		ofstream statespace;
+		#endif
+		ProbabilisticTimedModelChecker *analyzer;
+	#end
+#end
+
+#macro (mainMacroPutAnalyzerAllocation)
+	#if ($aFeatures.contains("TRACE_GENERATOR"))
+		int numberOfTraces = parser.hasOption('g') ? atoi(parser.getOptionValue('g').c_str()) : 1;
+		TIME_TYPE timeLimit = parser.hasOption('l') ? atoi(parser.getOptionValue('l').c_str()) : 0;
+		analyzer = new AbstractTimedTraceGenerator(*result, hashmapSize, numberOfTraces, timeLimit);
+		analyzer->generateTraces();
+	#else
+		#ifdef EXPORT_STATE_SPACE
+		if (parser.hasOption('x')) {
+			statespace.open(parser.getOptionValue('x').c_str(), ofstream::out|ofstream::trunc);
+		} else {
+			statespace.open("statespace.xml", ofstream::out|ofstream::trunc);
+		}
+		#endif
+		analyzer = new ProbabilisticTimedModelChecker(*result
+	    	#ifdef EXPORT_STATE_SPACE
+	    		, statespace
+			#endif
+			, hashmapSize
+			);
+		analyzer->doModelChecking("Deadlock-Freedom and No Deadline Missed", "Reachability");
+	#end
+#end

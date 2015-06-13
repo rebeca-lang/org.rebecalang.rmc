@@ -1,0 +1,176 @@
+//env int DIFS = 1;
+reactiveclass Node (5) {
+
+	knownrebecs {
+		Medium medium;
+	}
+	
+	statevars {
+		byte DIFS;
+		boolean mediumSense;
+		byte myId;
+		byte backoffCounter;
+		byte sendingStatus; /*0:nothing, 1:correctly*/
+		boolean ackStatus;
+		byte ASLOT;
+	}
+
+	Node(byte id) {
+		DIFS = 3;
+		ASLOT = 1;
+		mediumSense = true;
+		
+		backoffCounter = 0;
+		myId = id;
+		self.try();
+	}
+	
+	msgsrv try() {
+		if (!mediumSense) {
+			self.enterBackoff();
+		} else {
+			self.sendData() after(DIFS);
+		}
+	}
+	
+	msgsrv updateMediumStatus(boolean status) {
+		mediumSense = status;
+	}
+	
+	msgsrv sendData() {
+		if (!mediumSense) {
+			self.enterBackoff();
+		} else {
+			byte packetSize = 4;
+			medium.startSend(myId);
+			medium.endSend(myId) after(packetSize);
+			ackStatus = false;
+			int SIFS = 2;
+			self.checkForAck() after(packetSize + SIFS);
+		}
+	}
+	
+	msgsrv checkForAck() {
+		if (ackStatus)
+			//self.try() after(20);
+			self.end();
+		else {
+			self.enterBackoff();
+		}
+		ackStatus = false;
+	}
+	
+	msgsrv ack() {
+		ackStatus = true;
+	}
+	
+	msgsrv enterBackoff() {
+		backoffCounter++;
+		if (backoffCounter == 4) {
+			backoffCounter = 0;
+			self.try();
+		} else {
+			byte newValue = 0;
+			if(backoffCounter > 0) {
+				newValue = ?(1, 0);
+			}
+			if(backoffCounter > 1) {
+				newValue *= 2;
+				newValue += ?(1, 0);
+			}
+			if(backoffCounter > 2) {
+				newValue *= 2;
+				newValue += ?(1, 0);
+			}
+			if(backoffCounter > 3) {
+				newValue *= 2;
+				newValue += ?(1, 0);
+			}
+			if(backoffCounter > 4) {
+				newValue *= 2;
+				newValue += ?(1, 0);
+			}
+			if(backoffCounter > 5) {
+				newValue *= 2;
+				newValue += ?(1, 0);
+			}
+			if(backoffCounter > 6) {
+				newValue *= 2;
+				newValue += ?(1, 0);
+			}
+			
+			self.enterBackoff2(newValue);
+		}
+	}
+	msgsrv enterBackoff2(byte value) {
+		if (value != 0) {
+			if (!mediumSense)
+				self.enterBackoff2((byte)(value - 1)) after(ASLOT);
+			else {
+				backoffCounter = 0;
+				self.try();
+			}
+		} else {
+			self.enterBackoff();
+		}
+	}
+	
+	msgsrv end() {
+		//self.end();
+	}
+}
+
+reactiveclass Medium (8) {
+
+	knownrebecs {
+		Node node1;
+		Node node2;
+	}
+	
+	statevars {
+		boolean isCollision;
+		byte numberOfSendingNodes;
+		byte SIFS;
+		byte DIFS;
+	}
+	
+	Medium() {
+		numberOfSendingNodes = 0;
+		SIFS = 2;
+		DIFS = 1;
+	}
+
+	msgsrv sendStatusToNodes() {
+		node1.updateMediumStatus(numberOfSendingNodes == 0);
+		node2.updateMediumStatus(numberOfSendingNodes == 0);
+	}
+
+	msgsrv startSend(byte senderId) {
+		numberOfSendingNodes++;
+		self.sendStatusToNodes();
+	}
+	
+	msgsrv endSend(byte senderId) {
+		if (numberOfSendingNodes > 1) {
+			isCollision = true;
+		}
+		numberOfSendingNodes--;
+		if (numberOfSendingNodes == 0) {
+			if (!isCollision) {
+				if (senderId == 1) {
+					node1.ack() after(DIFS);
+				} else if (senderId == 2) {
+					node2.ack() after(DIFS);
+				}
+			}
+			isCollision = false;
+			self.sendStatusToNodes();
+		}
+	}
+}
+
+main {
+	Node node1(medium):(1);
+	Node node2(medium):(2);
+	Medium medium(node1, node2):();
+}

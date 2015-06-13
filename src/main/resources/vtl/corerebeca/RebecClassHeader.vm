@@ -1,0 +1,35 @@
+protected:
+    #foreach ($method in $reactiveClassDeclaration.getSynchMethods())
+    	$statementTranslator.getTypeName($method.getReturnType()) _synchmethod_${method.getName()}(
+            #putParameters($method.getFormalParameters() false)
+        );
+    #end
+
+public:
+    #foreach($fieldDec in $reactiveClassDeclaration.getStatevars())
+    	$statementTranslator.resolveFieldDeclarationStatement($fieldDec, "")
+    #end
+
+	#foreach ($constructor in $reactiveClassDeclaration.getConstructors())
+		long constructor${reactiveClassName}(byte creatorID
+		#putParameters($constructor.getFormalParameters() true)
+		);
+	#end
+
+    ${reactiveClassName}(byte myID, char* myName, int localHashmapSize);
+    #foreach ($method in $reactiveClassDeclaration.getMsgsrvs())
+        void _msg_${method.getName()}(byte senderId
+            #putParameters($method.getFormalParameters() true)
+        );
+        long msgsrv${method.getName()}(long* rebs
+            #putParameters($method.getFormalParameters() true)
+        );
+    #end
+    
+	#ifdef DEBUG
+	void printStateContent(long stateNo, ostream &out);
+	#endif
+	
+	~${reactiveClassName} ();
+    virtual int consumedMemory();
+	

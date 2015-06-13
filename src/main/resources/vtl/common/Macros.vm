@@ -1,0 +1,140 @@
+#*In the name of Allah*#
+
+#macro (applyPatch $patches $methodName $param)
+	#foreach($patch in $patches)
+		#parse("$patch")
+		#set($call = "#${patchRelatedTo}$methodName($param)")
+		#evaluate($call)
+	#end
+#end
+
+#macro (putParametersValues $parameterList $putComma)
+    #if(!$parameterList.isEmpty())
+	    #if($putComma)
+	        ,
+	    #end
+        #foreach($param in $parameterList)
+            _ref_$param.getName()
+	        #if ($velocityCount < $parameterList.size())
+	        , 
+	        #end
+        #end
+    #end
+#end
+
+#macro (putParameters $parameterList $putComma)
+	#if (!$parameterList.isEmpty())
+	    #if($putComma)
+	        ,
+	    #end
+	    #foreach($param in $parameterList)
+	        $TypesUtilities.getTypeName($param.getType()) _ref_$param.getName()
+	        #if ($velocityCount < $parameterList.size())
+	        , 
+	        #end
+	    #end
+    #end
+#end
+
+#macro (retrieveBooleanValuation $varName)
+	#set($booleanResult = $booleanResult + "$varName = (bool) ($arrayName [$indexName] & AbstractActor::coeff[$booleanCounter]);$newline")
+	#set($booleanCounter = $booleanCounter + 1)
+	#if ($booleanCounter == 8)
+		#set($booleanCounter = 0)
+		#set($booleanResult = $booleanResult + "$indexName++;$newline")
+	#end
+#end
+
+#macro (retrieveListFromArray $arrayName $indexName $varList $printVariableType $prefix)
+    #if($varList)
+    	#set($booleanCounter = 0)
+    	#set($booleanResult = "")
+        #foreach($variableDec in $varList)
+            #set($name = $variableDec.getName())
+            #set($pointerName = $prefix + $name)
+            #set($type = $variableDec.getType())
+            #set($size = $TypesAnalysisUtilities.getInstance().getTypeSize($type))
+
+            #if ($printVariableType)
+            	$translator.translator($variableDec);
+            #end
+            
+            #if($ArrayType.getClass().isAssignableFrom($type.getClass()))
+            	#set($type = $type.getPrimitiveType())
+            #else
+            	#set($pointerName = "&" + $pointerName)
+            #end
+            
+            #if ($type == $TypesUtilities.BOOLEAN_TYPE)
+            	#if ($size == 1)
+            		#retrieveBooleanValuation ("$prefix${name}")
+            	#else
+            		#set($size = $size - 1)
+            		#foreach ($varCounter in [0 .. $size])
+            			#retrieveBooleanValuation ("((boolean *)$prefix${name})[${varCounter}]")
+            		#end
+            	#end
+            #else
+                memcpy($pointerName, &$arrayName [$indexName], $size);
+                $indexName += $size;
+            #end
+        #end
+        #if ($booleanCounter > 0)
+            #set($booleanResult = $booleanResult + "++$indexName;")
+        #end
+        $booleanResult
+    #end
+#end
+
+#macro (putBooleanValuation $varName)
+
+	#if ($booleanCounter == 0)
+		#set($booleanResult = $booleanResult + "$arrayName [$indexName] = 0;$newline")
+	#end
+	#set($booleanResult = $booleanResult + "$arrayName [$indexName] |= ($varName ? 0xFF : 0x00) & AbstractActor::coeff[$booleanCounter]; $newline")
+	#set($booleanCounter = $booleanCounter + 1)
+	#if ($booleanCounter == 8)
+		#set($booleanCounter = 0)
+		#set($booleanResult = $booleanResult + "$indexName++;$newline")
+	#end
+#end
+#macro (putListToArray $arrayName $indexName $varList $prefix)
+    #if($varList)
+    	#set($booleanCounter = 0)
+    	#set($booleanResult = "")
+        #foreach($variableDec in $varList)
+            #set($name = $variableDec.getName())
+            #set($pointerName = $prefix + $name)
+            #set($type = $variableDec.getType())
+            #set($size = $TypesAnalysisUtilities.getInstance().getTypeSize($type))
+            
+            #if($ArrayType.getClass().isAssignableFrom($type.getClass()))
+				#foreach($dimension in $type.getDimensions())
+					#set($typeSuffix = $typeSuffix + "[$dimension]")
+				#end
+            	#set($type = $type.getPrimitiveType())
+            #else
+            	#set($pointerName = "&" + $pointerName)
+            #end
+            
+            #if ($type == $TypesUtilities.BOOLEAN_TYPE)
+            	#if ($size == 1)
+            		#putBooleanValuation ("$prefix${name}")
+            	#else
+            		#set($size = $size - 1)
+            		#foreach ($varCounter in [0 .. $size])
+            			#putBooleanValuation ("((boolean *)$prefix${name})[${varCounter}]")
+            		#end
+            	#end
+            #else
+                memcpy(&$arrayName [$indexName], $pointerName, $size);
+                $indexName += $size;
+            #end
+        #end
+        #if ($booleanCounter % 8 != 0)
+            #set($booleanResult = $booleanResult + "++$indexName;")
+        #end
+
+        $booleanResult
+    #end
+#end

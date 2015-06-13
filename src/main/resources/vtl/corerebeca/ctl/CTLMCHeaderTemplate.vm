@@ -1,0 +1,54 @@
+#ifndef _CTLLMC_H_
+\#define _CTLLMC_H_
+\#include "CTLSS.h"
+\#include <stack>
+
+enum ctl_op {ap,neg,conj,ax,au,eu,TRUE,FALSE};
+enum op_types {atomic,unary,binary};
+struct Operator
+{
+	int id;
+	ctl_op opname;
+	op_types arity;
+	Operator* left;
+	Operator* right;
+	char* proposition;
+	SystemState goal;
+};
+
+//void print_conj_error(SystemState );
+void reset_label(Operator*, SystemState);
+void reset_label_unknown(Operator*, SystemState);
+void add_label(Operator*, SystemState);
+boolean evaluate_proposition(Operator*, SystemState); // Incomplete !!!
+boolean labeled(Operator*, SystemState);
+byte label_status(Operator*,SystemState);
+void label_atomic(Operator*,SystemState);
+void label_negation(Operator*,SystemState);
+void label_conjunction(Operator*,SystemState);
+void label_ax(Operator*,SystemState);
+void label_au(Operator*,SystemState);
+void label_eu(Operator*,SystemState);
+void label_true(Operator*,SystemState);
+void label_false(Operator*,SystemState);
+void label_space(Operator*,SystemState);
+void check(Operator*, SystemState);
+boolean marked(Operator*, SystemState);
+void mark(Operator*,SystemState);
+void unmark(Operator*,SystemState);
+int check_au(Operator*,SystemState, stack<SystemState> *);
+int check_eu(Operator*,SystemState, stack<SystemState> *);
+void ctl_model_check(Operator**, int);
+void startCTL(char*, ostream&, byte reductionLevel);
+void empty_cst();
+void label_eu_scc(Operator*, SystemState, SystemState);
+int eval_eu_sccs(Operator*, SystemState, SystemState,stack<SystemState> *);
+
+//extern evaluate(char* pr,long* rebecStates);
+extern bool evaluate(char *ruleName/*, long* rebecsState// Commented by Ehsan */);
+extern Operator** ops;
+extern int opCount;
+extern Operator** generatePropertyArray(char* propName);
+extern int propLength(char* propName);
+void printCTLReport(bool flag, char *propertyName, char *result, ostream &out);
+#endif

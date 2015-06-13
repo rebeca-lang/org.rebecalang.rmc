@@ -1,0 +1,75 @@
+#*In the name of Allah*#
+
+#parse ("/vtl/common/Macros.vm")
+
+#ifndef __${reactiveClassName.toUpperCase()}_ACTOR_H__
+\#define __${reactiveClassName.toUpperCase()}_ACTOR_H__
+
+#foreach($tempReactiveClassDeclaration in $reactiveClassDeclarations)
+#if ($tempReactiveClassDeclaration.getName() != $reactiveClassName)
+\#include "${tempReactiveClassDeclaration.getName()}Actor.h"
+class ${tempReactiveClassDeclaration.getName()}Actor;
+#end
+#end
+
+#foreach($baseClass in $baseClasses)
+\#include "${baseClass}.h"
+#end
+
+class ${reactiveClassName}Actor :
+#foreach($baseClass in $baseClasses)
+	#if (!($foreach.first))
+	,
+	#end
+	virtual public $baseClass
+#end
+{
+
+public:
+    ${reactiveClassName}Actor(byte myID, char* myName, byte maxQueueLength, byte maxParamLength, vector<AbstractActor*>& rebecsRef
+		#ifdef DEBUG_LEVEL_2 
+			, ostream &out
+		#endif
+    	#applyPatch($patches 'AdditionalInitializationParameters' true)
+    );
+	~${reactiveClassName}Actor();
+	
+	long execute();
+	
+    char* getClassName();
+    
+	virtual void exportStateVariablesInXML(ostream &out, string tab);
+	virtual void exportAMessageInXML(ostream &out, string tab, int cnt);
+
+    void marshalActorToArray(byte* array);
+    void unmarshalActorFromArray(byte* array);
+
+    #foreach($fieldDec in $reactiveClassDeclaration.getStatevars())
+    	$translator.translate($fieldDec, "")
+    #end
+
+	#foreach ($constructor in $reactiveClassDeclaration.getConstructors())
+		long constructor${reactiveClassName}(byte creatorID
+		#putParameters($constructor.getFormalParameters() true)
+		);
+	#end
+
+    #foreach ($method in $reactiveClassDeclaration.getMsgsrvs())
+        void _msg_${method.getName()}(byte senderId
+            #putParameters($method.getFormalParameters() true)
+        );
+        long msgsrv${method.getName()}(
+            #putParameters($method.getFormalParameters() false)
+        );
+    #end
+
+	#applyPatch($patches 'AdditionalSignatures' '')
+protected:
+    #foreach ($method in $reactiveClassDeclaration.getSynchMethods())
+    	$TypesUtilities.getTypeName($method.getReturnType()) _synchmethod_${method.getName()}(
+            #putParameters($method.getFormalParameters() false)
+        );
+    #end    
+};
+
+#endif

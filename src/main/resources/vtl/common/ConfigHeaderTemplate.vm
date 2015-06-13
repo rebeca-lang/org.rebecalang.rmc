@@ -1,0 +1,27 @@
+#*In the name of Allah*#
+
+#ifndef __CONFIG_H__
+\#define __CONFIG_H__
+\#include "Types.h"
+
+#foreach ($feature in $aFeatures)
+\#define $feature	
+#end
+#foreach ($feature in $cFeatures)
+\#define $feature	
+#end
+
+\#if (defined DEBUG || defined EXPORT_STATE_SPACE)
+	\#define ENABLE_STATE_ID
+#endif
+
+#foreach ($fieldDeclaration in $envVariables)
+	 extern $translator.translate($fieldDeclaration, "") 
+#end
+
+\#define NEW_STATE 1
+
+#parse ("$configPatch")
+#addDefinitions()
+
+#endif

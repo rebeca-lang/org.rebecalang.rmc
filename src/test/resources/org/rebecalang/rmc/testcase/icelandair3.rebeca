@@ -1,0 +1,69 @@
+//Rebeca model for Icelandair flight network.
+
+reactiveclass Subroute1(2) {
+    knownrebecs {
+		Subroute2 subroute2;
+	}
+
+    statevars {
+		int overflightCost;
+		int duration;
+    }
+
+    Subroute1(int myOverflightCost, int myDuration) {
+		overflightCost = myOverflightCost;
+		duration = myDuration;
+		self.fly();
+	}
+    
+    msgsrv fly() {	
+		delay(duration);
+		subroute2.fly(overflightCost);
+    }
+}
+
+reactiveclass Subroute2(2) {
+    knownrebecs {
+		Airport airport;
+    }
+
+    statevars {
+		int overflightCost;
+		int duration;
+    }
+
+    Subroute2(int myOverflightCost, int myDuration) {
+		overflightCost = myOverflightCost;
+		duration = myDuration;
+	}
+    
+    msgsrv fly(int cost) {
+		delay(duration);
+		airport.land(cost + overflightCost);
+    }
+}
+
+reactiveclass Airport(10) {
+    knownrebecs {
+
+    }
+
+    statevars {
+		int totalCost;
+    }
+
+    Airport() {
+
+	}
+    
+    msgsrv land(int cost) {
+		totalCost += cost;
+    }
+}
+
+main {
+	Subroute1 subroute0(subroute2):(100,260);
+	Subroute1 subroute1(subroute2):(120,300);
+	Subroute2 subroute2(airport):(20,70);
+	Airport airport():();
+}

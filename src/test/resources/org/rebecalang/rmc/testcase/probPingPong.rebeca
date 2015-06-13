@@ -1,0 +1,33 @@
+reactiveclass Ping(3) {
+	knownrebecs {
+		Pong p1, p2;
+	}
+	
+	Ping() {
+		self.ping();
+	}
+	
+	msgsrv ping() {
+		delay(1);
+		if (?(0.4:true, 0.6:false))
+			p1.pong();
+		else
+			p2.pong();
+	}
+}
+
+reactiveclass Pong(3) {
+	knownrebecs {
+		Ping p;
+	}
+	
+	msgsrv pong() {
+		p.ping() after (1);
+	}
+}
+
+main {
+	Ping pi(po1, po2):();
+	Pong po1(pi):();
+	Pong po2(pi):();
+}

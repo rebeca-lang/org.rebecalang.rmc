@@ -1,0 +1,88 @@
+#*In the name of Allah*#
+
+#ifndef __ABSTRACT_ACTOR_H__
+\#define __ABSTRACT_ACTOR_H__
+
+\#include "Types.h"
+\#include "Config.h"
+\#include <iostream>
+\#include <vector>
+using namespace std;
+
+
+\#define EMPTY		0
+\#define INITIAL	1
+
+// includes self & one extra for -1
+\#define MAX_KNOWN ($maxKnownRebec + 1)
+
+#*maxActions will hold one plus max number of msgsrvs*#
+\#define MAX_ACTIONS $maxMethodNumber
+
+#applyPatch($patches 'AdditionalDeclarations' '')
+
+
+class AbstractActor {
+
+public:
+
+    AbstractActor(byte myID, char * myName, byte maxQueueLength, byte maxParamLength, vector<AbstractActor*>& rebecsRef
+		#ifdef DEBUG_LEVEL_2 
+			, ostream &out
+		#endif
+    	#applyPatch($patches 'AdditionalInitializationParameters' true)
+    );
+    virtual ~AbstractActor();
+
+    virtual long execute ();
+	
+	virtual void exportStateInXML(ostream &out, string tab);
+	virtual void exportQueueContentInXML(ostream &out, string tab);
+	virtual void exportStateVariablesInXML(ostream &out, string tab) = 0;
+	virtual void exportAMessageInXML(ostream &out, string tab, int cnt) = 0;
+    virtual char* getClassName() = 0;
+    
+    virtual void marshalActorToArray(byte* array) = 0;
+    virtual void unmarshalActorFromArray(byte* array) = 0;
+
+    char* getName();
+    char* activeAction();					// the action at queue head
+
+    byte myID;
+    char* myName;
+    byte *known;	// list of indexes of known rebecs
+
+    // message queue is made public to be accessible by areActiveActionsSafe()
+    byte* messageQueue;
+    byte* senderQueue;
+    
+    char ** messageNames;
+    byte** paramQueue;
+    byte maxParamLength;
+    byte maxQueueLength;
+    int shift;
+
+	#applyPatch($patches 'AdditionalSignatures' '')
+    
+protected:
+	const static byte coeff[];
+    byte queueTail;
+    vector<AbstractActor*>& rebecs;
+
+    void enqueue(byte *queue, byte message);
+    void enqueue(byte **queue, byte *message, int size);
+
+    void _synchmethod_assertion (/*string message*/ byte id, boolean condition);
+    //Temp function
+    void _synchmethod_assertion (boolean condition);
+    
+	#ifdef DEBUG_LEVEL_2 
+		ostream &analysisOutputStream;
+	#endif
+
+    #ifdef NO_ATOMIC_EXECUTION
+    	int __pc;
+    #endif
+};
+
+#endif

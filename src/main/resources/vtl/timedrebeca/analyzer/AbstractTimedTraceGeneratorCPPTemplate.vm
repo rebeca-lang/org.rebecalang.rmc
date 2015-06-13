@@ -1,0 +1,166 @@
+\#include "AbstractTimedTraceGenerator.h"
+
+AbstractTimedTraceGenerator::AbstractTimedTraceGenerator(ostream &outStream, int hashmapSize, int numberOfTraces, TIME_TYPE timeLimit) : 
+	AbstractTimedRebecaAnalyzer(outStream, hashmapSize) {
+
+	this->numberOfTraces = numberOfTraces;
+	this->timeLimit = timeLimit;
+}
+
+void AbstractTimedTraceGenerator::generateTraces() {
+	srand(time(NULL));
+    analysisOutputStream << "<traces>" << endl;
+	for (int cnt = 0; cnt < numberOfTraces; cnt++) {
+	    analysisOutputStream << "<trace number=\"" << (cnt + 1) << "\">" << endl;
+		try {
+		    numberOfTransitions = 0;
+		    numberOfStates = 0;
+	
+		    bfsStorage = new TimedRebecaBFSHashmap(hashmapSize, analysisOutputStream);
+		    #ifdef DEBUG
+		    	analysisOutputStream << "State space storage is created successfully." << endl;
+		    #endif
+			rebecs.clear();
+			instantiationPart();	    
+			
+		    #ifdef DEBUG
+		    	analysisOutputStream << "Rebecs are instanciated successfully." << endl;
+		    #endif
+
+			generateOneTrace();
+			analysisOutputStream << "<result>Normal Termination</result>" << endl;
+	    } catch (AssertionFailedException &e) {
+	    	analysisOutputStream << "<result>Assertion Failed</result>" << endl;
+	    } catch (DeadlockException &e) {
+	    	analysisOutputStream << "<result>Deadlock</result>" << endl;
+	    } catch (QueueOverflowException &e) {
+	    	analysisOutputStream << "<result>Queue Overflow</result>" << endl;
+	    } catch (DeadlineMissedException &e) {
+	    	analysisOutputStream << "<result>Deadline Missed</result>" << endl;
+	    } catch (...) {
+	    	analysisOutputStream << "<result>Heap Overflow</result>" << endl;
+	    }
+	    analysisOutputStream << "</trace>" << endl;
+    }
+
+    analysisOutputStream << "</traces>" << endl;
+    analysisOutputStream.flush();
+}
+
+void AbstractTimedTraceGenerator::shiftQueueContentOfRebec(int rebecId) {
+	int queueLength = rebecs[rebecId]->maxQueueLength;
+	int paramLength = rebecs[rebecId]->maxParamLength;
+	for(int shiftQueue = 1; shiftQueue < queueLength; shiftQueue++) {
+		typedSwap(rebecs[rebecId]->messageQueue[shiftQueue - 1], rebecs[rebecId]->messageQueue[shiftQueue], byte)
+		typedSwap(rebecs[rebecId]->senderQueue[shiftQueue - 1], rebecs[rebecId]->senderQueue[shiftQueue], byte)
+		typedSwap(rebecs[rebecId]->paramQueue[shiftQueue - 1], rebecs[rebecId]->paramQueue[shiftQueue], byte*)
+		typedSwap(rebecs[rebecId]->executionTime[shiftQueue - 1], rebecs[rebecId]->executionTime[shiftQueue], TIME_TYPE)
+		typedSwap(rebecs[rebecId]->deadline[shiftQueue - 1], rebecs[rebecId]->deadline[shiftQueue], TIME_TYPE)
+	}
+	rebecs[rebecId]->messageQueue[queueLength - 1] = 0;
+	rebecs[rebecId]->senderQueue[queueLength - 1] = 0;
+	rebecs[rebecId]->executionTime[queueLength - 1] = 0;
+	rebecs[rebecId]->deadline[queueLength - 1] = 0;
+	for(int cnt = 0; cnt < paramLength; cnt++) {
+		rebecs[rebecId]->paramQueue[queueLength - 1][cnt] = 0;
+	}
+    rebecs[rebecId] -> shift = 0;
+}
+
+void AbstractTimedTraceGenerator::generateOneTrace() {
+
+	TIME_TYPE currentTime = MAX_TIME;
+	for (int r = 0; r < REBEC_COUNT; r++) {
+		if (!rebecs[r]->messageQueue[0])
+			continue;
+		currentTime = currentTime > rebecs[r]->executionTime[0] ? rebecs[r]->executionTime[0] : currentTime;
+	}
+    current.currentTime = currentTime;
+
+    #ifdef DEBUG
+        out << "Before start state space generation \"while\" loop (The initial state is stored)." << endl;
+    #endif
+    
+    exportState(current, analysisOutputStream);
+    while(true) {
+        TIME_TYPE currentTime = current.currentTime;
+
+        vector<int> enabledRebecs;
+        for (int r = 0; r < REBEC_COUNT; r++) {
+            if (!rebecs[r]->messageQueue[0])
+                continue;
+            TIME_TYPE execTime = (max(rebecs[r]->getNow(), rebecs[r]->executionTime[0]));
+            if (execTime > currentTime) {
+                continue;
+            }
+            enabledRebecs.push_back(r);
+        }
+
+        if (enabledRebecs.size() == 0) {
+            throw DeadlockException("Deadlock occurs.");
+        }
+
+        int rebecId = enabledRebecs[randint(enabledRebecs.size() - 1)];
+        TIME_TYPE execTime = (max(rebecs[rebecId]->getNow(), rebecs[rebecId]->executionTime[0]));
+        int numberOfAlternatives = getNumberOfAlternatives(rebecId, execTime) - 1;
+        int selectedAlternative = numberOfAlternatives == 0 ? 0 : randint(numberOfAlternatives);
+
+        changeOrder(rebecId, selectedAlternative);
+        if (rebecs[rebecId]->deadline[0] < currentTime) {
+            throw DeadlineMissedException("Deadline missed.");
+        }
+
+	    byte result;
+	    TIME_TYPE shift;
+	
+        char* actionName = rebecs[rebecId]->activeAction();
+	    #ifdef DEBUG
+	        analysisOutputStream << "Enabled rebec is found. Try to excute message \"" << rebecs[rebecId]->getName() << "::" << rebecs[rebecId]->activeAction() << "\"."<< endl;
+	    #endif
+	
+	    rebecs[rebecId]->execute();
+	    #ifdef DEBUG
+	        analysisOutputStream << "Message \"" << rebecs[rebecId]->getName() << "::" << rebecs[rebecId]->activeAction() << "\" is executed " 
+	        	<< "and the return value is \"" << (int)nonDetTrans << "\"." << endl;
+	    #endif
+	
+	    int nextRebecTime = MAX_TIME;
+	    for (int r2 = 0; r2 < REBEC_COUNT; r2++) {
+	    	int index = (rebecId == r2 ? 1 : 0);
+			if (rebecs[r2]->messageQueue[index]) {
+	            TIME_TYPE rebecNextMessageTime = max(rebecs[r2]->getNow(), rebecs[r2]->executionTime[index]);
+	            nextRebecTime = min(rebecNextMessageTime ,nextRebecTime);
+	        }
+	    }
+	    if (nextRebecTime == MAX_TIME) {
+	        throw DeadlockException("Deadlock");
+	    }
+	
+	    for (int r2 = 0; r2 < REBEC_COUNT; r2++) {
+	    	if (rebecs[r2]->getNow() < nextRebecTime)
+	        	rebecs[r2]->setNow(nextRebecTime);
+	    }
+	    
+	    OpenBorderNode newState = storeRecentlyCreatedState(result, shift, current.state, current.stateActiveBundleNumber, rebecId);
+	    if (timeLimit == 0) {
+		    if (!(result & NEW_STATE)) {
+		    	exportTransition(current, newState, rebecs[rebecId]->getName(), actionName, shift, analysisOutputStream);
+		    	return;
+		    }
+	    } else if(timeLimit < currentTime)
+	    	return;
+        newState.currentTime = nextRebecTime;
+	    exportState(newState, analysisOutputStream);
+	    exportTransition(current, newState, rebecs[rebecId]->getName(), actionName, shift, analysisOutputStream);
+		shiftQueueContentOfRebec(rebecId);
+	    current = newState;
+    }		  
+
+}
+
+void AbstractTimedTraceGenerator::segmentationFault() {
+	analysisOutputStream << "<result>Segmentation Fault</result>" << endl;
+    analysisOutputStream << "</trace>" << endl;
+    analysisOutputStream << "</traces>" << endl;
+    analysisOutputStream.flush();
+}

@@ -1,0 +1,19 @@
+#*In the name of Allah*#
+
+#set($patchRelatedTo = "probabilisticRebeca")
+
+#macro (probabilisticRebecaAdditionalDeclarations $param)
+#end
+
+#macro (probabilisticRebecaAdditionalInitializations $param)
+#end
+
+#macro (probabilisticRebecaAdditionalInitializationParameters $hasType)
+#end
+
+#macro (probabilisticRebecaAdditionalSignatures $reactiveClassDeclaration)
+#end
+
+#macro (probabilisticRebecaAdditionalBodies $reactiveClassDeclaration)
+	extern float probability;
+#end

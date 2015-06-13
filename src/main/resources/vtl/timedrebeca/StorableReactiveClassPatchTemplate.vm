@@ -1,0 +1,31 @@
+#*In the name of Allah*#
+
+#set($patchRelatedTo = "timedRebecaReactiveClass")
+
+#macro (timedRebecaReactiveClassAdditionalDeclarations $param)
+#end
+
+#macro (timedRebecaReactiveClassAdditionalInitializationParameters $hasType)
+#end
+
+#macro (timedRebecaReactiveClassAdditionalInitializations $param)
+	if (hashtableTimeExtension == (vector<TimeFrame>**)0xFFFFFFFF) {	// avoid reinitialization
+        hashtableTimeExtension = new vector<TimeFrame>*[1 << hashmapSize];
+        memset (hashtableTimeExtension, 0, sizeof(vector<TimeFrame>*)*(1 << hashmapSize));
+	}
+#end
+
+#macro (timedRebecaReactiveClassAdditionalSignatures $param)
+	protected:
+	    static vector<TimeFrame>** hashtableTimeExtension;
+		virtual vector<TimeFrame>** getHashtableTimeExtension();
+#end
+
+#macro (timedRebecaReactiveClassAdditionalBodies $param)
+
+	vector<TimeFrame>** ${reactiveClassName}Actor::hashtableTimeExtension = (vector<TimeFrame>**)0xFFFFFFFF;
+	
+	vector<TimeFrame>** ${reactiveClassName}Actor::getHashtableTimeExtension() {
+		return hashtableTimeExtension;
+	}
+#end

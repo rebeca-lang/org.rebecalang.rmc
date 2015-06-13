@@ -1,0 +1,141 @@
+#*In the name of Allah*#
+
+#set($patchRelatedTo = "timedRebecaStorable")
+
+#macro (timedRebecaStorableAdditionalInitializationParameters $hasType)
+	#if($hasType)
+		, int stateSize, int hashmapSize
+	#else
+		, stateSize, hashmapSize
+	#end
+#end
+
+#macro (timedRebecaStorableAdditionalInitializations $param)
+	timeBundleCount = 0;
+#end
+
+#macro (timedRebecaStorableAdditionalDeclarations $param)
+	struct __attribute__((__packed__)) TimeFrame {
+	    TIME_TYPE* executionTime;
+	    TIME_TYPE* deadline;
+	    TIME_TYPE now;
+	    #ifdef TTS
+	    	TIME_TYPE res;
+	    #endif
+	};
+	
+	struct __attribute__((__packed__)) TimedRebecStateIndexType {
+		long tableIndex;
+		TIME_TYPE bundleIndex;
+		bool operator == (const TimedRebecStateIndexType &r2) {
+			return this->tableIndex == r2.tableIndex && this->bundleIndex == r2.bundleIndex;
+		}
+	};
+#end
+
+
+#macro (timedRebecaStorableAdditionalSignatures $param)
+	using AbstractActor::marshalActor;
+	using AbstractActor::unmarshalActor;
+	public:
+	
+	    TimedRebecStateIndexType marshalActor(TIME_TYPE& shiftTime);
+	    void unmarshalActor(TimedRebecStateIndexType state, TIME_TYPE shiftTime);
+		TimedRebecStateIndexType storeLocalState(long stateNum, TIME_TYPE& shiftTime);
+		
+	protected:
+		int timeBundleCount;
+		virtual vector<TimeFrame>** getHashtableTimeExtension() = 0;
+#end
+
+#macro (timedRebecaStorableAdditionalBodies $param)
+
+	TimedRebecStateIndexType AbstractTimedActor::marshalActor(TIME_TYPE& shiftTime) {
+		long stateNo = marshalActor();
+	    return storeLocalState(stateNo, shiftTime);
+	}
+	
+	void AbstractTimedActor::unmarshalActor(TimedRebecStateIndexType state, TIME_TYPE shiftTime) {
+	
+	    TIME_TYPE bundleIndex = state.bundleIndex;
+	    long stateNo = state.tableIndex;
+	    vector<TimeFrame>** hashtableTimeExtension = getHashtableTimeExtension();
+	    
+	    unmarshalActor(stateNo);
+	
+	    TimeFrame frame = (hashtableTimeExtension[stateNo])->operator[](bundleIndex);
+	    memcpy(executionTime, frame.executionTime, maxQueueLength * sizeof(TIME_TYPE));
+	    memcpy(deadline, frame.deadline, maxQueueLength * sizeof(TIME_TYPE));
+	    for (int cnt = 0; cnt < maxQueueLength && messageQueue[cnt]; cnt++) {
+	        executionTime[cnt] += shiftTime;
+	        if (deadline[cnt] != MAX_TIME)
+	        	deadline[cnt] += shiftTime;
+	    }
+	    _ref_now = frame.now + shiftTime;
+	    #ifdef TTS
+			__res = (__pc == -1 ? 0 : (frame.res + shiftTime));
+		#endif
+	
+	}
+	
+	TimedRebecStateIndexType AbstractTimedActor::storeLocalState(long stateNum, TIME_TYPE& shiftTime) {
+		int cnt = 0;
+	    vector<TimeFrame> **hashtableTimeExtension = getHashtableTimeExtension();
+	    // Empty Queue equals to itself by any time shift operation
+	    if (!hashtableTimeExtension[stateNum]) {
+	    	hashtableTimeExtension[stateNum] = new vector<TimeFrame>();
+	    }
+	    if (!messageQueue[0] && !hashtableTimeExtension[stateNum]->empty()) {
+	        TimedRebecStateIndexType retValue;
+	        shiftTime = _ref_now - (*(hashtableTimeExtension[stateNum]->begin())).now;
+	        retValue.tableIndex = stateNum;
+	        retValue.bundleIndex = 0;
+	        return retValue;
+	    }
+		for (vector<TimeFrame>::iterator it = hashtableTimeExtension[stateNum]->begin();
+				it != hashtableTimeExtension[stateNum]->end(); it++, cnt++) {
+	        TIME_TYPE diff = _ref_now - (*it).now;
+	        bool mismatch = false;
+	        #ifdef TTS
+	        	if (__res != 0)
+		        	mismatch = (diff != (__res - (*it).res));
+			#endif
+	        for (int cnt2 = shift; cnt2 < maxQueueLength && !mismatch && messageQueue[cnt2]; cnt2++) {
+	            if ((diff != executionTime[cnt2] - (*it).executionTime[cnt2 - shift]) || 
+	            	((diff != deadline[cnt2] - (*it).deadline[cnt2 - shift]) && deadline[cnt2] != MAX_TIME)) {
+	                mismatch = true;
+	                break;
+	            }
+	        }
+	        if (!mismatch) {
+	            TimedRebecStateIndexType retValue;
+	            shiftTime = diff;
+	            retValue.tableIndex = stateNum;
+	            retValue.bundleIndex = cnt;
+	            return retValue;
+	        }
+		}
+	
+	    timeBundleCount++;
+	    TimeFrame newFrame;
+	    newFrame.executionTime = new TIME_TYPE[maxQueueLength];
+	    newFrame.deadline = new TIME_TYPE[maxQueueLength];
+	    memcpy(newFrame.executionTime, &executionTime[shift], (maxQueueLength - shift) * sizeof (TIME_TYPE));
+	    memcpy(newFrame.deadline, &deadline[shift], (maxQueueLength - shift)  * sizeof (TIME_TYPE));
+	    if (shift) {
+	    	newFrame.executionTime[maxQueueLength - 1] = 0;
+	    	newFrame.deadline[maxQueueLength - 1] = MAX_TIME;
+	    }
+	    newFrame.now = _ref_now;
+	    #ifdef TTS
+	    	newFrame.res = __res;
+		#endif
+	    hashtableTimeExtension[stateNum]->push_back(newFrame);
+	    TimedRebecStateIndexType retValue;
+	    shiftTime = 0;
+	    retValue.tableIndex = stateNum;
+	    retValue.bundleIndex = cnt;
+	    return retValue;
+	}
+	
+#end

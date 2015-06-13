@@ -1,0 +1,41 @@
+#ifndef __ELDARICA_CTLHASHMAP_H_
+\#define __ELDARICA_CTLHASHMAP_H_
+
+\#include "Types.h"
+\#include "AcAut.h"
+\#include <string.h>
+\#include <vector>
+
+
+extern int hashmapSize;
+
+struct _SystemState {
+	long* rebecStates;
+	std::vector<_SystemState*> nextStates; // the next system state reached by executing each rebec in the current state
+	byte* labels; //labels for each id of subformulas of property
+	_SystemState *next;	// in bucket
+	long executing_rebec_id;
+	boolean equals (long *sys);
+	boolean * marked;
+	long id;
+    int dfsnum;
+};
+
+typedef struct _SystemState* SystemState;
+
+class CTLHashMap
+{
+	SystemState* table;
+	long hashValue;
+	SystemState current;
+	unsigned int hashCode (void*, unsigned long, unsigned int);
+public:
+	CTLHashMap();
+	virtual ~CTLHashMap();
+	boolean exists (long* sys);
+	SystemState put (long*);
+	SystemState getState();
+};
+
+#endif
+

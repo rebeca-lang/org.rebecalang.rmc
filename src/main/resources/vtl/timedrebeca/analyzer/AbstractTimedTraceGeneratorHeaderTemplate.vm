@@ -1,0 +1,25 @@
+#ifndef __ABSTRACT_TIMED_TRACE_GENERATOR_H__
+\#define __ABSTRACT_TIMED_TRACE_GENERATOR_H__
+
+\#include "AbstractTimedRebecaAnalyzer.h"
+
+\#include <iostream>
+\#include <queue>
+
+class AbstractTimedTraceGenerator : public AbstractTimedRebecaAnalyzer {
+
+protected:
+	int numberOfTraces;
+	TIME_TYPE timeLimit;
+
+public:
+	AbstractTimedTraceGenerator(std::ostream &out, int hashmapSize, int numberOfTraces, TIME_TYPE timeLimit);
+	
+	void shiftQueueContentOfRebec(int rebecId);
+	void generateTraces();
+	void generateOneTrace();
+	
+	void segmentationFault();
+};
+
+#endif

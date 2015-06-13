@@ -1,0 +1,37 @@
+#*In the name of Allah*#
+
+#set($patchRelatedTo = "coreRebecaReactiveClass")
+
+#macro (coreRebecaReactiveClassAdditionalDeclarations $param)
+#end
+
+#macro (coreRebecaReactiveClassAdditionalInitializationParameters $hasType)
+	#if($hasType)
+		, int hashmapSize
+	#else
+		, $stateSize, hashmapSize
+	#end
+#end
+
+#macro (coreRebecaReactiveClassAdditionalInitializations $param)
+	if (table == (byte**)0xFFFFFFFF) {	// avoid reinitialization
+		table = new byte* [1 << hashmapSize];
+        memset (table, 0, sizeof(byte*)*(1 << hashmapSize));
+	}
+
+#end
+
+#macro (coreRebecaReactiveClassAdditionalSignatures $param)
+	protected:
+	    static byte** table;
+		virtual byte** getTable();
+#end
+
+#macro (coreRebecaReactiveClassAdditionalBodies $param)
+
+	byte** ${reactiveClassName}Actor::table = (byte**)0xFFFFFFFF;
+
+	byte** ${reactiveClassName}Actor::getTable() {
+		return table;
+	}
+#end

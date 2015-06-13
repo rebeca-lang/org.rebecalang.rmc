@@ -1,0 +1,286 @@
+                                    #*In the name of Allah*#
+
+\#include "Types.h"
+\#include "${reactiveClassName}Actor.h"
+\#include <stdio.h>
+\#include <string.h>
+
+// location counters (values stored in messageQueue[0])
+/* There can be more than one location counter for each msgsrv when we
+   want to have non-atomic message servers.
+   Notice that values 0 and 1 are reserved for EMPTY and INITIAL, respectively.*/
+#set ($cnt = 1)
+#foreach ($methodDeclaration in $reactiveClassDeclaration.getMsgsrvs())
+\#define $methodDeclaration.getName().toUpperCase() $cnt
+#set ($cnt = $cnt + 1)
+#end
+
+
+// knownrebecs (those to whom message can be sent)
+// the following format allows to use them as variables --> the ID of the rebec
+\#define _ref_sender (rebecs[senderQueue[0]])
+\#define _ref_self (dynamic_cast<${reactiveClassName}Actor*>(rebecs[myID]))
+#set($cnt = 1)
+#foreach($fieldDec in $reactiveClassDeclaration.getKnownRebecs())
+    #foreach ($varDec in $fieldDec.getVariableDeclarators())
+    	\#define _ref_$varDec.getVariableName() (dynamic_cast<$TypesUtilities.getTypeName($fieldDec.getType())Actor*>(rebecs[known[$cnt]]))
+	    #set($cnt = $cnt + 1)
+    #end
+#end
+    
+#foreach($knownRebec in $reactiveClassDeclaration.getKnownRebecs().getKnownRebecDeclaration())
+    \#define _ref_$knownRebec.getName() (known[$cnt])
+    #set($cnt = $cnt + 1)
+#end
+
+${reactiveClassName}Actor::${reactiveClassName}Actor(byte myID, char* myName, byte maxQueueLength, byte maxParamLength, vector<AbstractActor*>& rebecsRef
+		#ifdef DEBUG_LEVEL_2 
+			, ostream &out
+		#endif
+	#applyPatch($patches 'AdditionalInitializationParameters' true)
+)
+	:
+	#foreach($baseClass in $baseClasses)
+		$baseClass (myID, myName, maxQueueLength, maxParamLength, rebecsRef
+			#ifdef DEBUG_LEVEL_2 
+				, out
+			#endif
+			#applyPatch($patches 'AdditionalInitializationParameters' false)
+		)
+		#if(!($foreach.last))
+		,
+		#end
+	#end
+	#foreach($className in $constructorCallClasses)
+	, $className (myID, myName, maxQueueLength, maxParamLength, rebecsRef
+		#ifdef DEBUG_LEVEL_2 
+			, out
+		#endif
+		#applyPatch($patches 'AdditionalInitializationParameters' false)
+	)
+	#end
+{
+
+    messageNames = new char *[$reactiveClassDeclaration.getMsgsrvs().size() + 1];
+	messageNames[0] = (char*)"Empty";
+
+    #set ($cnt = 1)
+    #foreach ($methodDeclaration in $reactiveClassDeclaration.getMsgsrvs())
+        messageNames[$cnt] = (char*)"$methodDeclaration.getName().toUpperCase()";
+        #set ($cnt = $cnt + 1)
+    #end
+
+	#applyPatch($patches 'AdditionalInitializations' '')
+	
+	queueTail = 0;
+}
+
+${reactiveClassName}Actor::~${reactiveClassName}Actor (){
+	delete [] messageNames;
+	delete [] messageQueue;
+	delete [] senderQueue;
+}
+
+
+void ${reactiveClassName}Actor::exportStateVariablesInXML(ostream &out, string tab) {
+	out << tab << "<statevariables>" << endl;
+    #foreach($fieldDec in $reactiveClassDeclaration.getStatevars())
+        #foreach($variableDec in $fieldDec.getVariableDeclarators())
+	        #set($name = $variableDec.getVariableName())
+	        #set($refName = "_ref_" + $name)
+	        #set($type = $fieldDec.getType())
+	    	out << tab << '\t' << "<variable name=\"$name\" type=\"$TypesUtilities.getTypeName($type)\">" <<  
+	    		$TypesAnalysisUtilities.getVaribleValue($refName, $type) << "</variable>" << endl;
+		#end
+	#end
+	out << tab << "</statevariables>" << endl;
+}
+
+void ${reactiveClassName}Actor::exportAMessageInXML(ostream &out, string tab, int cnt) {
+        int i = 0;
+        switch (messageQueue[cnt]) {
+	        #foreach ($methodDeclaration in $reactiveClassDeclaration.getMsgsrvs())
+            case $methodDeclaration.getName().toUpperCase(): {
+                #retrieveListFromArray("paramQueue[cnt]" "i" $methodDeclaration.getFormalParameters() true "_ref_")
+                out << "$methodDeclaration.getName()("
+                #foreach ($paramDeclaration in $methodDeclaration.getFormalParameters())
+                	#set($paramVarName = "_ref_" + $paramDeclaration.getName())
+                	<< $TypesAnalysisUtilities.getVaribleValue($paramVarName, $paramDeclaration.getType())
+                	#if ($foreach.count < $methodDeclaration.getFormalParameters().size())
+					<< ", "
+					#end
+                #end
+                << ")";
+                break;
+               }
+	        #end
+    	}
+
+}
+
+char* ${reactiveClassName}Actor::getClassName() {
+    return (char*)"${reactiveClassName}";
+}
+
+void ${reactiveClassName}Actor::marshalActorToArray(byte* array) {
+    int i,j, marshalIndex = 0;
+
+	for (i = (shift ? 1 : 0); i < maxQueueLength; i++) {
+        array[marshalIndex++] = messageQueue[i];
+    }
+
+    if (shift) {
+        array[marshalIndex++] = 0;
+    }
+    
+	for (i = (shift ? 1 : 0); i < maxQueueLength; i++) {
+        array[marshalIndex++] = senderQueue[i];
+    }
+
+    if (shift) {
+        array[marshalIndex++] = 0;
+    }
+
+	if(maxParamLength != 0) {
+        for (i = (shift ? 1 : 0); i < maxQueueLength; i++) {
+            for (j = 0; j < maxParamLength; j++) {
+                array[marshalIndex++] = paramQueue[i][j];
+            }
+        }
+        if (shift) {
+            for (j = 0; j < maxParamLength; j++) {
+                array[marshalIndex++] = 0;
+            }
+        }
+    }
+
+    #putListToArray ("array" "marshalIndex" $TypesAnalysisUtilities.convertToFormalParameterDeclaration($reactiveClassDeclaration.getStatevars()) "_ref_")
+
+    #ifdef NO_ATOMIC_EXECUTION
+    	memcpy(&array [marshalIndex], &__pc, 4);
+    	//array[marshalIndex++] = __pc;
+    #endif
+
+}
+
+void ${reactiveClassName}Actor::unmarshalActorFromArray(byte* array) {
+
+    int index = 0, i, j;
+    shift = 0;
+
+	for (i = 0; i < maxQueueLength; i++) {
+        messageQueue[i] = array[index++];
+    }
+	
+	for (i = 0; i < maxQueueLength; i++) {
+        senderQueue[i] = array[index++];
+    }
+    
+	if(maxParamLength != 0) {
+        for (i = 0; i < maxQueueLength; i++) {
+            for (j = 0; j < maxParamLength; j++) {
+                paramQueue[i][j] = array[index++];
+            }
+        }
+    }
+
+    #retrieveListFromArray ("array" "index" $TypesAnalysisUtilities.convertToFormalParameterDeclaration($reactiveClassDeclaration.getStatevars()) false "_ref_")
+    
+    #ifdef NO_ATOMIC_EXECUTION
+    	memcpy(&__pc, &array [index], 4);
+    	//__pc = array[index++];
+    #endif
+}
+
+/*#ifdef DEBUG
+void ${reactiveClassName}Actor::printStateContent(long stateNo) {
+	out << myName << "=>[";
+	byte* currentValues = getTable()[stateNo];
+	for (int cnt = 0; cnt < STATE_SIZE; cnt++)
+		out << (int)currentValues[cnt] << ", ";
+	out << "]";
+}
+#endif
+*/
+
+//---------------------------------------------------------
+/**
+  Checks which action of this rebec is enabled, and executes it. Actions are the
+  same as the location-counter defined at the beginning of this file.
+  In the case of non-atomic message servers, a location-counter may point to the
+  middle of a message server.
+  If this action leads to more than one transition (non_det), this method executes
+  only one of these transitions. With the help of some static variables, consecutive
+  calls to this method execute different transitions caused by this action.
+  Local variables must be properly valuated before any call to this method (see marshal()).
+
+  returns: >0 : there are more possible next states (non-det transitions).
+		   =0 : no more non_det transitions
+		   -1 : no enabled action (empty queue)
+		   -2 : Local hash table is full - immediate termination of search
+ */
+long ${reactiveClassName}Actor::execute() {
+	#foreach ($baseClass in $baseClasses)
+		$baseClass::execute();
+	#end
+    switch (messageQueue[0]) {
+
+        #foreach ($methodDeclaration in $reactiveClassDeclaration.getMsgsrvs())
+            case $methodDeclaration.getName().toUpperCase():
+                {
+                    int i = 0;
+                    #retrieveListFromArray("paramQueue[0]" "i" $methodDeclaration.getFormalParameters() true "_ref_")
+                    return msgsrv${methodDeclaration.getName()}(
+                        #putParametersValues($methodDeclaration.getFormalParameters() false)
+                    );
+                }
+        #end
+    }
+    return -1;   // if queue empty, we have no transitions
+}
+
+#foreach ($methodDeclaration in $reactiveClassDeclaration.getConstructors())
+    long ${reactiveClassName}Actor::constructor$reactiveClassName (byte creatorId 
+    	#putParameters($methodDeclaration.getFormalParameters() true)
+    ) {
+    	$methodBodyConvertor.convertConstructorBody($methodDeclaration)
+	}
+#end
+
+#foreach ($methodDeclaration in $reactiveClassDeclaration.getSynchMethods())
+
+    $TypesUtilities.getTypeName($methodDeclaration.getReturnType()) ${reactiveClassName}Actor::_synchmethod_$methodDeclaration.getName() (
+    	#putParameters($methodDeclaration.getFormalParameters() false)
+    ) {
+    	$methodBodyConvertor.convertSynchMethodBody($methodDeclaration)
+	}
+#end
+
+#foreach ($methodDeclaration in $reactiveClassDeclaration.getMsgsrvs())
+    void ${reactiveClassName}Actor::_msg_$methodDeclaration.getName() (byte senderId
+        #putParameters($methodDeclaration.getFormalParameters() true)
+    ){
+        queueTail = 0;
+        enqueue(messageQueue, $methodDeclaration.getName().toUpperCase());
+        enqueue(senderQueue, senderId);
+        #set($msgSrv = $reactiveClass.item($msgSrvCounter))
+
+        if (maxParamLength != 0) {
+            int index = 0;
+            byte paramsValues[maxParamLength];
+            memset(paramsValues, 0, maxParamLength);
+            #putListToArray ("paramsValues" "index" $methodDeclaration.getFormalParameters() "_ref_")
+            enqueue(paramQueue, paramsValues, maxParamLength);
+        }
+}
+#end
+
+#applyPatch($patches 'AdditionalBodies' '')
+
+#foreach ($methodDeclaration in $reactiveClassDeclaration.getMsgsrvs())
+    long ${reactiveClassName}Actor::msgsrv$methodDeclaration.getName() (
+    	#putParameters($methodDeclaration.getFormalParameters() false)
+    ) {
+    	$methodBodyConvertor.convertMsgsrvBody($methodDeclaration)
+}
+#end

@@ -1,0 +1,65 @@
+#*In the name of Allah*#
+
+#macro (mainMacroPutAdditionalIncludes)
+	#if ($aFeatures.contains("TRACE_GENERATOR")) 
+		\#include "AbstractTimedTraceGenerator.h"
+	#else
+		\#include "TimedModelChecker.h"
+	#end
+#end
+
+#macro (mainMacroPutInstanceReference)
+	#if ($aFeatures.contains("TRACE_GENERATOR")) 
+		AbstractTimedTraceGenerator *analyzer;
+	#else
+		#ifdef EXPORT_STATE_SPACE
+		ofstream statespace;
+		#endif
+		TimedModelChecker *analyzer;
+	#end
+#end
+
+#macro (mainMacroPutAdditionalCommandOptions)
+	#ifdef MONTE_CARLO
+	parser.addOption('e', "error", "Error value of the calculated results", "value");
+	parser.addOption('d', "delta", "Confidence value of the calculated results", "fileName");
+	#endif
+	
+	#if ($aFeatures.contains("TRACE_GENERATOR"))
+		parser.addOption('g', "generatetraces", "Simulate the model for number of times which is specified by \"value\".", "value");
+		parser.addOption('l', "timelimit", "Set termination time for each simulation trace.", "value");
+	#else
+	    #ifdef EXPORT_STATE_SPACE	
+		parser.addOption('x', "exportStatespace", "Exporting the state space in file \"fileName\".", "fileName");
+		#endif
+	#end
+#end
+
+
+#macro (mainMacroPutAnalyzerAllocation)
+	#if ($aFeatures.contains("TRACE_GENERATOR"))
+		int numberOfTraces = parser.hasOption('g') ? atoi(parser.getOptionValue('g').c_str()) : 1;
+		TIME_TYPE timeLimit = parser.hasOption('l') ? atoi(parser.getOptionValue('l').c_str()) : 0;
+		analyzer = new AbstractTimedTraceGenerator(*result, hashmapSize, numberOfTraces, timeLimit);
+		analyzer->generateTraces();
+	#else
+		#ifdef EXPORT_STATE_SPACE
+		if (parser.hasOption('x')) {
+			statespace.open(parser.getOptionValue('x').c_str(), ofstream::out|ofstream::trunc);
+		} else {
+			statespace.open("statespace.xml", ofstream::out|ofstream::trunc);
+			#ifdef DEBUG_LEVEL_2 
+			cout.rdbuf(statespace.rdbuf());
+			#endif
+			
+		}
+		#endif
+		analyzer = new TimedModelChecker(*result
+	    	#ifdef EXPORT_STATE_SPACE
+	    		, statespace
+			#endif
+			, hashmapSize
+			);
+		analyzer->doModelChecking("Deadlock-Freedom and No Deadline Missed", "Reachability");
+	#end
+#end

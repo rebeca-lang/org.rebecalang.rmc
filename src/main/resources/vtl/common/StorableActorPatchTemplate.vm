@@ -1,0 +1,116 @@
+#*In the name of Allah*#
+
+#set($patchRelatedTo = "coreRebecaStorable")
+
+#macro (coreRebecaStorableAdditionalDeclarations $param)
+#end
+
+#macro (coreRebecaStorableAdditionalInitializations $param)
+	this->stateSize = stateSize;
+	this->hashmapSize = hashmapSize;
+#end
+
+#macro (coreRebecaStorableAdditionalInitializationParameters $hasType)
+	#if($hasType)
+		, int stateSize, int hashmapSize 
+	#else
+		, stateSize, hashmapSize 
+	#end
+#end
+
+#macro (coreRebecaStorableAdditionalSignatures $param)
+	public:
+	    long marshalActor();
+	    void unmarshalActor(long stateId);
+	    long storeLocalState(byte* currentValues);
+	    
+	    virtual long consumedMemory();
+	
+	    unsigned int hashCode (byte *v);
+	
+	protected:
+	    int hashmapSize;
+	    int stateSize;
+	    virtual byte** getTable() = 0;
+#end
+
+#macro (coreRebecaStorableAdditionalBodies $param)
+	long AbstractActor::consumedMemory(){
+		return 0;
+	}
+	
+	unsigned int AbstractActor::hashCode (byte *v) {
+		unsigned long c;
+	    if (stateSize < 8) { // 8 is sizeof(c)=sizeof(long)
+		    c = * (unsigned long*) v;
+	    }
+	    else {
+	        unsigned long a, b, len, length;
+	
+	        length = len = stateSize;
+	        byte *k = v;
+	        a = b = 0x9e3779b9;
+	        c = 0;
+	        while (len >= 3)
+	        {	a += k[0];
+	            b += k[1];
+	            c += k[2];
+	            mix(a,b,c);
+	            k += 3; len -= 3;
+	        }
+	        c += length;
+	        // If len equals to 2, both cases, 2 and 1, are executed
+	        // If len equals to 1, just the second case (1) will be executed
+	        switch (len) {
+	            case 2: b+=k[1];
+	            case 1: a+=k[0];
+	        }
+	        mix(a,b,c);
+	    }
+		return c & ((1 << hashmapSize)-1);
+	}
+	
+	long AbstractActor::marshalActor() {
+		byte currentValues[stateSize];
+		marshalActorToArray(currentValues);
+		#ifdef DEBUG_LEVEL_2
+			analysisOutputStream << "Rebec " << myName << " is marshaled to array [";
+			for (int cnt = 0; cnt < stateSize; cnt++)
+				analysisOutputStream << (int)currentValues[cnt] << ",";
+			analysisOutputStream << "]" << endl;
+		#endif
+	    return storeLocalState(currentValues);
+	}
+	
+	void AbstractActor::unmarshalActor(long stateId) {
+	    byte* currentValues = getTable()[stateId];
+		unmarshalActorFromArray(currentValues);
+	}
+	
+	long AbstractActor::storeLocalState(byte* currentValues) {
+		// get Number by State
+	    unsigned long h, stateNum;
+		h = stateNum = hashCode(currentValues);
+		byte **table = getTable();
+	next:
+		if (table[stateNum] == null) {
+			table[stateNum] = new byte [stateSize];
+			if (getTable()[stateNum] == NULL) {
+	            throw HeapOverflowException("Cannot store rebec's local state." );
+			}
+			memcpy (table[stateNum], currentValues, sizeof(byte) * stateSize);
+	        return stateNum;
+		}
+		if (!memcmp (table[stateNum], currentValues, sizeof(byte) * stateSize)) {
+	        return stateNum;
+	    }
+	
+		// Collision has occured
+		// Check next slot (linear probing) for collision handling
+		stateNum = (stateNum < (1 << hashmapSize)-1)? stateNum+1 : 0; // may wrap arond
+		if (stateNum == h) {
+	        throw Exception("Hash table of reactive class is full.");
+		}
+		goto next;	// collision
+	}
+#end
