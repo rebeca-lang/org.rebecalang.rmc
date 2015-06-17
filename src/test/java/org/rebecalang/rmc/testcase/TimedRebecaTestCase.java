@@ -12,18 +12,18 @@ public class TimedRebecaTestCase extends TestCase {
 //	@Test 
 	public void testDiningPhilosophers() {
 		String[] parameters = new String[] {
-//				"--source", base + "/yarn-5jobs5tasks.rebeca",
-				"--source", base + "/TinyOSPV4.rebeca",
+				"--source", base + "/ticket-service-2c_c2notissued.rebeca",
+//				"--source", base + "/TinyOSPV4.rebeca",
 //				"--source", base + "/yarn-deadline-fifo-1jobs.rebeca",
 //				"--source", base + "/ASPIN-modified-faulty.rebeca",
 //				"--source", base + "/ticket-service-2c_c2notissued.rebeca",
 //				"-e", "ProbabilisticTimedRebeca",
 				"-e", "TimedRebeca",
 				"-v", "2.1",
-//				"-o", "Jamal",
-				"-o", "Yarn",
+				"-o", "Jamal",
+//				"-o", "Yarn",
 //				"--tracegenerator", 
-				"-tts",
+//				"-tts",
 //				"-debug",
 //				"-x", 
 //				"-h",

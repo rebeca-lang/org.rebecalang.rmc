@@ -1,6 +1,6 @@
 #*In the name of Allah*#
 
-#parse ("vtl/corerebeca/Macros.vm")
+#parse ("vtl/common/Macros.vm")
 
 #ifndef __MODERE_${reactiveClassName.toUpperCase()}_H__
 \#define __MODERE_${reactiveClassName.toUpperCase()}_H__

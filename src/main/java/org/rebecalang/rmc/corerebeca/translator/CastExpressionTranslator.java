@@ -10,6 +10,7 @@ import org.rebecalang.rmc.AnalysisFeature;
 import org.rebecalang.rmc.StatementTranslationException;
 import org.rebecalang.rmc.AbstractStatementTranslator;
 import org.rebecalang.rmc.StatementTranslatorContainer;
+import org.rebecalang.rmc.utils.TypesAnalysisUtilities;
 
 public class CastExpressionTranslator extends AbstractStatementTranslator {
 
@@ -21,7 +22,11 @@ public class CastExpressionTranslator extends AbstractStatementTranslator {
 	public String translate(Statement statement, String tab)
 			throws StatementTranslationException {
 		CastExpression cExpression = (CastExpression) statement;
-		return tab + "((" + TypesUtilities.getTypeName(cExpression.getType()) + ")"
+		if (TypesUtilities.getInstance().canTypeUpCastTo(cExpression.getType(), TypesUtilities.REACTIVE_CLASS_TYPE)) {
+			return tab + "(dynamic_cast<" + TypesAnalysisUtilities.getTypeName(cExpression.getType()) + ">("
+					+ StatementTranslatorContainer.translate(cExpression.getExpression(), "") + "))";
+		}
+		return tab + "((" + TypesAnalysisUtilities.getTypeName(cExpression.getType()) + ")"
 				+ StatementTranslatorContainer.translate(cExpression.getExpression(), "") + ")";
 	}
 

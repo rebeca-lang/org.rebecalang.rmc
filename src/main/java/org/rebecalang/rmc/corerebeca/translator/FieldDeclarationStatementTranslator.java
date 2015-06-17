@@ -14,11 +14,11 @@ import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.Type;
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.VariableDeclarator;
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.VariableInitializer;
 import org.rebecalang.compiler.utils.CompilerFeature;
-import org.rebecalang.compiler.utils.TypesUtilities;
 import org.rebecalang.rmc.AnalysisFeature;
 import org.rebecalang.rmc.StatementTranslationException;
 import org.rebecalang.rmc.AbstractStatementTranslator;
 import org.rebecalang.rmc.StatementTranslatorContainer;
+import org.rebecalang.rmc.utils.TypesAnalysisUtilities;
 
 public class FieldDeclarationStatementTranslator extends AbstractStatementTranslator {
 
@@ -54,9 +54,9 @@ public class FieldDeclarationStatementTranslator extends AbstractStatementTransl
 		String suffix = "";
 		Type type = formalParameterDeclaration.getType();
 		if (type instanceof OrdinaryPrimitiveType) {
-			retValue += TypesUtilities.getTypeName(type) + " ";
+			retValue += TypesAnalysisUtilities.getTypeName(type) + " ";
 		} else {
-			retValue += TypesUtilities.getTypeName(((ArrayType)type).getPrimitiveType()) + " ";
+			retValue += TypesAnalysisUtilities.getTypeName(((ArrayType)type).getPrimitiveType()) + " ";
 			for (Integer dimension : ((ArrayType)type).getDimensions())
 				suffix += "[" + dimension + "]";
 		}

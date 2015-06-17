@@ -28,7 +28,8 @@
 	        ,
 	    #end
 	    #foreach($param in $parameterList)
-	        $TypesUtilities.getTypeName($param.getType()) _ref_$param.getName()
+    		$TypesAnalysisUtilities.getTypeName($param.getType())
+	         _ref_$param.getName()
 	        #if ($velocityCount < $parameterList.size())
 	        , 
 	        #end

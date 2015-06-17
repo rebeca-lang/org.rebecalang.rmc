@@ -13,11 +13,11 @@ reactiveclass Customer(3) {
     }
     msgsrv try() {
 		ticketIssued =false;
-        a.requestTicket(id);
+        a.requestTicket(self);
     }
     msgsrv ticketIssued() {
 		ticketIssued = true;
-		self.try() after(?(0.3:5,0.7:30));
+		self.try() after(?(5,30));
     }
 }
 reactiveclass Agent(10) {
@@ -30,15 +30,15 @@ reactiveclass Agent(10) {
     }
     Agent() {
     }
-    msgsrv requestTicket(byte id) {
-        ts.requestTicket(id) deadline(24);
+    msgsrv sib() {}
+    msgsrv requestTicket(Customer cu) {
+        Customer gg = cu;
+        //((Agent)sender).sib();
+        ts.requestTicket((Customer)sender);// deadline(24);
     }
-    msgsrv ticketIssued(byte id) {
-        if (id == 1)
-			c1.ticketIssued();
-		else if (id == 2)
-			c2.ticketIssued();
-		}
+    msgsrv ticketIssued(Customer cu) {
+		cu.ticketIssued();
+    }
 }
 reactiveclass TicketService(10) {
     knownrebecs {
@@ -48,13 +48,11 @@ reactiveclass TicketService(10) {
     }
     TicketService() {
     }
-    msgsrv requestTicket(byte id) {
-		if(id ==1){
+    msgsrv requestTicket(Customer cu) {
 			int issueDelay;
-			issueDelay= ?(0.2:40,0.8:10);
+			issueDelay= ?(40,10);
 			delay(issueDelay);
-			a.ticketIssued(id);
-		}
+			a.ticketIssued(cu);
     }
 }
 main {

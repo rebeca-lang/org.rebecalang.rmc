@@ -36,8 +36,8 @@ public class TypesAnalysisUtilities {
 			size *= 2;
 		else if (type == TypesUtilities.INT_TYPE)
 			size *= 4;
-		else if (type == TypesUtilities.REACTIVE_CLASS_TYPE)
-			size *= 4;
+		else if (TypesUtilities.getInstance().canTypeUpCastTo(type, TypesUtilities.REACTIVE_CLASS_TYPE))
+			size *= 8;
 		else 
 			throw new TypeAnalysisException("Unknown type " + TypesUtilities.getTypeName(type));
 		return size;
@@ -97,7 +97,7 @@ public class TypesAnalysisUtilities {
 				if (TypesUtilities.getInstance().canTypeCastTo(type, TypesUtilities.INT_TYPE)) 
 					retValue = "((int)" + varName +")";
 				else
-					retValue = "\\\"unknown type " + TypesUtilities.getTypeName(type) + "\\\"";
+					retValue = "\"unknown type " + TypesUtilities.getTypeName(type) + "\"";
 		}
 		return retValue;
 	}
@@ -106,5 +106,11 @@ public class TypesAnalysisUtilities {
 		if (inputType instanceof ArrayType)
 			return ((ArrayType) inputType).getPrimitiveType();
 		return inputType;
+	}
+
+	public static String getTypeName(Type type) {
+		if (TypesUtilities.getInstance().canTypeUpCastTo(type, TypesUtilities.REACTIVE_CLASS_TYPE))
+			return TypesUtilities.getTypeName(type)+ "Actor*";
+		return TypesUtilities.getTypeName(type);
 	}
 }
