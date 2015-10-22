@@ -8,6 +8,9 @@
 #macro (coreRebecaStorableAdditionalInitializations $param)
 	this->stateSize = stateSize;
 	this->hashmapSize = hashmapSize;
+    //byte *statevariablesInitialValues = new byte[stateSize];
+    //memset (statevariablesInitialValues, 0, sizeof(byte) * stateSize);
+    //unmarshalActorFromArray(statevariablesInitialValues);	
 #end
 
 #macro (coreRebecaStorableAdditionalInitializationParameters $hasType)
@@ -84,6 +87,12 @@
 	
 	void AbstractActor::unmarshalActor(long stateId) {
 	    byte* currentValues = getTable()[stateId];
+		#ifdef DEBUG_LEVEL_2
+			analysisOutputStream << "Rebec " << myName << " is unmarshaled from array [";
+			for (int cnt = 0; cnt < stateSize; cnt++)
+				analysisOutputStream << (int)currentValues[cnt] << ",";
+			analysisOutputStream << "]" << endl;
+		#endif
 		unmarshalActorFromArray(currentValues);
 	}
 	

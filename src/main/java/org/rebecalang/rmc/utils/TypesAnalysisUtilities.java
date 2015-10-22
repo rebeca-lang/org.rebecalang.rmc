@@ -37,7 +37,7 @@ public class TypesAnalysisUtilities {
 		else if (type == TypesUtilities.INT_TYPE)
 			size *= 4;
 		else if (TypesUtilities.getInstance().canTypeUpCastTo(type, TypesUtilities.REACTIVE_CLASS_TYPE))
-			size *= 8;
+			size *= 6;
 		else 
 			throw new TypeAnalysisException("Unknown type " + TypesUtilities.getTypeName(type));
 		return size;

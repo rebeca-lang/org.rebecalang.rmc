@@ -52,6 +52,7 @@
 
 	TimedRebecStateIndexType AbstractTimedActor::marshalActor(TIME_TYPE& shiftTime) {
 		long stateNo = marshalActor();
+		
 	    return storeLocalState(stateNo, shiftTime);
 	}
 	

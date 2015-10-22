@@ -20,6 +20,7 @@ AbstractTimedActor::AbstractTimedActor(byte myID, char* myName, byte maxQueueLen
 	memset (deadline, 0, sizeof(TIME_TYPE) * maxQueueLength);
     executionTime  = new TIME_TYPE[maxQueueLength];
 	memset (executionTime,  0, sizeof(TIME_TYPE) * maxQueueLength);
+	_ref_now = 0;
     #ifdef TTS
         __pc = -1;
         __res = 0;
@@ -63,7 +64,7 @@ void AbstractTimedActor::applyPolicy(boolean isSendToSelf) {
 	}
 	
 	if (cnt > 0) {
-		while ((executionTime[cnt] == executionTime[cnt - 1]) && !(cnt == 1 && (isSendToSelf
+		while ((cnt > 0) && (executionTime[cnt] == executionTime[cnt - 1]) && !(cnt == 1 && (isSendToSelf
 		#ifdef TTS
 			|| __pc != -1 
 		#endif

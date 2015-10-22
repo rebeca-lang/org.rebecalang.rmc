@@ -94,6 +94,12 @@ void TimedModelChecker::doTimedModelChecking(char *userSelectedPropertyName, cha
 				    }
 	            	nonDetTrans = executeRebec(r);
 					unmarshalRebecs(current.state->rebsIndex, current.state->shiftTimes[current.stateActiveBundleNumber].shift);
+				    #ifdef DEBUG_LEVEL_2
+						out << "<state>" << endl;
+						for (int cnt = 0; cnt < REBEC_COUNT; cnt++)
+							rebecs[cnt]->exportStateInXML(out, "\t");
+						out << "</state>" << endl;
+					#endif
 	                currentTime = current.currentTime;
 	            } while (nonDetTrans > 0);
             }
