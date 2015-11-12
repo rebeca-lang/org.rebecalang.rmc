@@ -32,7 +32,7 @@ reactiveclass Agent(10) {
     }
     msgsrv sib() {}
     msgsrv requestTicket(Customer cu) {
-        Customer gg = cu;
+        Customer bb = cu;
         //((Agent)sender).sib();
         ts.requestTicket((Customer)sender);// deadline(24);
     }

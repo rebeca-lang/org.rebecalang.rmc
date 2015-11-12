@@ -1,8 +1,5 @@
 package org.rebecalang.rmc.testcase;
 
-import java.util.Collection;
-
-import org.junit.Test;
 import org.rebecalang.rmc.RMC;
 
 import junit.framework.TestCase;
