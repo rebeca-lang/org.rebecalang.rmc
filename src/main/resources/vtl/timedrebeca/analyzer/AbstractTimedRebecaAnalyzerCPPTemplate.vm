@@ -57,7 +57,8 @@ OpenBorderNode AbstractTimedRebecaAnalyzer::storeRecentlyCreatedState (byte &res
 			analysisOutputStream <<"]" << endl;
 		#endif
 		for (std::vector<RebecsShiftTime>::iterator it = node.state->shiftTimes.begin() ; (it != (node.state->shiftTimes.end())) && !uniformShift; ++it) {
-            shift = -1;
+            shift = 0;
+            boolean first = true;
 			uniformShift = true;
             #ifdef DEBUG_LEVEL_2
             	analysisOutputStream << "timed bundle " << (int)node.stateActiveBundleNumber << ": [";
@@ -69,8 +70,10 @@ OpenBorderNode AbstractTimedRebecaAnalyzer::storeRecentlyCreatedState (byte &res
 			for(int cnt = 0; cnt < REBEC_COUNT; cnt++) {
 				if (!rebecs[cnt]->messageQueue[0])
 					continue;
-				if (shift == -1)
+				if (first) {
+					first = false;
 					shift = rebecsLocalShift.shift[cnt] - (*it).shift[cnt];
+				}
 				else if (shift != rebecsLocalShift.shift[cnt] - (*it).shift[cnt]) {
 					uniformShift = false;
 					break;
@@ -198,10 +201,10 @@ void AbstractTimedRebecaAnalyzer::exportState(OpenBorderNode &current, ostream& 
 }
 
 void AbstractTimedRebecaAnalyzer::exportTransition(OpenBorderNode &source, OpenBorderNode &destination, 
-		string owner, string label, TIME_TYPE shift, ostream& outStream) {
+		string owner, string label, TIME_TYPE executionTime, TIME_TYPE shift, ostream& outStream) {
     outStream << "<transition source=\"" << source.state->stateID << "_" << 
 		(int)source.stateActiveBundleNumber << "\" destination=\"" << 
 		destination.state->stateID << "_" << (int)destination.stateActiveBundleNumber <<
-    	"\" shift=\"" << (int) shift << "\"> <messageserver owner=\"" << 
+    	"\" executionTime=\"" << (int)executionTime << "\" shift=\"" << (int) shift << "\"> <messageserver owner=\"" << 
     	owner << "\" title=\"" << label << "\"/></transition>" << endl;
 }

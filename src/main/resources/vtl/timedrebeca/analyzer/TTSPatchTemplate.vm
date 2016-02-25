@@ -40,7 +40,7 @@ void TimedModelChecker::printCounterExampleTransition(TimedBFSState* parent, Tim
 			label += "tau=>";
 		}
 		label += rebecs[rebecId]->activeAction();
-		exportTransition(parentNode, childNode, rebecs[rebecId]->getName(), label, 0, out);
+		exportTransition(parentNode, childNode, rebecs[rebecId]->getName(), label, rebecs[rebecId]->getNow(), 0, out);
 	}
 }
 
@@ -246,7 +246,7 @@ long TimedModelChecker::executeRebec(int rebecId) {
 	#ifdef EXPORT_STATE_SPACE
 	string label = prefix;
 	label += actionName;
-	exportTransition(current, newState, rebecs[rebecId]->getName(), label, shift, statespace);
+	exportTransition(current, newState, rebecs[rebecId]->getName(), label, currentTime, shift, statespace);
 	#endif
 	return nonDetTrans;
 }

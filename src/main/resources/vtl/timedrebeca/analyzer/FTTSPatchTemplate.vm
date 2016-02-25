@@ -23,7 +23,7 @@ void TimedModelChecker::printCounterExampleTransition(TimedBFSState* parent, Tim
 	int rebecId = child->parents.front().executedRebecIndex;
 	string label = "";
 	label = rebecs[rebecId]->activeAction();
-	exportTransition(parentNode, childNode, rebecs[rebecId]->getName(), label, 0, out);
+	exportTransition(parentNode, childNode, rebecs[rebecId]->getName(), label, rebecs[rebecId]->getNow(), 0, out);
 }
 void TimedModelChecker::printModelCheckingOptions() {
     out << "\t<option>FTTS</option>" << std::endl;
@@ -120,6 +120,9 @@ long TimedModelChecker::executeRebec(int rebecId) {
         out << "Enabled rebec is found. Try to excute message \"" << rebecs[rebecId]->getName() << "::" << rebecs[rebecId]->activeAction() << "\"."<< endl;
     #endif
 
+    #ifdef EXPORT_STATE_SPACE
+    TIME_TYPE executionTime = rebecs[rebecId]->getNow();
+    #endif
     nonDetTrans = rebecs[rebecId]->execute();
     #ifdef DEBUG
         out << "Message \"" << rebecs[rebecId]->getName() << "::" << rebecs[rebecId]->activeAction() << "\" is executed " 
@@ -158,7 +161,7 @@ long TimedModelChecker::executeRebec(int rebecId) {
     }
     #ifdef EXPORT_STATE_SPACE
     string label = actionName;
-    exportTransition(current, newState, rebecs[rebecId]->getName(), label, shift, statespace);
+    exportTransition(current, newState, rebecs[rebecId]->getName(), label, executionTime, shift, statespace);
 	#endif
     return nonDetTrans;
 }
