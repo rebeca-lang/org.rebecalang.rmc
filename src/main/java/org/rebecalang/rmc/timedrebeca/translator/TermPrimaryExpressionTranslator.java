@@ -2,21 +2,19 @@ package org.rebecalang.rmc.timedrebeca.translator;
 
 import java.util.Set;
 
-import org.rebecalang.compiler.modelcompiler.corerebeca.CoreRebecaCategoriesUtility;
+import org.rebecalang.compiler.modelcompiler.corerebeca.CoreRebecaLabelUtility;
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.Expression;
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.FieldDeclaration;
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.NonDetExpression;
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.Statement;
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.TermPrimary;
-import org.rebecalang.compiler.modelcompiler.timedrebeca.TimedRebecaCategoriesUtilities;
+import org.rebecalang.compiler.modelcompiler.timedrebeca.TimedRebecaLabelUtility;
 import org.rebecalang.compiler.modelcompiler.timedrebeca.objectmodel.TimedRebecaParentSuffixPrimary;
 import org.rebecalang.compiler.utils.CompilerFeature;
-import org.rebecalang.compiler.utils.TypesUtilities;
 import org.rebecalang.rmc.AnalysisFeature;
 import org.rebecalang.rmc.StatementTranslationException;
 import org.rebecalang.rmc.StatementTranslatorContainer;
 import org.rebecalang.rmc.corerebeca.translator.FieldDeclarationStatementTranslator;
-import org.rebecalang.rmc.corerebeca.translator.NondetExpressionTranslator;
 
 public class TermPrimaryExpressionTranslator extends org.rebecalang.rmc.corerebeca.translator.TermPrimaryExpressionTranslator {
 
@@ -37,7 +35,7 @@ public class TermPrimaryExpressionTranslator extends org.rebecalang.rmc.corerebe
 		TermPrimary termPrimary = (TermPrimary) statement;
 		
 		if (termPrimary.getParentSuffixPrimary() != null &&
-				termPrimary.getCategoty() == TimedRebecaCategoriesUtilities.DELAY) {
+				termPrimary.getLabel() == TimedRebecaLabelUtility.DELAY) {
 			numberOfDelays++;
 			if (aFeatures.contains(AnalysisFeature.TTS)) {
 				NondetExpressionTranslator ndTranslator = (NondetExpressionTranslator)
@@ -61,7 +59,7 @@ public class TermPrimaryExpressionTranslator extends org.rebecalang.rmc.corerebe
 				StatementTranslatorContainer.translate(termPrimary.getParentSuffixPrimary().getArguments().get(0), "");
 		} else {
 			if (termPrimary.getParentSuffixPrimary() == null &&
-					termPrimary.getCategoty() == CoreRebecaCategoriesUtility.LOCAL_VARIABLE &&
+					termPrimary.getLabel() == CoreRebecaLabelUtility.LOCAL_VARIABLE &&
 					aFeatures.contains(AnalysisFeature.TTS) &&
 					numberOfDelays > 0) {
 				container.addWarning(new StatementTranslationException(
@@ -70,8 +68,7 @@ public class TermPrimaryExpressionTranslator extends org.rebecalang.rmc.corerebe
 			}
 
 			if (termPrimary.getParentSuffixPrimary() != null && 
-					TypesUtilities.getInstance().canTypeCastTo(
-							termPrimary.getType(), TypesUtilities.MSGSRV_TYPE)) {
+					termPrimary.getLabel() == CoreRebecaLabelUtility.MSGSRV) {
 				retValue += "_timed_msg_" + termPrimary.getName() + "(myID";
 				for (Expression expression : termPrimary.getParentSuffixPrimary().getArguments()) {
 					retValue += ", " + StatementTranslatorContainer.translate(expression, "");

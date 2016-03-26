@@ -49,9 +49,15 @@ public class RMC {
 			option.setRequired(true);
 			options.addOption(option);
 			
+			option = OptionBuilder.withArgName("file")
+                    .hasArg()
+                    .withDescription("Rebeca model property file.")
+                    .withLongOpt("property").create('p');
+			options.addOption(option);
+			
 			option = OptionBuilder.withArgName("value")
                     .hasArg()
-                    .withDescription("Rebeca compiler version (2.0 or 2.1). Default version is 2.0")
+                    .withDescription("Rebeca compiler version (2.0, 2.1, 2.2). Default version is 2.1")
                     .withLongOpt("version").create('v');
 			options.addOption(option);
 			
@@ -69,6 +75,7 @@ public class RMC {
 			options.addOption(option);
 
 			options.addOption(new Option("debug", "Enable debug mode in result C++ files."));
+			options.addOption(new Option("debug2", "Enable debug level 2 mode in result C++ files."));
 			options.addOption(new Option("h", "help", false, "Print this message."));
 
 			for (OptionGroup additionalOption : GenerateFiles.getInstance().getOptions())
@@ -78,8 +85,11 @@ public class RMC {
 
 			if (commandLine.hasOption("help"))
 				throw new ParseException("");
-			// Set Rebeca file reference.
+
 			File rebecaFile = new File(commandLine.getOptionValue("source"));
+			File propertyFile = null;
+			if (commandLine.hasOption("property"))
+				propertyFile = new File(commandLine.getOptionValue("property"));
 
 			// Set output location. Default location is rmc-output folder.
 			File destination;
@@ -101,7 +111,7 @@ public class RMC {
 					throw new ParseException("Unrecognized Rebeca version: " + version);
 				}
 			} else {
-				coreVersion = CompilerFeature.CORE_2_0;
+				coreVersion = CompilerFeature.CORE_2_1;
 			}
 			compilerFeatures.add(coreVersion);
 			
@@ -126,8 +136,7 @@ public class RMC {
 
 			Set<AnalysisFeature> analysisFeatures = new HashSet<AnalysisFeature>();
 
-			GenerateFiles.getInstance().generateFiles(rebecaFile, destination, compilerFeatures, analysisFeatures, commandLine);
-
+			GenerateFiles.getInstance().generateFiles(rebecaFile, propertyFile, destination, compilerFeatures, analysisFeatures, commandLine);
 			for (Exception e : GenerateFiles.getInstance().getExceptionContainer().getWarnings()) {
 				if (e instanceof CodeCompilationException) {
 					CodeCompilationException ce = (CodeCompilationException) e;

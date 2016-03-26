@@ -19,6 +19,7 @@ import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.NonDetExpres
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.ReactiveClassDeclaration;
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.RebecaModel;
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.TermPrimary;
+import org.rebecalang.compiler.propertycompiler.corerebeca.objectmodel.PropertyModel;
 import org.rebecalang.compiler.utils.CodeCompilationException;
 import org.rebecalang.compiler.utils.CompilerFeature;
 import org.rebecalang.compiler.utils.ExceptionContainer;
@@ -34,13 +35,13 @@ import org.rebecalang.rmc.utils.TypesAnalysisUtilities;
 
 public class TimedRebecaFileGenerator extends CoreRebecaFileGenerator {
 	
-	public void prepare(RebecaModel rebecaModel,
+	public void prepare(RebecaModel rebecaModel, PropertyModel propertyModel,
 			Set<CompilerFeature> compilerFeatures, 
 			Set<AnalysisFeature> analysisFeatures,
 			CommandLine commandLine,
 			File destinationLocation, ExceptionContainer container) throws CodeCompilationException {
 
-		super.prepare(rebecaModel, compilerFeatures, analysisFeatures,
+		super.prepare(rebecaModel, propertyModel, compilerFeatures, analysisFeatures,
 				commandLine, destinationLocation, container);
 
 		if (commandLine.hasOption("tts")) {
@@ -86,7 +87,7 @@ public class TimedRebecaFileGenerator extends CoreRebecaFileGenerator {
 			super.createBFSHashmapTemplate();
 			createTimedRebecaBFSHashmap();
 			
-			createAbstractTimedRebecaAnalyzer();
+			createAbstractCoreRebecaAnalyzer();
 			
 			if (aFeatures.contains(AnalysisFeature.TRACE_GENERATOR)) {
 				createTraceGenerator();
@@ -181,7 +182,7 @@ public class TimedRebecaFileGenerator extends CoreRebecaFileGenerator {
 
 	}
 
-	protected void createAbstractTimedRebecaAnalyzer() throws IOException {
+	protected void createAbstractCoreRebecaAnalyzer() throws IOException {
 
 		VelocityContext context = new VelocityContext();
 		context.put("aFeatures", analysisFeaturesNames);

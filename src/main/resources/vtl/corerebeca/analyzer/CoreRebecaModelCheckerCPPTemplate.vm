@@ -1,0 +1,103 @@
+\#include "CoreRebecaModelChecker.h"
+
+CoreRebecaModelChecker::CoreRebecaModelChecker(ostream &outStream
+	#ifdef EXPORT_STATE_SPACE
+	    , ostream &statespaceStream
+	#endif
+    , int hashmapSize) : AbstractModelChecker(outStream
+	#ifdef EXPORT_STATE_SPACE
+    	, statespaceStream
+	#endif
+	), 
+	AbstractCoreRebecaAnalyzer(outStream, hashmapSize)
+	{
+
+	this->hashmapSize = hashmapSize;
+}
+
+long CoreRebecaModelChecker::getConsumedMemory() {
+    long totalMem = 0;
+    for (int i=0; i<REBEC_COUNT; i++)
+    	totalMem += rebecs[i]->consumedMemory();
+    totalMem += sizeof(State) * AbstractModelChecker::numberOfStates;
+    return totalMem;
+}
+
+void CoreRebecaModelChecker::exportModelCheckingResult(string userSelectedPropertyName, string userSelectedPropertyType,
+	int result, string message) {
+
+	AbstractModelChecker::numberOfTransitions = AbstractCoreRebecaAnalyzer::numberOfTransitions;
+	AbstractModelChecker::numberOfStates = AbstractCoreRebecaAnalyzer::numberOfStates;
+    out  <<  "<model-checking-report>"  <<  std::endl;
+
+	exportModelCheckingDetails(userSelectedPropertyName, userSelectedPropertyType, result, message);
+	exportModelCheckingReportExtraDetails();
+    out  <<  "<counter-example-trace>"  <<  std::endl;
+	if (result != HEAP_OVERFLOW && result != SATISFIED)
+		printCounterExample();
+    out  <<  "</counter-example-trace>"  <<  std::endl;
+	
+	
+    out  <<  "</model-checking-report>"  <<  std::endl;
+}
+
+void CoreRebecaModelChecker::doModelChecking(string userSelectedPropertyName, string userSelectedPropertyType) {
+	vector<AbstractActor*> referenceToRebecs;
+	try {
+		AbstractModelChecker::doModelChecking(userSelectedPropertyName, userSelectedPropertyType);
+
+	    storage = new CoreRebecaDFSHashmap(hashmapSize, out);
+	    #ifdef DEBUG
+	    	out << "State space storage is created successfully." << endl;
+	    #endif
+
+		instantiationPart();	    
+
+		doDFSModelChecking(userSelectedPropertyName, userSelectedPropertyType);
+		
+	    exportModelCheckingResult(userSelectedPropertyName, userSelectedPropertyType,
+	    	SATISFIED, NULL);
+	    	
+    } catch (AssertionFailedException &e) {
+    	string assertionName = "assertion name: ";
+    	assertionName += e.getMessage();
+    	exportModelCheckingResult(userSelectedPropertyName, userSelectedPropertyType,
+	    	ASSERTION_FAILED, assertionName);
+    } catch (DeadlockException &e) {
+    	exportModelCheckingResult(userSelectedPropertyName, userSelectedPropertyType,
+	    	DEADLOCK, "");
+    } catch (QueueOverflowException &e) {
+    	exportModelCheckingResult(userSelectedPropertyName, userSelectedPropertyType,
+	    	QUEUE_OVERFLOW, "");
+    } catch (StackOverflowException &e) {
+    	exportModelCheckingResult(userSelectedPropertyName, userSelectedPropertyType,
+	    	STACK_OVERFLOW, "");
+    } catch (CounterExampleException &e) {
+    	exportModelCheckingResult(userSelectedPropertyName, userSelectedPropertyType,
+	    	COUNTER_EXAMPLE, "");
+    } catch (UnknownPropertyException &e) {
+    	exportModelCheckingResult(userSelectedPropertyName, userSelectedPropertyType,
+	    	UNKNOWN_PROPERTY, e.getMessage());
+    } catch (...) {
+    	exportModelCheckingResult(userSelectedPropertyName, userSelectedPropertyType,
+	    	HEAP_OVERFLOW, "");
+    }
+
+    #ifdef EXPORT_STATE_SPACE
+	    statespace << "</transitionsystem>" << endl;
+	    statespace.flush();
+	#endif
+
+}
+
+void CoreRebecaModelChecker::segmentationFault() {
+	exportModelCheckingResult("", "", SEGMENTATION_FAULT, NULL);
+	#ifdef EXPORT_STATE_SPACE
+	    statespace << "</transitionsystem>" << endl;
+	    statespace.flush();
+	#endif
+}
+
+
+#applyPatch($patches 'AdditionalBodies' false)
+

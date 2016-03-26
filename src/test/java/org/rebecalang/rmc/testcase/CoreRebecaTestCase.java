@@ -1,14 +1,10 @@
 package org.rebecalang.rmc.testcase;
 
+import junit.framework.TestCase;
+
 import org.rebecalang.rmc.RMC;
 
-import junit.framework.TestCase;
-import ru.ifmo.automata.statemashine.IAutomataContext;
-import ru.ifmo.automata.statemashine.impl.AutomataContext;
 import ru.ifmo.ltl.LtlParseException;
-import ru.ifmo.ltl.converter.*;
-import ru.ifmo.ltl.grammar.LtlNode;
-import ru.ifmo.ltl.grammar.predicate.PredicateFactory;
 
 public class CoreRebecaTestCase extends TestCase {
 	
@@ -17,13 +13,22 @@ public class CoreRebecaTestCase extends TestCase {
 //	@Test 
 	public void testDiningPhilosophers() {
 		String[] parameters = new String[] {
-				"-s", base + "/phils.rebeca",
+				"-s", base + "/WhackAMoleP.rebeca",
+//				"-s", base + "/phils.rebeca",
+//				"-s", base + "/spanning-tree-protocol-best-port.rebeca",
+				"-p", base + "/WhackAMoleP.property",
+//				"-p", base + "/phils.property",
 				"-e", "CoreRebeca",
 				"-v", "2.1",
-				"-o", "test",
+				"-o", "WhackAMoleP",
+//				"-o", "phils",
+				"-x",
+//				"-debug2",
+//				"-debug",
 		};
+
 		try {
-		RMC.main(parameters);
+			RMC.main(parameters);
 		} catch (Exception e) {
 			
 		}
@@ -31,12 +36,12 @@ public class CoreRebecaTestCase extends TestCase {
 	
 	public static void main(String[] args) throws LtlParseException {
 
-        PredicateFactory predicates = new PredicateFactory();
-        
-        IAutomataContext context = new AutomataContext();
-        
-        LtlParser parser = new LtlParser(context, predicates);
-        LtlNode parse = parser.parse("G(a)");
+//        PredicateFactory predicates = new PredicateFactory();
+//        
+//        IAutomataContext context = new AutomataContext();
+//        
+//        LtlParser parser = new LtlParser(context, predicates);
+//        LtlNode parse = parser.parse("G(a)");
         
 		CoreRebecaTestCase testCase = new CoreRebecaTestCase();
 		testCase.testDiningPhilosophers();

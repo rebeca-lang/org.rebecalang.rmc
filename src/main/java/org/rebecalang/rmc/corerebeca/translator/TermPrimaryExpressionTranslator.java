@@ -2,11 +2,11 @@ package org.rebecalang.rmc.corerebeca.translator;
 
 import java.util.Set;
 
+import org.rebecalang.compiler.modelcompiler.corerebeca.CoreRebecaLabelUtility;
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.Expression;
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.Statement;
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.TermPrimary;
 import org.rebecalang.compiler.utils.CompilerFeature;
-import org.rebecalang.compiler.utils.TypesUtilities;
 import org.rebecalang.rmc.AnalysisFeature;
 import org.rebecalang.rmc.StatementTranslationException;
 import org.rebecalang.rmc.AbstractStatementTranslator;
@@ -24,8 +24,7 @@ public class TermPrimaryExpressionTranslator extends AbstractStatementTranslator
 		TermPrimary termPrimary = (TermPrimary) statement;
 		String retValue = termPrimary.getName();
 		if (termPrimary.getParentSuffixPrimary() != null) {
-			boolean isMessageServer = TypesUtilities.getInstance().canTypeCastTo(
-				termPrimary.getType(), TypesUtilities.MSGSRV_TYPE);
+			boolean isMessageServer = termPrimary.getLabel() == CoreRebecaLabelUtility.MSGSRV;
 			retValue = (isMessageServer ? "_msg_" : "_synchmethod_") + retValue;
 			String params = "(";
 			if (isMessageServer)

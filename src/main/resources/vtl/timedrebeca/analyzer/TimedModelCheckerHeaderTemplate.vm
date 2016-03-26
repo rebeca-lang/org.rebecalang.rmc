@@ -14,7 +14,7 @@ protected:
 	using AbstractTimedRebecaAnalyzer::exportState;
 	using AbstractTimedRebecaAnalyzer::exportTransition;
 	
-	virtual const char* getModelCheckingResultName(int id);
+	virtual string getModelCheckingResultName(int id);
     virtual long getConsumedMemory();
     virtual void printCounterExample();
     virtual void printCounterExampleTransition(TimedBFSState* parent, TimedBFSState* child);
@@ -30,10 +30,10 @@ public:
 		    , ostream &statespace
 		#endif
 		, int hashmapSize);
-	virtual void doModelChecking(char *userSelectedPropertyName, char *userSelectedPropertyType);
-	virtual void doTimedModelChecking(char *userSelectedPropertyName, char *userSelectedPropertyType);
-	virtual void exportModelCheckingResult(char *userSelectedPropertyName, 
-		char *userSelectedPropertyType, int result, const char* message);
+	virtual void doModelChecking(string userSelectedPropertyName, string userSelectedPropertyType);
+	virtual void doTimedModelChecking(string userSelectedPropertyName, string userSelectedPropertyType);
+	virtual void exportModelCheckingResult(string userSelectedPropertyName, 
+		string userSelectedPropertyType, int result, string message);
 
 	#applyPatch($patches 'AdditionalSignatures' false)
 		

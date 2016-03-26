@@ -110,7 +110,7 @@ void TimedModelChecker::storeInitialState() {
 }
 
 
-void TimedModelChecker::doTimedModelChecking(char *userSelectedPropertyName, char *userSelectedPropertyType) {
+void TimedModelChecker::doTimedModelChecking(string userSelectedPropertyName, string userSelectedPropertyType) {
     byte result;
     TIME_TYPE shift;
 

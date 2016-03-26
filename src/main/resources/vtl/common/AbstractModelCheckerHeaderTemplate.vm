@@ -31,7 +31,8 @@ protected:
     virtual void printModelCheckingOptions() = 0;
     virtual long getConsumedMemory() = 0;
 
-    virtual const char* getModelCheckingResultName(int result);
+    virtual string getModelCheckingResultName(int result);
+    
 
 public:
 	AbstractModelChecker(ostream &outStream 
@@ -40,9 +41,9 @@ public:
 		#endif
 	);
 
-	virtual void doModelChecking(char *userSelectedPropertyName, char *userSelectedPropertyType);
-	virtual void exportModelCheckingDetails(char *userSelectedPropertyName, 
-	char *userSelectedPropertyType, int result, const char* message);
+	virtual void doModelChecking(string userSelectedPropertyName, string userSelectedPropertyType);
+	virtual void exportModelCheckingDetails(string userSelectedPropertyName, 
+		string userSelectedPropertyType, int result, string message);
 };
 
 #endif

@@ -13,9 +13,10 @@ import org.apache.velocity.Template;
 import org.apache.velocity.VelocityContext;
 import org.apache.velocity.app.Velocity;
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.RebecaModel;
-import org.rebecalang.compiler.modelcompiler.probabilisticrebeca.ProbabilisticRebecaStatementObserver;
 import org.rebecalang.compiler.modelcompiler.probabilisticrebeca.objectmodel.PAltStatement;
 import org.rebecalang.compiler.modelcompiler.probabilisticrebeca.objectmodel.ProbabilisticExpression;
+import org.rebecalang.compiler.modelcompiler.probabilisticrebeca.statementsemanticchecker.statement.PALTStatementSemanticCheck;
+import org.rebecalang.compiler.propertycompiler.corerebeca.objectmodel.PropertyModel;
 import org.rebecalang.compiler.utils.CodeCompilationException;
 import org.rebecalang.compiler.utils.CompilerFeature;
 import org.rebecalang.compiler.utils.ExceptionContainer;
@@ -27,13 +28,13 @@ import org.rebecalang.rmc.timedrebeca.TimedRebecaFileGenerator;
 
 public class ProbabilisticTimedRebecaFileGenerator extends TimedRebecaFileGenerator {
 	
-	public void prepare(RebecaModel rebecaModel,
+	public void prepare(RebecaModel rebecaModel, PropertyModel propertyModel,
 			Set<CompilerFeature> compilerFeatures, 
 			Set<AnalysisFeature> analysisFeatures,
 			CommandLine commandLine,
 			File destinationLocation, ExceptionContainer container) throws CodeCompilationException {
 
-		super.prepare(rebecaModel, compilerFeatures, analysisFeatures,
+		super.prepare(rebecaModel, propertyModel, compilerFeatures, analysisFeatures,
 				commandLine, destinationLocation, container);
 
 		StatementTranslatorContainer.registerTranslator(PAltStatement.class, new PAltStatementTranslator(cFeatures, aFeatures));
@@ -64,7 +65,7 @@ public class ProbabilisticTimedRebecaFileGenerator extends TimedRebecaFileGenera
 			super.createBFSHashmapTemplate();
 			super.createTimedRebecaBFSHashmap();
 			
-			super.createAbstractTimedRebecaAnalyzer();
+			super.createAbstractCoreRebecaAnalyzer();
 			
 			createProbabilisticModelChecker();
 			
@@ -81,8 +82,8 @@ public class ProbabilisticTimedRebecaFileGenerator extends TimedRebecaFileGenera
 
 	protected void createProbabilisticModelChecker() throws IOException {
 		VelocityContext context = new VelocityContext();
-		context.put("PROB_ACCURACY", ProbabilisticRebecaStatementObserver.PROB_ACCURACY);
-		context.put("PROB_PREC", (int)Math.log10(ProbabilisticRebecaStatementObserver.PROB_ACCURACY));
+		context.put("PROB_ACCURACY", PALTStatementSemanticCheck.PROB_ACCURACY);
+		context.put("PROB_PREC", (int)Math.log10(PALTStatementSemanticCheck.PROB_ACCURACY));
 
 		Template template = Velocity
 				.getTemplate(FilesNames.PROBABILISTIC_TIMED_MODEL_CHECKER_HEADER_TEMPLATE);

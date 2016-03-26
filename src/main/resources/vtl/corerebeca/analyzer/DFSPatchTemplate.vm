@@ -1,0 +1,524 @@
+#*In the name of Allah*#
+
+#set($patchRelatedTo = "coreRebecaDFS")
+
+#macro (coreRebecaDFSAdditionalSignatures $noParam)
+
+	virtual void doDFSModelChecking(string userSelectedPropertyName, string userSelectedPropertyType);
+	int maxDepth, depth, maxReached;// depth in manual stack
+	string getModelCheckingResultName(int id);
+	bool incDepth();
+	
+	short int getNextClaimState(short int claim, short int claimNonDetTrans, int propertySelector);
+	boolean isAccepting(short int claim, int propertySelector);
+#end
+
+#macro (coreRebecaDFSAdditionalBodies $noParam)
+
+\#define UNDEFINED 0
+
+// the PUSH macro is used in BFS, therefore assigning -1 to rebec & flag
+#ifdef DEBUG
+	\#define PUSH(d, newState) \
+		stack[d].state = newState;	\
+		stack[d].rebec = (unsigned char)-1; \
+		stack[d].flag = false; \
+		stack[d].undoMark = undoMark; \
+		stack[d].fc =  stack[d-1].fc;
+\#else
+	\#define PUSH(d, newState) \
+		stack[d].state = newState;	\
+		stack[d].rebec = (unsigned char)-1; \
+		stack[d].flag = false; \
+		stack[d].undoMark = fairnessCounter;
+#endif
+
+struct StackEl {
+	State *state;	// a pointer to the real state stored in HashMap
+	byte rebec;		// ID of the last rebec executed at this state at current depth
+	bool flag;		// used in fairness algorithm
+	byte undoMark;	// used in fairness algorithm
+#if ($aFeatures.contains("REDUCTION"))
+#ifdef SYMM
+#ifdef ON_THE_FLY
+	byte perm[REBEC_COUNT];
+\#else
+	byte* perm;
+#endif
+#endif SYMM
+#end
+	#ifdef DEBUG
+		byte fc;	// fairness counter
+	#endif
+}*stack;
+
+
+bool CoreRebecaModelChecker::incDepth() {
+	static boolean warned = false;
+	if (depth >= maxDepth-1) {
+		if (!warned) {
+			// warn only once about stack overflow
+			// printf ("Max search depth too small : %d. (Stack overflow)\n", maxDepth);
+			warned = true;
+		}
+		return false;
+	}
+	else {
+		depth++;	// move one level down in the DFS stack
+		if (maxReached <= depth) maxReached = depth+1;	// "depth" is zero-based
+	}
+	return true;
+}
+
+#foreach($definition in $propertyDefinitions)
+	\#define _ref_$definition.getName() _propDef_$definition.getName()()
+#end
+
+short int CoreRebecaModelChecker::getNextClaimState(short int claim, short int claimNonDetTrans, int propertySelector) {
+	switch (propertySelector) {
+	#set($cnt = 1)
+	#foreach($graphSpec in $propertyGraph)
+		case $cnt:
+			switch(claim) {
+			#foreach($graphNode in $graphSpec.getSecond().getNodes())
+				case $graphNode.getId():
+					#set($defaultTransTarget = -1)
+					#foreach($edge in $graphNode.getOutgoingEdges())
+						#if($edge.getGuard() == "-")
+							#set($defaultTransTarget = $edge.getNext().getId())
+						#else
+							if ($edge.getGuard()) return $edge.getNext().getId();
+						#end
+					#end
+					#if($defaultTransTarget != -1)
+						return $defaultTransTarget;
+					#end
+			#end
+			default:
+				return -1;
+			}
+		break;
+		#set($cnt = $cnt + 1)
+	#end
+	default:
+		return 0;
+	}
+}
+
+boolean CoreRebecaModelChecker::isAccepting(short int claim, int propertySelector) {
+	return false;
+}
+
+#foreach($definition in $propertyDefinitions)
+	#undef _ref_$definition.getName()
+#end
+
+void CoreRebecaModelChecker::doDFSModelChecking(string userSelectedPropertyName, string userSelectedPropertyType) {
+	int propertySelector;
+	short int claim;
+	maxDepth = 100000;
+	stack = new StackEl[maxDepth];
+
+	byte fairnessCounter;	// for fairness algorithm
+	byte undoMark;			// undo mark for fairnessCounter
+	int	seedDepth;			// depth at which 2nd DFS is started - used to detect when 2nd DFS finishes
+	int effectiveDepth;		// in BFS: we need to keep depth of the real state being explored
+	char r;					// rebec counter for systemDfs -> must be signed
+	bool flag;				// fairness undo number and mark
+	bool newStateFlag;		// for claim BFS
+	byte result;			// result of trying to store a new state
+	boolean qOverflow = false;
+
+	long nonDetTrans = 0;		// in nondeterminism - BFS mark for system
+    long claimNonDetTrans;		// BFS mark for claim
+ 	boolean deadlock=false;		// Are we facing a deadlock?
+	boolean deadlockEnable=true;
+	
+ 	seedDepth = -1;			// initially we are not in 2nd DFS
+    fairnessCounter = REBEC_COUNT + 1;	// start with the 1st DFS
+ 	maxReached = 0;
+	depth = -1;	// in symmetry, depth+1 is used in store()
+
+	#set($cnt = 1)
+	if (userSelectedPropertyName.empty())
+		propertySelector = 0;
+	#foreach($graphSpec in $propertyGraph)
+		else if (userSelectedPropertyName == "$graphSpec.getFirst()")
+			propertySelector = $cnt;
+		#set($cnt = $cnt + 1)
+	#end
+	else {
+		string message = "Unknown property name \"";
+		message += userSelectedPropertyName;
+		message += "\"";
+		throw UnknownPropertyException(message);
+	}
+ 	// store initial state of system
+ 	stack[0].state = storeRecentlyCreatedState (result, claim, fairnessCounter);
+    #ifdef EXPORT_STATE_SPACE
+	    statespace << "<transitionsystem>" << endl;
+	    exportState(stack[0].state, statespace);
+    #endif
+ 	
+ 	#ifdef DEBUG
+ 		stack[0].fc = fairnessCounter;
+ 	#endif
+	depth = 0;
+    #ifdef EXPORT_STATE_SPACE
+	    string label;
+    #endif
+
+
+ systemTurn:	// SystemDfs(): called from within ClaimDfs(), except for the first time which is called from main()
+ 	if (depth == maxDepth - 1){
+ 		//printf ("Bounded search reached its depth limit: %d.\n", maxDepth);
+        throw StackOverflowException("search stack bound is reached.");
+ 	}
+
+ 	deadlock = deadlockEnable;	// choose whether to detect deadlocks
+    flag = false;
+    #if ($aFeatures.contains("REDUCTION"))
+ 	#ifdef PO
+ 		/*
+ 		  In 1st DFS: fullyExpandBit is initially false (try reduction) - We always check this bit
+ 		    to make sure whether we have given up reduction.
+ 		  In 2nd DFS: fullyExpandBit depends on previous experiences in the first DFS - We can't
+ 		    choose to set this bit in 2nd DFS.
+ 		*/
+ 		goto TryReduction;
+ FullyExpand:
+ 		// In 1st DFS: If reduction fails for all rebecs, get back here to start phase 2 (which is fully expansion)
+ 		stack[depth].state->setFullyExpandBit();
+ TryReduction:
+ 	#endif
+    #end
+ 	undoMark = fairnessCounter;
+ 	// Make sure rebecs are unmarshall properly if "for" and "while" below iterate!
+ 	unmarshalRebecs(stack[depth].state->rebecs);	// unmarshal is needed for checking disabled rebecs - also needed because of symmetry detection!
+ 	//check if disabled rebecs can contribute to fairnessCounter
+#if ($aFeatures.contains("REDUCTION"))
+#ifdef SYMM
+	while(fairnessCounter < REBEC_COUNT && !rebecs[currentSysPerm[fairnessCounter]]->messageQueue[0]) fairnessCounter++;
+\#else
+ 	while(fairnessCounter < REBEC_COUNT && !rebecs[fairnessCounter]->messageQueue[0]) fairnessCounter++;
+#endif
+#else
+    while(fairnessCounter < REBEC_COUNT && !rebecs[fairnessCounter]->messageQueue[0]) fairnessCounter++;    
+#end
+     for (r = 0; r < REBEC_COUNT; r++) {	// try to execute all rebecs in the system (interleaving)
+ 		if (!rebecs[r]->messageQueue[0] && deadlockEnable) continue;	// if disabled continue with next rebec
+ 		#if ($aFeatures.contains("REDUCTION"))
+        #ifdef PO
+ 			// in 1st DFS this tests which phase of loop over processes
+ 			// in 2nd DFS this tests if 1st DFS had to fully expand
+ 			if (!stack[depth].state->isFullyExpandBitSet()){	// check if we are fully expanding or trying reduction
+ 				if (!areActiveActionsSafe(stack[depth].state->rebecs, r, propertySelector))
+ 					continue;	// if current rebec's active actions are not safe, continue with next rebec
+ 				//else execute this rebec and if proviso is not violated, other rebecs will not be executed (ReductionSuccessful)
+ 			}
+ 		#endif
+        #end
+ 		// fairness algorithm: check whether to move to the next copy of state-space (only in 2nd DFS)
+        #if ($aFeatures.contains("REDUCTION"))
+        #ifdef SYMM
+		    if (r == currentSysPerm[fairnessCounter])
+        \#else
+		    if (fairnessCounter == r)
+        #endif SYMM
+        #else
+            if (fairnessCounter == r)
+        #end
+		{
+			undoMark = fairnessCounter;
+			fairnessCounter++;
+ 			flag = true;
+ 			//check if disabled rebecs can contribute to fairnessCounter
+            #if ($aFeatures.contains("REDUCTION"))
+            #ifdef SYMM
+			    while(fairnessCounter < REBEC_COUNT && !rebecs[currentSysPerm[fairnessCounter]]->messageQueue[0]) fairnessCounter++;
+            \#else
+			    while(fairnessCounter < REBEC_COUNT && !rebecs[fairnessCounter]->messageQueue[0]) fairnessCounter++;
+            #endif
+            #else
+                while(fairnessCounter < REBEC_COUNT && !rebecs[fairnessCounter]->messageQueue[0]) fairnessCounter++;
+            #end
+         }
+
+ 		effectiveDepth = depth;
+ 		do {	// explore all non-det transitions in system in BFS manner
+            #if ($aFeatures.contains("REDUCTION"))
+ 			#ifdef PO
+ 				result = UNDEFINED;
+ 			#endif
+            #end
+ 			// read the system state which is to be explored (useful when back-tracking and in non_det BFS)
+ 			qOverflow = false;
+		    #ifdef EXPORT_STATE_SPACE
+			    label = rebecs[r]->messageNames[rebecs[r]->messageQueue[0]];
+		    #endif
+            nonDetTrans = rebecs[r]->execute();	// The parameter should be removed actually I believe!
+ 			/*
+ 			The next system state is returned in "sys"
+ 			Return value (nonDetTrans):
+ 				-2	 : some local hashTable is full.
+ 				-1   : current rebec was disabled
+ 				0    : there was no more non-det transitions
+ 				other: there are other (non_det) transistions
+ 			*/
+			if (qOverflow) {	// set as an external variable when there is queue-overflow
+ 				if (nonDetTrans == -2) {
+					out << "Reactive class local hashtable is full" << endl;
+					exit (0);
+ 				}
+				throw QueueOverflowException("A rebec queue is overflowed.");
+			}
+ 			deadlock = false;	// if some rebec has some enabled transition, then there is no deadlock
+ 			// we are going to call another method, so we need to store our own local variables onto stack
+ 			stack[depth].flag = flag;
+ 			stack[depth].undoMark = undoMark;
+ 			stack[depth].rebec = (effectiveDepth == depth)? r : -1;	// we need to know where to resume when we're back!
+ 			// if we are here, deadlock is false, so no need to store it
+
+ 			// claimDfs(sNext);
+ 			goto claimTurn;
+ Back2System:
+ 			if (nonDetTrans <= 0) {	// if no BFS, i.e., if back tracking
+ 				// POP from stack
+ 				deadlock = false;	// useful when "deadlockEnable" is false
+ 				flag = stack[depth].flag;
+ 				undoMark = stack[depth].undoMark;
+ 				r = stack[depth].rebec;
+ 				while((r == -1) && stack[depth].state->isVisited(fairnessCounter)) {
+ 					// r == -1 means it was a BFS state
+ 					// If it is visited later, just skip it here (it is already explored)
+ 					/* If POR: this state was visited at a bigger depth, so if stack proviso
+ 					   was not violated, it won't be here, either. Anyway, POR itself must
+ 					   handle it somehow, if the same state is reached later with a different
+ 					   stack!
+ 					*/
+ 					depth--;
+ 					flag = stack[depth].flag;
+ 					undoMark = stack[depth].undoMark;
+ 					r = stack[depth].rebec;
+ 				}
+ 			}
+ 			unmarshalRebecs(stack[effectiveDepth].state->rebecs);	// make ready for next non_det execution
+ 		} while (nonDetTrans>0);
+
+ 		if (r == -1) {	// unexplored state - caused by non_det BFS
+ 			// explore it now - first visit, then if in 1st-DFS put it on stack
+ 			stack[depth].state->visit(fairnessCounter);
+ 			if (fairnessCounter > REBEC_COUNT)
+ 				stack[depth].state->setOnStack();
+            #if ($aFeatures.contains("REDUCTION"))
+            #ifdef SYMM
+			    updatePermutation(stack[depth].perm); // new! for non-det
+            #endif
+            #end
+ 		} else {
+            #if ($aFeatures.contains("REDUCTION"))
+ 			#ifdef PO
+ 				// In 1st DFS we check reduction possibility. In 2nd DFS we follow the decision made in 1st DFS.
+ 				// phase 1: If this rebec is executed and we get here, stack proviso was staisfied for this state!
+ 				// phase 2: If fullyExpandBit is set, we are in phase 2 (which is fully-expansion)
+ 				if (!stack[depth].state->isFullyExpandBitSet() && fairnessCounter > REBEC_COUNT && nonDetTrans != -1/*not disabled*/ && !qOverflow) {
+ 					// ignore execution of other rebecs, by jumping out of "for"
+ 					goto ReductionSuccessful;
+ 				}
+ TryNextRebec:
+ 			/*
+ 			  If stack proviso is violated we jump here.
+ 			  In this case, we undo execution of current rebec and try the next rebec. It is
+ 			  achieved before jumping here, by setting "depth = effectiveDepth". In addition,
+ 			  if fairnessCounter was incremented due to this rebec, we need to undo (below).
+ 			*/
+ 			#endif
+            #end
+ 			if (flag && nonDetTrans != -1 &&
+            #if ($aFeatures.contains("REDUCTION"))
+            #ifdef SYMM
+				currentSysPerm[undoMark] == r )
+            \#else // if not SYMM
+				undoMark == r )
+            #endif SYMM
+            #else
+                undoMark == r )
+            #end
+				/*We must undo, only if fairnessCounter is incremented and current rebec was not disabled*/
+ 				fairnessCounter = undoMark;
+ 		}
+ 		unmarshalRebecs(stack[depth].state->rebecs);	// make ready for next rebec
+    }	// end of loop over processes
+ 	#if ($aFeatures.contains("REDUCTION"))
+    #ifdef PO
+ 		if (/*phase 1?*/!stack[depth].state->isFullyExpandBitSet() && /*1st DFS?*/fairnessCounter > REBEC_COUNT)
+ 			// reduction proviso was not met for any of the rebecs with safe actions, so start next phase of loop, i.e. fully expand
+ 			goto FullyExpand;
+ ReductionSuccessful:
+    #endif
+    #end
+ 	nonDetTrans = 0;	// when backtracking, it may be -1
+ 	if (deadlock /*&& fairnessCounter > REBEC_COUNT*/){
+    	throw DeadlockException("Deadlock occurs.");
+ 	}
+ 	if (depth <= 0) {
+ 		// Search complete
+ 		#ifdef DEBUG
+ 		if (depth < 0) cout << "<faral-error>negative depth = " << depth << "</faral-error>" << endl;
+ 		#endif
+ 		return;
+ 	}
+ 	goto Back2Claim;	// SystemDfs() is called from within ClaimDfs, so we return to there
+ claimTurn:
+ 	claimNonDetTrans = 0;	// Claim behavior is to be determined later!
+ 	newStateFlag = false;
+ 	do {	// BFS due to claim non-det
+ 		// Do Rebecs still have their unmarshaled state??? YES, because of BFS
+ 		claim = getNextClaimState(stack[effectiveDepth].state->claim, claimNonDetTrans, propertySelector);	// we may use recently executed rebec
+ 		/*
+ 		The next claim state is returned. This function computes the synchronous product of system and claim.
+ 		claimNonDetTrans:
+ 			-1   : current state was disabled?! Do we have such a condition?
+ 			0    : there was no more non-det transitions
+ 			other: there are other (non_det) transistions
+ 		*/
+ 		if (claimNonDetTrans == -1){
+ 		    claimNonDetTrans = 0;
+             break;	// if no further moves in current state of claim
+         }
+
+ 		/* The next state in the product automaton is reached when both system and claim move
+ 		one state forward. So we can store() a new state here.
+ 		*/
+ 		State *newState;
+ 		newState = storeRecentlyCreatedState (result, claim, fairnessCounter/*, nonDetTrans || claimNonDetTrans*/);
+
+
+ 		if (result & NEW_STATE) {	// bitwise AND
+		    #ifdef EXPORT_STATE_SPACE
+		    	exportState(newState, statespace);
+			    exportTransition(stack[depth].state, newState, rebecs[r]->getName(), label, statespace);
+		    #endif
+ 			// Move one step deeper in the stack
+ 			if (!incDepth()) break;
+ 			newStateFlag = true;
+ 			PUSH (depth, newState);
+ 			/*
+ 			  The PUSH macro sets "rebec" and "flag" elements of stack to -1.
+ 			  It causes a full expansion of that state if we have to goto Back2System. (useful for BFS in claim)
+ 			  The last state is however simply expanded by goto SystemTurn.
+ 			*/
+	    #ifdef EXPORT_STATE_SPACE
+ 		} else {
+		    exportTransition(stack[depth].state, newState, rebecs[r]->getName(), label, statespace);
+		#endif
+ 		}
+        #if ($aFeatures.contains("REDUCTION"))
+ 		#ifdef PO
+ 			// stack proviso
+ 			if (/*1st DFS?*/fairnessCounter > REBEC_COUNT && /*stack proviso violated?*/(result & ON_STACK)
+ 				&& !stack[effectiveDepth].state->isFullyExpandBitSet()/*phase 1: make sure we haven't given up reduction*/){
+ 					depth = effectiveDepth;	// ignore the possible (unvisited) states due to non_det - undo execution of this rebec
+ 					goto TryNextRebec;	// in systemTurn
+ 					/* If proviso is not violated for any of the non_det transitions of this rebec, we just
+ 					   proceed DFS. Later, as backtracking, when we goto Back2System, if that state was not
+ 					   fully-expanded, it means that Reduction was successful.
+ 					*/
+ 			} else
+ 		#endif
+        #end
+ 		if (/*equals(stack[seedDepth].state, sys, claim)*/ (result & ON_STACK) && fairnessCounter == REBEC_COUNT) {
+ 			// If the stack of 1st DFS is cut, a cycle is definitly closed.
+ 			/*-->implies && seedDepth != -1*/
+ 			// implied: in 2nd DFS
+ 			// If we are at the copy "REBEC_COUNT" of state-space, then the cycle is fair.
+	        throw CounterExampleException("Counter example if detected.");	// finished searching
+ 		}
+ 	} while (claimNonDetTrans);
+
+     if (newStateFlag && !nonDetTrans) {
+
+         stack[depth].state->visit(fairnessCounter);
+         if (fairnessCounter > REBEC_COUNT)
+             stack[depth].state->setOnStack();
+ 		#ifdef DEBUG
+ 			stack[depth].fc = fairnessCounter;
+ 		#endif
+        #if ($aFeatures.contains("REDUCTION"))
+        #ifdef SYMM
+			updatePermutation(stack[depth].perm);
+        #endif SYMM
+        #end
+
+ 		goto systemTurn;	// continue with current DFS
+             //systemDfs(sNext);
+ Back2Claim:
+ 		if (depth == seedDepth){	// returning from the recursive call below
+             fairnessCounter = REBEC_COUNT+1;	//back from 2nd DFS
+ 			seedDepth = -1;
+ 		}
+ 		else {	// returning from the above recursive call
+ 			// After the 1st DFS exploration of current rebec is finished, if it is accepting, we
+ 			// start the 2nd DFS from this state. This post-order behavior allows us to keep the
+ 			// state-space of 2nd DFS between consecutive calls.
+ 			if (/*in 1st DFS?*/fairnessCounter > REBEC_COUNT && isAccepting(stack[depth].state->claim, propertySelector)) {
+ 				seedDepth = depth;
+ 				fairnessCounter = 0;	//enter 2nd DFS
+ 				goto systemTurn;	// start 2nd DFS
+ 			}
+ 		}
+ 		// if we just want to start 2nd DFS, we have to keep the ON_STACK flag of the last state (seed)
+ 		if (fairnessCounter > REBEC_COUNT)	// we only keep track of 1st DFS stack
+ 			stack[depth].state->clearOnStack();
+ 		depth--;
+        #if ($aFeatures.contains("REDUCTION"))
+        #ifdef SYMM
+		    undoPermutation(stack[depth].perm);	// no need to restore pRebec, because it is calculated every time needed -> in store()
+        #endif SYMM
+        #end
+     }
+
+ 	goto Back2System;
+}
+
+void CoreRebecaModelChecker::printCounterExample() {
+    int loopID = -1;
+    int counter = 0;
+
+	unmarshalRebecs(stack[0].state->rebecs);
+	exportState(stack[0].state, out);
+	short int parent = 0;
+	
+    for (int cnt = 1; cnt < depth; cnt++) {
+        // non_det BFS state(not visited in DFS)
+        if (stack[cnt].rebec == (byte)-1)
+            continue;
+        //if (stack[cnt].state->equals(sys, claim))
+        //    loopID = counter;
+
+		unmarshalRebecs(stack[cnt].state->rebecs);
+		exportState(stack[cnt].state, out);
+		short int rebecId = stack[cnt].rebec;
+		exportTransition(stack[parent].state, stack[cnt].state, rebecs[rebecId]->getName(), rebecs[rebecId]->activeAction(), out);
+        
+	}
+}
+
+
+void CoreRebecaModelChecker::printModelCheckingOptions() {
+    out << "\t<option>Nested DFS</option>" << std::endl;
+}
+
+void CoreRebecaModelChecker::exportModelCheckingReportExtraDetails() {
+}
+
+string CoreRebecaModelChecker::getModelCheckingResultName(int id) {
+	return (
+		id == STACK_OVERFLOW ? "search stack overflow" :
+			AbstractModelChecker::getModelCheckingResultName(id)
+		);
+}
+
+
+
+#end

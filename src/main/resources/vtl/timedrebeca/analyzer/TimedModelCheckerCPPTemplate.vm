@@ -16,7 +16,7 @@ TimedModelChecker::TimedModelChecker(ostream &outStream
 	current.state = NULL;
 }
 
-const char* TimedModelChecker::getModelCheckingResultName(int id) {
+string TimedModelChecker::getModelCheckingResultName(int id) {
 	return (
 		id == DEADLINE_MISSED ? "deadline missed" :
 			AbstractModelChecker::getModelCheckingResultName(id)
@@ -63,8 +63,8 @@ void TimedModelChecker::printCounterExample() {
 	}
 }
 
-void TimedModelChecker::exportModelCheckingResult(char *userSelectedPropertyName, char *userSelectedPropertyType,
-	int result, const char* message) {
+void TimedModelChecker::exportModelCheckingResult(string userSelectedPropertyName, string userSelectedPropertyType,
+	int result, string message) {
 
     AbstractModelChecker::numberOfStates = AbstractTimedRebecaAnalyzer::numberOfStates;
     AbstractModelChecker::numberOfTransitions = AbstractTimedRebecaAnalyzer::numberOfTransitions;
@@ -77,12 +77,10 @@ void TimedModelChecker::exportModelCheckingResult(char *userSelectedPropertyName
 	if (result != HEAP_OVERFLOW && result != SATISFIED)
 		printCounterExample();
     out  <<  "</counter-example-trace>"  <<  std::endl;
-	
-	
     out  <<  "</model-checking-report>"  <<  std::endl;
 }
 
-void TimedModelChecker::doModelChecking(char *userSelectedPropertyName, char *userSelectedPropertyType) {
+void TimedModelChecker::doModelChecking(string userSelectedPropertyName, string userSelectedPropertyType) {
 	vector<AbstractActor*> referenceToRebecs;
 	try {
 		AbstractModelChecker::doModelChecking(userSelectedPropertyName, userSelectedPropertyType);

@@ -1,0 +1,28 @@
+#*In the name of Allah*#
+
+#ifndef __CORE_REBECA_BFS_HASHMAP_H__
+\#define __CORE_REBECA_BFS_HASHMAP_H__
+
+\#include "Types.h"
+\#include "Config.h"
+\#include "BFSHashmapTemplate.h"
+\#include "AbstractActor.h"
+
+class CoreRebecaParentReference;
+
+class CoreRebecaBFSState : public BFSState<long, CoreRebecaParentReference> {
+};
+
+class CoreRebecaParentReference {
+public:
+	CoreRebecaBFSState* parent;
+	byte executedRebecIndex;
+};
+
+class CoreRebecaBFSHashmap : public BFSHashmapTemplate<CoreRebecaBFSState, CoreRebecaParentReference> {
+public:
+	CoreRebecaBFSHashmap(int hashmapSize, ostream &out) : BFSHashmapTemplate<CoreRebecaBFSState, CoreRebecaParentReference>(hashmapSize, out){}
+	virtual ~CoreRebecaBFSHashmap() {}
+};
+
+#endif

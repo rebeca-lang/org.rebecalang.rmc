@@ -75,7 +75,17 @@ public:
 	~DeadlockException() throw() {}
 };
 
+class CounterExampleException : public Exception {
+public:
+	CounterExampleException(string message) : Exception(message){}
+	~CounterExampleException() throw() {}
+};
 
+class UnknownPropertyException : public Exception {
+public:
+	UnknownPropertyException(string message) : Exception(message){}
+	~UnknownPropertyException() throw() {}
+};
 
  /*
   * The hash function is taken from SPIN, and is based on

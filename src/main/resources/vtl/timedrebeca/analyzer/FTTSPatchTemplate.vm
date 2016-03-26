@@ -63,7 +63,7 @@ void TimedModelChecker::storeInitialState() {
 	openBorderQueue.push(current);
 }
 
-void TimedModelChecker::doTimedModelChecking(char *userSelectedPropertyName, char *userSelectedPropertyType) {
+void TimedModelChecker::doTimedModelChecking(string userSelectedPropertyName, string userSelectedPropertyType) {
 
 	storeInitialState();
 	    

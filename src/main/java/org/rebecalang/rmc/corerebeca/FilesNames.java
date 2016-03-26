@@ -10,6 +10,7 @@ public interface FilesNames {
 
 	public final static String BASE = "vtl/corerebeca/";
 	public final static String COMMON = "vtl/common/";
+	public final static String ANALYZER_BASE = BASE + "analyzer/";
 	
 	public static final String MACROS_TEMPLATE = COMMON + "Macros.vm";
 
@@ -41,11 +42,29 @@ public interface FilesNames {
     public final static  String BFS_HASHMAP_TEMPLATE_HEADER_TEMPLATE = COMMON + "BFSHashmapTemplateHeaderTemplate.vm";
     //
     public final static  String CORE_REBECA_BFS_HASHMAP_OUTPUT_CPP = "CoreRebecaBFSHashmap.cpp";
-    public final static  String CORE_REBECA_BFS_HASHMAP_CPP_TEMPLATE = BASE + "bfs/CoreRebecaBFSHashmapCPPTemplate.vm";
+    public final static  String CORE_REBECA_BFS_HASHMAP_CPP_TEMPLATE = BASE + "analyzer/CoreRebecaBFSHashmapCPPTemplate.vm";
     public final static  String CORE_REBECA_BFS_HASHMAP_OUTPUT_HEADER = "CoreRebecaBFSHashmap.h";
-    public final static  String CORE_REBECA_BFS_HASHMAP_HEADER_TEMPLATE = BASE + "bfs/CoreRebecaBFSHashmapHeaderTemplate.vm";
+    public final static  String CORE_REBECA_BFS_HASHMAP_HEADER_TEMPLATE = BASE + "analyzer/CoreRebecaBFSHashmapHeaderTemplate.vm";
     
+    public final static  String CORE_REBECA_DFS_HASHMAP_OUTPUT_CPP = "CoreRebecaDFSHashmap.cpp";
+    public final static  String CORE_REBECA_DFS_HASHMAP_CPP_TEMPLATE = BASE + "analyzer/CoreRebecaDFSHashmapCPPTemplate.vm";
+    public final static  String CORE_REBECA_DFS_HASHMAP_OUTPUT_HEADER = "CoreRebecaDFSHashmap.h";
+    public final static  String CORE_REBECA_DFS_HASHMAP_HEADER_TEMPLATE = BASE + "analyzer/CoreRebecaDFSHashmapHeaderTemplate.vm";
+    
+	public static final String ABSTRACT_CORE_REBECA_ANALYZER_HEADER_TEMPLATE = ANALYZER_BASE + "AbstractCoreRebecaAnalyzerHeaderTemplate.vm";
+	public static final String ABSTRACT_CORE_REBECA_ANALYZER_OUTPUT_HEADER = "AbstractCoreRebecaAnalyzer.h";
+	public static final String ABSTRACT_CORE_REBECA_ANALYZER_CPP_TEMPLATE = ANALYZER_BASE + "AbstractCoreRebecaAnalyzerCPPTemplate.vm";
+	public static final String ABSTRACT_CORE_REBECA_ANALYZER_OUTPUT_CPP = "AbstractCoreRebecaAnalyzer.cpp";
 
+	public static final String CORE_REBECA_MODEL_CHECKER_HEADER_TEMPLATE = ANALYZER_BASE + "CoreRebecaModelCheckerHeaderTemplate.vm";
+	public static final String CORE_REBECA_MODEL_CHECKER_OUTPUT_HEADER = "CoreRebecaModelChecker.h";
+	public static final String CORE_REBECA_MODEL_CHECKER_CPP_TEMPLATE = ANALYZER_BASE + "CoreRebecaModelCheckerCPPTemplate.vm";
+	public static final String CORE_REBECA_MODEL_CHECKER_OUTPUT_CPP = "CoreRebecaModelChecker.cpp";
+    
+	public static final String DFS_PATCH_TEMPLATE = ANALYZER_BASE + "DFSPatchTemplate.vm";
+    
+    
+    
 	public final static  String ACAUT_OUTPUT_HEADER = "AcAut.h";
     public final static  String ACAUT_HEADER_TEMPLATE = BASE + "AcAutHeaderTemplate.vm";
     public final static  String ACAUT_OUTPUT_CPP = "AcAut.cpp";

@@ -1,0 +1,193 @@
+\#include "AbstractCoreRebecaAnalyzer.h"
+
+#set($cnt = 0)
+#foreach($instance in $mainDefinition.getMainRebecDefinition())
+	#set($type = $TypesUtilities.getTypeName($instance.getType()))
+	\#define _ref_${instance.getName()} (dynamic_cast<${type}Actor*>(rebecs[$cnt]))
+    #set($cnt = $cnt + 1)
+#end
+
+#foreach($definition in $propertyDefinitions)
+	$TypesUtilities.getTypeName($definition.getExpression().getType()) AbstractCoreRebecaAnalyzer::_propDef_$definition.getName() () {
+		return $translator.translate($definition.getExpression(), "");
+	}
+#end
+
+#foreach($instance in $mainDefinition.getMainRebecDefinition())
+	#undef _ref_${instance.getName()}
+#end
+
+AbstractCoreRebecaAnalyzer::AbstractCoreRebecaAnalyzer(ostream &outStream, int hashmapSize) : analysisOutputStream(outStream){
+	this->hashmapSize = hashmapSize;
+}
+
+
+void AbstractCoreRebecaAnalyzer::unmarshalRebecs(long* node) {
+	int i;
+	for (i = 0; i < REBEC_COUNT; i++) {
+        rebecs[i]->unmarshalActor(node[i]);   // uncompress all states of all rebecs
+    }
+}
+
+void AbstractCoreRebecaAnalyzer::marshalRebecs(long* node) {
+	int i;
+	for (i=0; i<REBEC_COUNT; i++){
+		node[i] = rebecs[i]->marshalActor();
+	}
+}
+
+State* AbstractCoreRebecaAnalyzer::storeRecentlyCreatedState (byte &result, short int claim, short int fairnessCounter) {
+
+    numberOfTransitions++;
+    State *st;
+    long sys[REBEC_COUNT];
+	marshalRebecs(sys);
+	#if ($aFeatures.contains("REDUCTION"))
+	#ifdef SYMM
+	#ifdef ON_THE_FLY
+		int r;
+		sort(sys);	// assign sorted indices to "order"
+		stack_depth_perm = stack[depth+1].perm;
+		memset(stack_depth_perm, 255, sizeof(byte)*REBEC_COUNT);
+		for (r=0; r<REBEC_COUNT; r++){
+			if (isAssigned(r)) continue;
+			for (int o=0;;o++) {
+	           if (o == REBEC_COUNT){
+	                // cannot find a permutation --> revert to ID
+	                for (int id=0; id<REBEC_COUNT; id++) stack_depth_perm[id] = id;
+	                break;
+	            }
+				if (stack_depth_perm[order[o]] == 255 && // find the first element in "order" not used in "rep"
+					type[order[o]] == type[r] && // assuming the starting model is type correct, this is only needed once
+					check(order[o],r))
+						break;
+			}
+		}
+		#ifdef REPORT
+			reportPerm();
+		#endif REPORT
+		// permute sys
+		// rep and stack[depth] have the correct permutation
+		// data vars are already marshalled
+		for (r=0; r<REBEC_COUNT; r++){
+	        sys[stack_depth_perm[r]] = rebecs[r]->marshalRebecVars(stack_depth_perm);
+		}
+	\#else // IF NOT ON_THE_FLY
+		long tempSys[REBEC_COUNT];
+		int ps, pRebec = 0;
+		applyPerm(sys, 0);	// supply the identity permutation --> just fill in the rebec vars
+	
+		for (ps = 1; ps<PERM_COUNT; ps++) {   // first permutation (ps = 0) is identity
+			applyPerm (tempSys, ps);	// use identity for unmarshalling and ps for marshalling again
+			if (memcmp(sys, tempSys, sizeof(long)*REBEC_COUNT) > 0) {
+				pRebec = ps;
+				memcpy(sys, tempSys, sizeof(long)*REBEC_COUNT);
+			}
+		}
+		stack[depth+1].perm = sysPerms[pRebec];
+	#endif ON_THE_FLY
+	#endif SYMM
+	#end
+	result = NEW_STATE;
+	if (st = storage->exists (sys, claim)){
+		if (st->isOnStack()){
+			result |= ON_STACK;	// used in detecting cycle & stack proviso
+		}
+		if (st->isVisited(fairnessCounter)){
+			result &= ~NEW_STATE;
+		}
+        #if ($aFeatures.contains("REDUCTION"))
+		#ifdef PO
+			// see explanations below for the 2nd DFS
+			else if (fairnessCounter <= REBEC_COUNT && !st->isVisited(REBEC_COUNT+1)) {
+				result &= ~NEW_STATE;
+			}
+		#endif
+        #end
+	}
+	else
+    #if ($aFeatures.contains("REDUCTION"))
+	#ifdef PO
+		/* In 2nd DFS, if not fully-expanding, we have to explore all rebecs with safe
+		   transitions. The code below avoids exploring states not already seen in 1st DFS. */
+		// TODO : POSSIBLE ERROR ------
+		if (fairnessCounter <= REBEC_COUNT) {
+			result &= ~NEW_STATE;
+		} else
+	#endif
+    #end
+	{
+		st = storage->put(sys, claim);	//create the new State
+		if (st == NULL) {
+	        throw Exception("Not enough memory for continuing the state space generation.");
+		}
+	    st->stateID = numberOfStates++;
+	    #ifdef DEBUG_LEVEL_2
+			cout << "State stored successfully with id: " << st->stateID << "." << endl;
+		#endif
+	}
+	return st;
+}
+
+void AbstractCoreRebecaAnalyzer::instantiationPart() {
+	vector<AbstractActor*>* referenceToRebecs = new vector<AbstractActor*>();
+	byte maxRebecID = 0;
+    #foreach($instance in $mainDefinition.getMainRebecDefinition())
+    	#set($type = $TypesUtilities.getTypeName($instance.getType()))
+    	#set($maxQueueLength = $sizes.get($type).first)
+    	#set($maxParamLength = $sizes.get($type).second)
+    	${type}Actor* _ref_${instance.getName()} = new ${type}Actor(maxRebecID++, "${instance.getName()}", $maxQueueLength, $maxParamLength, *referenceToRebecs 
+    											#ifdef DEBUG_LEVEL_2 
+    											, analysisOutputStream 
+    											#endif
+    											, hashmapSize
+    											);
+        rebecs.push_back(_ref_${instance.getName()});
+        referenceToRebecs->push_back(_ref_${instance.getName()});
+	#end
+
+	#set($counter = 0)
+    #foreach($instance in $mainDefinition.getMainRebecDefinition())
+    	#set($type = $TypesUtilities.getTypeName($instance.getType()))
+    	_ref_${instance.getName()}->known = new byte[MAX_KNOWN];
+    	#set($counter2 = 1)
+    	_ref_${instance.getName()}->known[0] = _ref_${instance.getName()}->myID;
+    	#foreach($expression in $instance.getBindings()) _ref_${instance.getName()}->known[$counter2] = $translator.translate($expression, "")->myID;
+    		#set($counter2 = $counter2 + 1)
+		#end
+
+		#if ($features.contains("CORE_2_0"))
+			#set($initialMsgName = "_msg_initial")
+		#else
+			#set($initialMsgName = "constructor" + $type)
+		#end
+		_ref_${instance.getName()}->$initialMsgName(INITIAL_SENDER
+	        #foreach($argumentExpression in $instance.getArguments())
+	        , $translator.translate($argumentExpression, "")
+	        #end
+		);
+        #set($counter = $counter + 1)
+	#end
+
+	numberOfStates = 0;
+	numberOfTransitions = 0;
+
+    #ifdef DEBUG
+    	analysisOutputStream << "Rebecs are instanciated successfully." << endl;
+    #endif
+
+}
+
+void AbstractCoreRebecaAnalyzer::exportState(State* current, ostream& outStream) {
+	outStream << "<state id=\"" << current->stateID << "\">" << endl;
+	for (int cnt = 0; cnt < REBEC_COUNT; cnt++)
+		rebecs[cnt]->exportStateInXML(outStream, "\t");
+	outStream << "</state>" << endl;
+}
+
+void AbstractCoreRebecaAnalyzer::exportTransition(State* source, State* destination, 
+		string owner, string label, ostream& outStream) {
+    outStream << "<transition source=\"" << source->stateID << "\" destination=\"" << 
+		destination->stateID << "\"> <messageserver owner=\"" << 
+    	owner << "\" title=\"" << label << "\"/></transition>" << endl;
+}
