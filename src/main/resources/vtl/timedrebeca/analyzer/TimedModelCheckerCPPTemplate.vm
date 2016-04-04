@@ -94,23 +94,31 @@ void TimedModelChecker::doModelChecking(string userSelectedPropertyName, string 
 
 		doTimedModelChecking(userSelectedPropertyName, userSelectedPropertyType);
 	    exportModelCheckingResult(userSelectedPropertyName, userSelectedPropertyType,
-	    	SATISFIED, NULL);
+	    	SATISFIED, "");
 	    	
     } catch (AssertionFailedException &e) {
+    	string assertionName = "assertion name: ";
+    	assertionName += e.getMessage();
     	exportModelCheckingResult(userSelectedPropertyName, userSelectedPropertyType,
-	    	ASSERTION_FAILED, ("assertion name: " + e.getMessage()).c_str());
+	    	ASSERTION_FAILED, assertionName);
     } catch (DeadlockException &e) {
     	exportModelCheckingResult(userSelectedPropertyName, userSelectedPropertyType,
-	    	DEADLOCK, NULL);
+	    	DEADLOCK, "");
     } catch (QueueOverflowException &e) {
     	exportModelCheckingResult(userSelectedPropertyName, userSelectedPropertyType,
-	    	QUEUE_OVERFLOW, NULL);
+	    	QUEUE_OVERFLOW, "");
+    } catch (CounterExampleException &e) {
+    	exportModelCheckingResult(userSelectedPropertyName, userSelectedPropertyType,
+	    	COUNTER_EXAMPLE, "");
+    } catch (UnknownPropertyException &e) {
+    	exportModelCheckingResult(userSelectedPropertyName, userSelectedPropertyType,
+	    	UNKNOWN_PROPERTY, e.getMessage());
     } catch (DeadlineMissedException &e) {
     	exportModelCheckingResult(userSelectedPropertyName, userSelectedPropertyType,
-	    	DEADLINE_MISSED, NULL);
+	    	DEADLINE_MISSED, "");
     } catch (...) {
     	exportModelCheckingResult(userSelectedPropertyName, userSelectedPropertyType,
-	    	HEAP_OVERFLOW, NULL);
+	    	HEAP_OVERFLOW, "");
     }
 
     #ifdef EXPORT_STATE_SPACE

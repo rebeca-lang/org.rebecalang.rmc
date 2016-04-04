@@ -56,7 +56,7 @@ void CoreRebecaModelChecker::doModelChecking(string userSelectedPropertyName, st
 		doDFSModelChecking(userSelectedPropertyName, userSelectedPropertyType);
 		
 	    exportModelCheckingResult(userSelectedPropertyName, userSelectedPropertyType,
-	    	SATISFIED, NULL);
+	    	SATISFIED, "");
 	    	
     } catch (AssertionFailedException &e) {
     	string assertionName = "assertion name: ";
