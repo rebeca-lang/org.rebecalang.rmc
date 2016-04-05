@@ -13,19 +13,20 @@ public class TimedRebecaTestCase extends TestCase {
 	public void testDiningPhilosophers() {
 		String[] parameters = new String[] {
 //				"--source", base + "/ticket-service-2c_c2notissued.rebeca",
-//				"--source", base + "/Noc44-1.2.rebeca",
+				"--source", base + "/NoC-xy44.rebeca",
 //				"--source", base + "/yarn-deadline-fifo-1jobs.rebeca",
-				"--source", base + "/TinyOSPV6-TDMA.rebeca",
+//				"--source", base + "/TinyOSPV6-TDMA.rebeca",
 //				"--source", base + "/tcsma2.rebeca",
 //				"-e", "ProbabilisticTimedRebeca",
 				"-e", "TimedRebeca",
 				"-v", "2.1",
-				"-o", "TinyOSPV6-TDMA-vis",
+				"-o", "NOC",
 //				"-o", "Yarn",
 //				"--tracegenerator", 
-//				"-tts",
+				"-tts",
 //				"-debug",
-//				"-x",
+//				"-debug2",
+				"-x",
 //				"-h",
 		};
 		

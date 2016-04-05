@@ -7,7 +7,7 @@
 	virtual void storeInitialState();
 	virtual long executeRebec(int rebecId);
 	virtual void exportProgressOfTimeTransition(OpenBorderNode &source,
-		OpenBorderNode &destination, TIME_TYPE time, TIME_TYPE shift, ostream &outStream);
+		OpenBorderNode &destination, TIME_TYPE time, TIME_TYPE executionTime, TIME_TYPE shift, ostream &outStream);
 		
 	int numberOfDelayStates;
 	int numberOfDelayTransitions;
@@ -32,7 +32,7 @@ void TimedModelChecker::printCounterExampleTransition(TimedBFSState* parent, Tim
     		child->shiftTimes[child->parents.front().timeBundleIndex].shift);
     	diff = rebecs[0]->_ref_now - diff;
     		
-		exportProgressOfTimeTransition(parentNode, childNode, diff, 0, out);
+		exportProgressOfTimeTransition(parentNode, childNode, diff, rebecs[0]->getNow(), 0, out);
 	} else {
 		int rebecId = child->parents.front().executedRebecIndex;
 		string label = "";
@@ -99,7 +99,7 @@ void TimedModelChecker::storeInitialState() {
 		
 	    #ifdef EXPORT_STATE_SPACE
 	    exportState(current, statespace);
-	    exportProgressOfTimeTransition(current, newState2, nextRebecTime, 0, statespace);
+	    exportProgressOfTimeTransition(current, newState2, nextRebecTime, 0, 0, statespace);
 	    #endif
 		openBorderQueue.push(newState2);
 		numberOfDelayTransitions++;
@@ -236,7 +236,7 @@ long TimedModelChecker::executeRebec(int rebecId) {
 	    		openBorderQueue.push(newState2);
 	    	}
 		    #ifdef EXPORT_STATE_SPACE
-		    exportProgressOfTimeTransition(newState, newState2, (nextRebecTime - currentTime), shift2, statespace);
+		    exportProgressOfTimeTransition(newState, newState2, (nextRebecTime - currentTime), currentTime, shift2, statespace);
 		    #endif
 		    numberOfDelayTransitions++;
 	    } else {
@@ -253,12 +253,13 @@ long TimedModelChecker::executeRebec(int rebecId) {
 
 
 void TimedModelChecker::exportProgressOfTimeTransition(OpenBorderNode &source,
-	OpenBorderNode &destination, TIME_TYPE time, TIME_TYPE shift, ostream &outStream) {
+	OpenBorderNode &destination, TIME_TYPE time, TIME_TYPE executionTime, TIME_TYPE shift, ostream &outStream) {
     
     outStream << "<transition source=\"" << source.state->stateID << "_" << 
 		(int)source.stateActiveBundleNumber << 
     	"\" destination=\"" << destination.state->stateID << "_" << 
-    	(int)destination.stateActiveBundleNumber << "\" shift=\"" << (int) shift <<
+    	(int)destination.stateActiveBundleNumber <<
+    	"\" executionTime=\"" << (int)executionTime << "\" shift=\"" << (int) shift <<
 		"\"> <time value=\"" << (int)time << "\"/></transition>" << endl;
 }
 
