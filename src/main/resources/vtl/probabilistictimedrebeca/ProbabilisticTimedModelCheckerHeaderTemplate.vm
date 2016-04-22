@@ -25,11 +25,12 @@ public:
 	virtual long executeRebec(int rebecId);
 	
 	virtual void exportTransition(OpenBorderNode &source, OpenBorderNode &destination, 
-		string owner, string label, TIME_TYPE shift, ostream& outStream);
+		string owner, string label, TIME_TYPE executionTime, TIME_TYPE shift, ostream& outStream);
 		
 #ifdef TTS
 	virtual void exportProgressOfTimeTransition(OpenBorderNode &source,
-		OpenBorderNode &destination, TIME_TYPE time, TIME_TYPE shift, ostream &outStream);
+		OpenBorderNode &destination, TIME_TYPE time, TIME_TYPE executionTime, TIME_TYPE shift, ostream &outStream);
+		
 #endif
 };
 
