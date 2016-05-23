@@ -97,7 +97,7 @@ OpenBorderNode AbstractTimedRebecaAnalyzer::storeRecentlyCreatedState (byte &res
 			numberOfStates++;
             numberOfTimedBundles++;
             node.state->shiftTimes.push_back(rebecsLocalShift);
-	    	node.state->stateID = numberOfStates;
+	    	//node.state->stateID = numberOfStates;
         }
 	}
 	else {
