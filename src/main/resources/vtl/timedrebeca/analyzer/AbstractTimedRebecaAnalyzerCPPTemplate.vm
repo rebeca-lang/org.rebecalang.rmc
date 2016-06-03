@@ -128,7 +128,12 @@ int AbstractTimedRebecaAnalyzer::getNumberOfAlternatives(int rebecId, TIME_TYPE 
 	int numberOfAlternatives = 1;
     while((numberOfAlternatives < rebecs[rebecId]->maxQueueLength) &&
     		(rebecs[rebecId]->messageQueue[numberOfAlternatives]) &&
-    		(max(rebecs[rebecId]->getNow(), rebecs[rebecId]->executionTime[numberOfAlternatives])) == executionTime) {
+    		(max(rebecs[rebecId]->getNow(), rebecs[rebecId]->executionTime[numberOfAlternatives])) == executionTime
+#ifdef PRESERVE_TIMED_MESSAGE_ORDER
+            && rebecs[rebecId]->executionTime[numberOfAlternatives] == rebecs[rebecId]->executionTime[numberOfAlternatives-1]
+#endif
+
+    		) {
     	numberOfAlternatives++;
     }
     return numberOfAlternatives;
