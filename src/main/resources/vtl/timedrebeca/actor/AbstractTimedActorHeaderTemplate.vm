@@ -26,6 +26,7 @@ public:
     virtual ~AbstractTimedActor();
     void setNow(TIME_TYPE now);
     TIME_TYPE getNow();
+    TIME_TYPE lastProcessingTime();
 
     #ifdef TTS
         int __pc;
@@ -35,6 +36,7 @@ public:
     TIME_TYPE* executionTime;
     TIME_TYPE* deadline;
     TIME_TYPE _ref_now;
+    TIME_TYPE _ref_last_processing_time;
     
     virtual long execute();
     

@@ -56,7 +56,8 @@ public class TermPrimaryExpressionTranslator extends org.rebecalang.rmc.corerebe
 				return retValue;
 			} else
 				return "_ref_now += " + 
-				StatementTranslatorContainer.translate(termPrimary.getParentSuffixPrimary().getArguments().get(0), "");
+				StatementTranslatorContainer.translate(termPrimary.getParentSuffixPrimary().getArguments().get(0), "") + ";\n" +
+						"_ref_last_processing_time += " +  StatementTranslatorContainer.translate(termPrimary.getParentSuffixPrimary().getArguments().get(0), "");
 		} else {
 			if (termPrimary.getParentSuffixPrimary() == null &&
 					termPrimary.getLabel() == CoreRebecaLabelUtility.LOCAL_VARIABLE &&
