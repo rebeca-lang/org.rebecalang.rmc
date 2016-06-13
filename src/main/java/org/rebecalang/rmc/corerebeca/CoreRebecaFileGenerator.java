@@ -103,6 +103,10 @@ public class CoreRebecaFileGenerator extends AbstractFileGenerator {
 			aFeatures.add(AnalysisFeature.EXPORT_STATE_SPACE);
 		}
 
+		if (commandLine.hasOption("ptmo")) {
+			aFeatures.add(AnalysisFeature.PRESERVE_TIMED_MESSAGE_ORDER);
+		}
+
 		analysisFeaturesNames = getFeaturesNames(aFeatures);
 
 		// Initialize Velocity Library.

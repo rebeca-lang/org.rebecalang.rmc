@@ -39,6 +39,10 @@ TIME_TYPE AbstractTimedActor::getNow() {
     return this->_ref_now;
 }
 
+TIME_TYPE AbstractTimedActor::lastProcessingTime() {
+    return this->_ref_last_processing_time;
+}
+
 void AbstractTimedActor::addTimedBundles(byte senderId, TIME_TYPE executionTime, TIME_TYPE deadline) {
     timeEnqueue(this->executionTime, executionTime);
     timeEnqueue(this->deadline, deadline);
@@ -95,6 +99,7 @@ long AbstractTimedActor::execute() {
 	_ref_currentMessageArrival = executionTime[0];
 	_ref_currentMessageDeadline = deadline[0];
 	_ref_currentMessageWaitingTime = _ref_now - _ref_currentMessageArrival;
+	_ref_last_processing_time = 0;
 }
 
 void AbstractTimedActor::exportStateInXML(ostream &out, string tab) {

@@ -128,7 +128,12 @@ int AbstractTimedRebecaAnalyzer::getNumberOfAlternatives(int rebecId, TIME_TYPE 
 	int numberOfAlternatives = 1;
     while((numberOfAlternatives < rebecs[rebecId]->maxQueueLength) &&
     		(rebecs[rebecId]->messageQueue[numberOfAlternatives]) &&
-    		(max(rebecs[rebecId]->getNow(), rebecs[rebecId]->executionTime[numberOfAlternatives])) == executionTime) {
+    		(max(rebecs[rebecId]->getNow(), rebecs[rebecId]->executionTime[numberOfAlternatives])) == executionTime
+#ifdef PRESERVE_TIMED_MESSAGE_ORDER
+            && rebecs[rebecId]->executionTime[numberOfAlternatives] == rebecs[rebecId]->executionTime[numberOfAlternatives-1]
+#endif
+
+    		) {
     	numberOfAlternatives++;
     }
     return numberOfAlternatives;
@@ -201,10 +206,10 @@ void AbstractTimedRebecaAnalyzer::exportState(OpenBorderNode &current, ostream& 
 }
 
 void AbstractTimedRebecaAnalyzer::exportTransition(OpenBorderNode &source, OpenBorderNode &destination, 
-		string owner, string label, TIME_TYPE executionTime, TIME_TYPE shift, ostream& outStream) {
+		string owner, string label, TIME_TYPE executionTime, TIME_TYPE processingTime, TIME_TYPE shift, ostream& outStream) {
     outStream << "<transition source=\"" << source.state->stateID << "_" << 
 		(int)source.stateActiveBundleNumber << "\" destination=\"" << 
 		destination.state->stateID << "_" << (int)destination.stateActiveBundleNumber <<
-    	"\" executionTime=\"" << (int)executionTime << "\" shift=\"" << (int) shift << "\"> <messageserver owner=\"" << 
+    	"\" executionTime=\"" << (int)executionTime << "\" processingTime=\"" << (int)processingTime << "\" shift=\"" << (int) shift << "\"> <messageserver owner=\"" <<
     	owner << "\" title=\"" << label << "\"/></transition>" << endl;
 }

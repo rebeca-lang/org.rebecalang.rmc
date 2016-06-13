@@ -77,6 +77,7 @@ public class RMC {
 			options.addOption(new Option("debug", "Enable debug mode in result C++ files."));
 			options.addOption(new Option("debug2", "Enable debug level 2 mode in result C++ files."));
 			options.addOption(new Option("h", "help", false, "Print this message."));
+			options.addOption(new Option("ptmo", "preserve-timed-message-order", false, "Preserve to order of messages in TimedRebeca."));
 
 			for (OptionGroup additionalOption : GenerateFiles.getInstance().getOptions())
 				options.addOptionGroup(additionalOption);
