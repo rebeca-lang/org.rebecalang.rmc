@@ -83,7 +83,7 @@ import org.rebecalang.rmc.utils.TypesAnalysisUtilities;
 public class CoreRebecaFileGenerator extends AbstractFileGenerator {
 	
 	protected StatementTranslatorContainer translator = new StatementTranslatorContainer();
-	protected MethodBodyConvertor methodBodyConvertor = new MethodBodyConvertor();
+	protected MethodBodyConvertor methodBodyConvertor;
 	protected Set<String> helperHeaders;
 	protected String fileNameOfStateSpaceInXML;
 	
@@ -95,7 +95,7 @@ public class CoreRebecaFileGenerator extends AbstractFileGenerator {
 			ExceptionContainer container) throws CodeCompilationException {
 		super.prepare(rebecaModel, propertyModel, cFeatures, aFeatures, commandLine,
 				destinationLocation, container);
-
+		methodBodyConvertor = new MethodBodyConvertor(aFeatures);
 		if (commandLine.hasOption("x")) {
 			if ((fileNameOfStateSpaceInXML = commandLine.getOptionValue("statespace")) == null){
 				fileNameOfStateSpaceInXML = "statespace.xml";

@@ -72,8 +72,8 @@ protected:
     void enqueue(byte *queue, byte message);
     void enqueue(byte **queue, byte *message, int size);
 
-    void _synchmethod_assertion (/*string message*/ byte id, boolean condition);
-    //Temp function
+    //void _synchmethod_assertion (/*string message*/ byte id, boolean condition);
+    void _synchmethod_assertion (boolean condition, string message);
     void _synchmethod_assertion (boolean condition);
     
 	#ifdef DEBUG_LEVEL_2 

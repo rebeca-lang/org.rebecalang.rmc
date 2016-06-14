@@ -66,14 +66,19 @@ char* AbstractActor::getName() {
     return myName;
 }
 
-void AbstractActor::_synchmethod_assertion(/*string message*/byte id, boolean condition) {
-	if (!condition)
-		throw AssertionFailedException(/*message*/ "assertion failed");
-}
+//void AbstractActor::_synchmethod_assertion(/*string message*/byte id, boolean condition) {
+//	if (!condition)
+//		throw AssertionFailedException(/*message*/ "assertion failed");
+//}
 
 void AbstractActor::_synchmethod_assertion(boolean condition) {
 	if (!condition)
-		throw AssertionFailedException(/*message*/ "assertion failed");
+		throw AssertionFailedException("no message");
+}
+
+void AbstractActor::_synchmethod_assertion(boolean condition, string message) {
+	if (!condition)
+		throw AssertionFailedException(message);
 }
 
 long AbstractActor::execute() {

@@ -59,10 +59,8 @@ void CoreRebecaModelChecker::doModelChecking(string userSelectedPropertyName, st
 	    	SATISFIED, "");
 	    	
     } catch (AssertionFailedException &e) {
-    	string assertionName = "assertion name: ";
-    	assertionName += e.getMessage();
     	exportModelCheckingResult(userSelectedPropertyName, userSelectedPropertyType,
-	    	ASSERTION_FAILED, assertionName);
+	    	ASSERTION_FAILED, e.getMessage());
     } catch (DeadlockException &e) {
     	exportModelCheckingResult(userSelectedPropertyName, userSelectedPropertyType,
 	    	DEADLOCK, "");

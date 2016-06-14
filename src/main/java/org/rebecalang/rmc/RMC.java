@@ -32,7 +32,6 @@ public class RMC {
 
 	@SuppressWarnings("static-access")
 	public static void main(String[] args) {
-
 		CommandLineParser cmdLineParser = new GnuParser();
 		Options options = new Options();
 		try {
@@ -70,12 +69,14 @@ public class RMC {
 			
 			option = OptionBuilder.withArgName("file")
 	                .hasOptionalArg()
-	                .withDescription("Export transition system in an XML file.")
+	                .withDescription("Exports transition system in an XML file.")
 	                .withLongOpt("exporttransitionsystem").create("x");
 			options.addOption(option);
 
-			options.addOption(new Option("debug", "Enable debug mode in result C++ files."));
-			options.addOption(new Option("debug2", "Enable debug level 2 mode in result C++ files."));
+			options.addOption(new Option("safemode", "Checks for array index out of bound during the model checking."));
+			
+			options.addOption(new Option("debug", "Enables debug mode in result C++ files."));
+			options.addOption(new Option("debug2", "Enables debug level 2 mode in result C++ files."));
 			options.addOption(new Option("h", "help", false, "Print this message."));
 
 			for (OptionGroup additionalOption : GenerateFiles.getInstance().getOptions())
@@ -114,13 +115,15 @@ public class RMC {
 				coreVersion = CompilerFeature.CORE_2_1;
 			}
 			compilerFeatures.add(coreVersion);
-			
+
+
 			String extensionLabel;
 			if (commandLine.hasOption("extension")) {
 				extensionLabel = commandLine.getOptionValue("extension");
 			} else {
 				extensionLabel = "CoreRebeca";
 			}
+			
 			if (extensionLabel.equals("CoreRebeca")) {
 				
 			} else if (extensionLabel.equals("TimedRebeca")) {
@@ -135,6 +138,9 @@ public class RMC {
 			}
 
 			Set<AnalysisFeature> analysisFeatures = new HashSet<AnalysisFeature>();
+			
+			if(commandLine.hasOption("safemode"))
+				analysisFeatures.add(AnalysisFeature.SAFE_MODE);
 
 			GenerateFiles.getInstance().generateFiles(rebecaFile, propertyFile, destination, compilerFeatures, analysisFeatures, commandLine);
 			for (Exception e : GenerateFiles.getInstance().getExceptionContainer().getWarnings()) {

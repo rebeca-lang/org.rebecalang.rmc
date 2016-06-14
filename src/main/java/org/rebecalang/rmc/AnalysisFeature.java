@@ -2,7 +2,7 @@ package org.rebecalang.rmc;
 
 public enum AnalysisFeature {
 	//General
-	TRACE_GENERATOR, DEBUG, DEBUG_LEVEL_2, EXPORT_STATE_SPACE,
+	TRACE_GENERATOR, DEBUG, DEBUG_LEVEL_2, EXPORT_STATE_SPACE, SAFE_MODE,
 	//Timed Systems
 	RT_MAUDE, TTS, COMPACT_DTG,
 	
