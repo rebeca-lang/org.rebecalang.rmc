@@ -1,0 +1,12 @@
+#ifndef __ELDARICA_CTL_PROP_H_
+\#define __ELDARICA_CTL_PROP_H_
+
+\#include "CTLMC.h"
+
+Operator** generatePropertyArray(char* propName);
+int propLength(char* propName);
+
+extern int opCount;
+
+#endif
+

@@ -164,20 +164,12 @@ public class CoreRebecaFileGenerator extends AbstractFileGenerator {
 					graphs.add(new Pair<String, Graph>(ltlDefinition.getName(), 
 							propertyHandler.ltl2BA(ltlDefinition.getExpression())));
 					Pair<String, Graph> pair = graphs.get(graphs.size() - 1);
-//					System.out.println(pair.getFirst());
-//					for (Node node : pair.getSecond().getNodes()) {
-//						System.out.print(node.getId() + "->");
-//						for (Edge edge : node.getOutgoingEdges()) {
-//							System.out.print("[" + edge.getGuard() + ":" + edge.getNext().getId() + "] ");
-//						}
-//						System.out.println();
-//					}
 					
 				}
 			}
 
-			createAbstractCoreRebecaAnalyzer(propertyModel.getDefinitions());
-			createCoreRebecaModelChecker(propertyModel.getDefinitions(), graphs);
+			createAbstractCoreRebecaAnalyzer();
+			createCoreRebecaModelChecker(graphs);
 
 //
 //			createAcAut(null);
@@ -304,8 +296,13 @@ public class CoreRebecaFileGenerator extends AbstractFileGenerator {
 		fileWriter.close();
 	}
 
-	protected void createAbstractCoreRebecaAnalyzer(List<Definition> definitions) throws IOException {
+	protected void createAbstractCoreRebecaAnalyzer() throws IOException {
 
+		List<Definition> definitions;
+		if (propertyModel == null)
+			definitions = new LinkedList<Definition>();
+		else
+			definitions = propertyModel.getDefinitions();
 		VelocityContext context = new VelocityContext();
 		context.put("aFeatures", analysisFeaturesNames);
 		context.put("cFeatures", compilerFeaturesNames);
@@ -355,7 +352,13 @@ public class CoreRebecaFileGenerator extends AbstractFileGenerator {
 		fileWriter.close();
 	}	
 
-	protected void createCoreRebecaModelChecker(List<Definition> definitions, List<Pair<String, Graph>> propertyGraphs) throws IOException {
+	protected void createCoreRebecaModelChecker(List<Pair<String, Graph>> propertyGraphs) throws IOException {
+
+		List<Definition> definitions;
+		if (propertyModel == null)
+			definitions = new LinkedList<Definition>();
+		else
+			definitions = propertyModel.getDefinitions();
 		createAbstractModelChecker();
 		
 		VelocityContext context = new VelocityContext();

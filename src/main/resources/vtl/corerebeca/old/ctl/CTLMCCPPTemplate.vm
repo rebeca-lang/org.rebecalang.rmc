@@ -1,0 +1,521 @@
+\#include "CTLMC.h"
+\#include <stack>
+using namespace std;
+
+Operator** ops;
+int opCount;
+int recCalls;
+stack<SystemState> counterExample;
+int dfsValue;
+void printStackTrace(ostream &out);
+void init_label(Operator* op, SystemState state)
+{
+	//state->labels[op->id] = 2; //unknown
+	state->labels[op->id] = 0; //false // change according to algorithm
+}
+
+void reset_label(Operator* op, SystemState state)
+{
+	state->labels[op->id] = 0; //false
+}
+
+void reset_label_unknown(Operator* op, SystemState state)
+{
+	state->labels[op->id] = 2; //Unknown
+}
+
+void add_label(Operator* op, SystemState state)
+{
+	state->labels[op->id] = 1;//true
+}
+
+void set_label(Operator* op, SystemState state, char* info)
+{
+	if(strcmp(info, "true") == 0)
+		state->labels[op->id] = 1;//true
+	else if(strcmp(info, "false") == 0)
+		state->labels[op->id] = 0; //false
+	else if (strcmp(info, "unknown") == 0)
+		state->labels[op->id] = 2; //unknown
+}
+
+boolean evaluate_proposition(Operator* op, SystemState state)
+{
+	return evaluate(op->proposition/*,state->rebecStates//Commented by Ehsan */);
+}
+
+byte label_status(Operator* op, SystemState state)
+{
+	return(state->labels[op->id]);
+}
+
+boolean labeled(Operator* op, SystemState state)
+{
+	if(state->labels[op->id] == 1)
+		return true;
+	return false;
+}
+boolean notlabeled(Operator* op, SystemState state)
+{
+	if(state->labels[op->id] == 0)
+		return true;
+	return false;
+}
+
+boolean unlabeled(Operator* op, SystemState state)
+{
+	if(state->labels[op->id] == 2)
+		return true;
+	return false;
+}
+
+// CHANGED
+void label_atomic(Operator* op, SystemState state)
+{
+	if(evaluate_proposition(op,state))
+		set_label(op,state,"true");
+	else
+		set_label(op,state,"false");
+}
+
+
+
+//CHANGED
+void label_negation(Operator* op,SystemState state)
+{
+	check(op->left,state);
+	if(label_status(op->left,state)==1)
+		set_label(op,state,"false");
+	else
+		set_label(op,state,"true");
+}
+
+
+//CHANGED
+void label_conjunction(Operator* op,SystemState state)
+{
+	check(op->left, state);
+	if(label_status(op->left,state)==1)
+	{
+		check(op->right,state);
+		if(label_status(op->right, state)==1)
+		{
+			set_label(op,state,"true");
+			return;
+		}
+
+	}
+	set_label(op,state,"false");
+}
+
+//CHANGED
+void label_ax(Operator* op,SystemState state)
+{
+	SystemState current;
+	for(int w=0;w < state->nextStates.size(); w++)
+	{
+		current = state->nextStates.at(w);
+		check(op->left, current);
+		if(label_status(op->left, current)==0)
+		{
+			set_label(op,state,"false");
+			return;
+		}
+	}
+	set_label(op,state,"true");
+}
+
+void empty_cst(stack<SystemState> *cst)
+{
+	while(!(*cst).empty())
+	{
+		if((*cst).size()>=1)
+			(*cst).pop();
+	}
+}
+
+void label_au(Operator* op,SystemState state)
+{
+	stack<SystemState> cst;
+	try{
+		check_au(op,state,&cst);
+	}
+	catch(int thrown)
+	{
+		//printf("thrown: %d\n", thrown);
+	}
+	/*	stack<SystemState> cstTemp;
+	cstTemp = cst;
+	while(!cstTemp.empty())
+	{
+		SystemState t = cstTemp.top();
+		cstTemp.pop();
+		printf("%d \n",*(t->rebecStates));
+	}*/
+
+//cst contains counter example PROCESS CE
+	while(!cst.empty())
+	{
+		SystemState t = cst.top();
+		cst.pop();
+		counterExample.push(t);
+		unmark(op,t);
+		set_label(op,t,"false");
+
+	}
+//	while(!counterExample.empty()){
+//		SystemState t = counterExample.top();
+//		counterExample.pop();
+//		printf("sysId counter%d\n", t->id);
+//	}
+//	printf("success\n");
+}
+
+void unmark(Operator* op,SystemState state)
+{
+	state->marked[op->id]= false;
+}
+
+void mark(Operator* op,SystemState state)
+{
+	state->marked[op->id]= true;
+}
+
+boolean marked(Operator* op,SystemState state)
+{
+	return state->marked[op->id];
+}
+////////////////// CHECK_AU /////////////////////////
+int check_au(Operator* op,SystemState state, stack<SystemState> *cst)
+{
+	byte tmp= label_status(op,state);
+	//printf("state.id = %ld\n", state->id);
+	if(tmp==0) //false
+	{
+		throw 3;//exit_l  ->
+	}
+	else if(tmp==1) //true
+	{
+		return 0; //good exit
+	}
+	else if(tmp==2) //unknown
+	{
+		check(op->right,state);
+		if(label_status(op->right,state) == 1) //true
+		{
+			unmark(op,state);
+			set_label(op,state,"true");
+			return 0; //good exit
+		}
+		check(op->left,state);
+		if(label_status(op->left,state)==0) //false
+		{
+			(*cst).push(state);
+			throw 3;
+		}
+		mark(op,state);
+		(*cst).push(state);
+		SystemState current;
+		for(int w=0;w < state->nextStates.size(); w++) {
+			current = state->nextStates.at(w);
+			if(!marked(op,current))
+				check_au(op,current,cst);
+			else
+				throw 3;
+		}
+		(*cst).pop();
+		unmark(op,state);
+		set_label(op,state,"true");
+	}
+}
+
+//////////// check_eu //////////////////////////
+int check_eu(Operator* op,SystemState state,stack<SystemState> *cst)
+{
+	byte tmp= label_status(op,state);
+	if(tmp==0) //false
+	{
+		return -1; // no wittness can be found
+	}
+	else if(tmp==1) //true
+	{
+		mark(op , state);
+		op->goal = state; //witness found
+		throw 4; //abort search  4
+	}
+
+	else if(tmp==2)//unknown
+	{
+		check(op->right,state);
+		if(label_status(op->right,state)==1) // True
+		{
+			mark(op , state);
+			op->goal = state; //witness found
+			throw 4;
+
+		}
+		check(op->left,state);
+		if(label_status(op->left,state)==0) // False
+		{
+			unmark(op,state); // no witness contains s
+			set_label(op,state,"false");
+			return 0;
+		}
+		mark(op,state); //mark state visited
+		(*cst).push(state); // add state to potential witness states
+
+		//itereating through state successors and search for a witness
+
+		SystemState current;
+		for(int w=0;w < state->nextStates.size(); w++) {
+			current = state->nextStates.at(w);
+			if(!marked(op,current))
+			{
+				check_eu(op,current,cst); //search current for a witness
+			}
+		}
+	}
+}
+
+void label_eu_scc(Operator* op, SystemState state, SystemState goal)
+{
+	dfsValue =0;
+	stack<SystemState> fst;
+	try{
+		eval_eu_sccs(op,state,goal,&fst);
+	}
+	catch(int thrown)
+	{
+		//printf("thrown: %d\n", thrown);
+	}
+	while(!fst.empty())
+	{
+		SystemState st = fst.top();
+		fst.pop();
+		st->dfsnum = 0;
+	}
+}
+
+int eval_eu_sccs(Operator* op, SystemState state, SystemState goal, stack<SystemState> *fst)
+{
+	/*
+		Label states which can reach goal
+	*/
+	//	if (goal->id == 17)
+	//		printf("aaaaaaaaaaaaa\n");
+	unmark(op,state);
+	set_label(op,state,"true"); //suppose that s belongs to a witness
+	if(state->id == goal->id)
+		throw 5; //goal state found, abort  5
+	dfsValue = dfsValue + 1;
+	state->dfsnum = dfsValue;
+	int min = dfsValue;  // initialize minimum reachable dfs-number
+	(*fst).push(state);
+
+    // visit successors in same fixed order as check_eu
+	SystemState current;
+	for(int w=0;w < state->nextStates.size(); w++)
+	{
+		current = state->nextStates.at(w);
+		int m = current->dfsnum;
+		if((m==0) && (marked(op,current)))
+		{
+			/////////
+			///////// DONT FORGET TO INIT DFSNUM to 0 !!!
+			/////////
+			m = eval_eu_sccs(op,current,goal,fst); //dfs-seach for goal
+		}
+		if((m>0) && (m<min))  // A state with smaller dfs-number found ?
+		{
+			min = m; // Yes, update minimum dfs-number
+		}
+	}
+	if(state->dfsnum == min) // MSCC root state found ?
+	{							// yes, and goal noat found either
+		SystemState t;
+		do
+		{						// top of stack fst contains a MSCC,
+								// from wich goal can not be reached
+
+			t = (*fst).top();	// t is a state in MSCC
+			(*fst).pop();
+			t->dfsnum = 0;		// clean up dfs-number
+			set_label(op,t,"false"); //change info to False
+
+		}
+		while(t->id != state->id);
+	}
+	return min;
+}
+
+void label_eu(Operator* op,SystemState state)
+{
+	stack<SystemState> cst;
+	op->goal = null;
+	try
+	{
+		check_eu(op,state,&cst);
+	}
+	catch(int thrown)
+	{
+		//printf("thrown: %d\n", thrown);
+	}
+	if(op->goal == null)
+	{
+		while(!cst.empty())
+		{
+			SystemState t= cst.top();
+			cst.pop();
+			unmark(op,t);
+			set_label(op,t,"false");
+		}
+	}
+	else
+		label_eu_scc(op,state,op->goal);
+}
+
+void label_true(Operator* op,SystemState state)
+{
+	for(int i=0;i<systemStatesSize;i++)
+		add_label(op,systemStates[i]);
+}
+
+void label_false(Operator* op, SystemState state)
+{
+	for(int i=0;i<systemStatesSize;i++)
+		reset_label(op,systemStates[i]);
+}
+void check(Operator* op, SystemState state)
+{
+	//if (state->id == 24)
+		//printf("aaaaaaaaaaaaa\n");
+	ctl_op type = op->opname;
+	if((label_status(op,state) == 1)|| (label_status(op,state) == 0))//True or false
+		return;
+	if(type == ap)
+		label_atomic(op,state);
+	else if (type == neg)
+		label_negation(op,state);
+	else if (type == conj)
+		label_conjunction(op,state);
+	else if (type == ax)
+		label_ax(op,state);
+	else if (type == au)
+		label_au(op,state);
+	else if (type == eu)
+		label_eu(op,state);
+	else if (type == TRUE)
+		label_true(op,state);
+	else if (type == FALSE)
+		label_false(op,state);
+}
+
+
+
+void ctl_model_check(Operator** opl, int propLen,char *propName, ostream &out ,byte mode)
+{
+	//printf("ctl_model_check");
+	generateStateSpace(mode);
+	//printf("after state generation\n");
+	//    char *result = (char*)((systemStates[0]->labels[opl[opCount - 1]->id] == 1)?"satisfied":"not satisfied");
+	//	printCTLReport(false, propName, result, out);
+	recCalls = 0;
+	for(int j=0;j<systemStatesSize;j++)
+	{
+		(systemStates[j])->labels = new byte[propLen];
+		(systemStates[j])->marked = new boolean[propLen];
+		 systemStates[j]->dfsnum = 0; ////////////// CHECK ME PLEASE !!
+	}
+
+	for(int i=0;i<propLen;i++)
+	{
+		opl[i]->goal = null;
+		for(int j=0;j<systemStatesSize;j++)
+		{
+			set_label(opl[i],systemStates[j],"unknown");
+			systemStates[j]->marked[opl[i]->id] = false;
+
+		}
+		//label_space(sysopl[i]);
+	}
+
+	check(opl[propLen-1],systemStates[0]);
+
+	char *result = (char*)((systemStates[0]->labels[opl[propLen - 1]->id] == 1)?"satisfied":"not satisfied");
+	printCTLReport(false, propName, result, out);
+
+}
+
+void startCTL(char* prop, ostream &out ,byte mode)
+{
+	ctl_model_check(generatePropertyArray(prop),propLength(prop),prop, out , mode);
+}
+
+extern long ctlMaxReached;
+
+void printCTLReport(bool flag, char *propertyName, char *result, ostream &out)
+{
+	out<<"<model-checking-report>"<<endl;
+	out<<"<system-info>"<<endl;
+	out<<"<total-spend-time>"<< "0"  <<"</total-spend-time>"<<endl;
+	out<<"<max-depth>"<< ctlMaxReached  <<"</max-depth>"<<endl;
+	out<<"<max-reached-state>"<<systemStatesSize<<"</max-reached-state>"<<endl;
+
+	out<<"</system-info>"<<endl;
+	out<<"<checked-property>"<<endl;
+	out<<"<type>"<<"CTL"<<"</type>"<<endl;
+	out<<"<name>" <<(propertyName == null ? "none" : propertyName)<<"</name>"<<endl;
+
+	bool haveCounterExample = false;
+	if((!counterExample.empty()) && (strcmp(result , "not satisfied") == 0)) {
+        out<<"<result>"<<"counter example"<<"</result>"<<endl;
+        haveCounterExample = true;
+    }
+    else
+	    out<<"<result>"<<result<<"</result>"<<endl;
+	out<<"</checked-property>"<<endl;
+	if(haveCounterExample)
+	{
+    	out<<"<counter-example-trace>"<<endl;
+		printStackTrace(out);
+    	out<<"</counter-example-trace>"<<endl;
+	}
+	out<<"</model-checking-report>"<<endl;
+
+}
+
+void printStackTrace(ostream &out) {
+
+	while(!counterExample.empty())
+	{
+		SystemState t = counterExample.top();
+		counterExample.pop();
+		SystemState nextState;
+		long nextStateId=0;
+		if (!counterExample.empty())
+		{
+			nextState = counterExample.top();
+			nextStateId = nextState->id;
+		}
+		else
+		{
+			nextStateId = -1;
+		}
+		out  <<  "<system-state id=\""  <<  t->id  <<  "\">"  <<  endl;
+		for (int i=0; i<REBEC_COUNT; i++)
+			rebecs[i]->printState (t->rebecStates[i], out);
+		out  <<  "<executing-rebec name=\""  <<  rebecs[t->executing_rebec_id]->myName  <<
+				"\" msgsrv=\""  <<  rebecs[t->executing_rebec_id]->activeAction()  <<  "\"/>"  <<  endl;
+		out  <<  "<next-system-state>"  << endl << nextStateId << endl << "</next-system-state>"<< endl;
+                    out  <<  "<fairness-counter>"  <<  endl;
+                    out  <<  "0"  <<  endl;
+                    out  <<  "</fairness-counter>"  <<  endl;
+                out  <<  "<claim-state>"  <<  endl;
+                out  <<  "0"  <<  endl;
+                out  <<  "</claim-state>"  <<  endl;
+
+		out  <<  "</system-state>"  <<  endl;
+
+	}
+}
+

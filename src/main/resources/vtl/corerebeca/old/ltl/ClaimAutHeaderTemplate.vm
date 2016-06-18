@@ -1,0 +1,38 @@
+                                                #*In the name of Allah*#
+#ifndef __MODERE_CLAIMAUT_H_
+\#define __MODERE_CLAIMAUT_H_
+
+\#include "AcAut.h"
+\#include "Types.h"
+\#include "Config.h"
+\#include "string.h"
+\#include "PropertyDefinition.h"
+
+#set($count = 1)
+#foreach($ltlSpecificationName in $ltlSpecifications.keySet())
+\#define __propertyName_$ltlSpecificationName $count
+#set($count = $count + 1)
+#end
+
+
+#set($max = 1)
+#foreach ($claimGraphName in $ltlSpecifications.keySet())
+    #set ($claimGraph = $ltlSpecifications.get($claimGraphName))
+    #if ($max < $claimGraph.nodes.size())
+        #set($max = $claimGraph.nodes.size())
+    #end
+#end
+extern bool accepting [][$max];
+
+long getNextClaimState(long claimState, long& remainingTransitions, int propertySelector);
+bool isAccepting(int claim, int propertySelector);
+byte propertyIdentifier(char *propertyName);
+byte getPropertyInitialState(int propertyId);
+
+#if ($features.contains("REDUCTION"))
+#ifdef PO
+boolean areActiveActionsSafe(long*rebecsState, byte r, int propertySelector);
+#endif
+#end
+
+#endif

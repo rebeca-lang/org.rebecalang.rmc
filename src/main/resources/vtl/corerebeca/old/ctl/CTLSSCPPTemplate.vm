@@ -1,0 +1,181 @@
+\#include "CTLSS.h"
+
+\#include <iostream>
+\#include <vector>
+
+using namespace std;
+
+
+//int count = 0;					// counting number of reached states (stored in 'storage')
+int ssStackTop = -1; // points to the top element
+int nextRebecToExeStackTop = -1; // points to the top element
+CTLHashMap *systemStatesMap;
+long systemStatesSize = 0;
+struct _SystemState** systemStates;
+struct _SSStack* ssStack;
+struct _NextRebecToExe* nextRebecToExeStack;
+long ctlMaxReached;
+
+
+extern int hashmapSize;
+extern int maxDepth;
+
+boolean equalsSystemStates(SystemState s1, SystemState s2) {
+	for (int i=0; i < REBEC_COUNT
+	#ifdef SYSTEM_C
+	+1
+	#endif
+	; i++) {
+		if (s1->rebecStates[i] != s2->rebecStates[i]) {
+			return false;
+		}
+	}
+	return true;
+}
+
+int findId(long* ss) {
+	struct _SystemState s1;
+	s1.rebecStates = ss;
+	for (int i = 0; i < systemStatesSize; i++) {
+		if (equalsSystemStates(systemStates[i], &s1)) {
+			return i;
+		}
+	}
+	return -1;
+}
+
+void sscpy(long* orig, long* cpy, byte size) {
+	for (byte i = 0; i < size; i++) {
+		cpy[i] = orig[i];
+	}
+}
+
+SystemState addSystemState(long* sshash) {
+	systemStates[systemStatesSize] = systemStatesMap->put(sshash);
+	systemStates[systemStatesSize]->id = systemStatesSize;
+	SystemState temp = systemStates[systemStatesSize];
+	systemStatesSize++;
+	return temp;
+}
+
+void printHashedState(long* s) {
+	for (int i = 0; i < REBEC_COUNT; i++) {
+		printf("%ld, ", s[i]);
+	}
+	printf("\n");
+
+}
+
+void stateToString(long* s) {
+	for (int i = 0; i < REBEC_COUNT-1; i++) {
+		//printf("%ld, ", s[i]);
+	}
+	//printf("%ld", s[REBEC_COUNT-1]);
+}
+
+void amshalidfs(SystemState s , byte mode) {
+	SystemState systemState;
+	long* ssTemp = new long[REBEC_COUNT];
+	byte nextRebec;
+	boolean isEnabled = false;
+	while (!(SS_EMPTY)) {
+		systemState = SS_POP;
+//		printf("poped state: %ld\n", systemState->id);
+//		printHashedState(systemState->rebecStates); //debug
+		nextRebec = NRE_POP;
+		isEnabled=false;
+		//printf("next rebec: %d\n", nextRebec);//debug
+		for (byte i = nextRebec; i < REBEC_COUNT; i++) {
+			long moreTrans;
+			if(isEnabled==true && mode==1){
+				break;
+}
+			do {
+				sscpy(systemState->rebecStates, ssTemp, REBEC_COUNT
+				#ifdef SYSTEM_C
+				+1
+				#endif
+				);
+//				printf("executing rebec: %d on %ld\n", i, systemState->id);//debug
+//				printHashedState(ssTemp);//debug
+				moreTrans = getNextSysState(ssTemp, i);
+				if(moreTrans>=0)
+					isEnabled=true;
+//				printf(" >>  >>  %ld\n", moreTrans);
+				boolean isNew = false;
+				SystemState newSystemState = null;
+				long* newState = ssTemp;
+				if (systemStatesMap->exists(newState)) {
+					isNew = false;
+					newSystemState = systemStatesMap->getState();
+//					printf("old state id: %ld\n", newSystemState->id);
+				}
+				else {
+					isNew = true;
+					newSystemState = addSystemState(newState);
+					newSystemState->executing_rebec_id = i;
+//					printf("new state id: %ld\n", newSystemState->id);
+				}
+				//printf("new state: ");//debug
+//				printHashedState(newState);//debug
+				//printf("Is new? %s\n", isNew == true ? "yes" : "no");//debug
+				if (newSystemState->id != systemState->id) {
+					systemState->nextStates.push_back(newSystemState);
+				}
+				if (isNew) {
+					SS_PUSH(newSystemState);
+					NRE_PUSH(0);
+				}
+			} while (moreTrans != 0 && moreTrans != -1 && moreTrans != -2);
+		}
+	}
+}
+
+void generateStateSpace(byte mode) {
+	systemStatesSize = 0;
+	ssStack = new _SSStack[maxDepth];
+	memset (ssStack, 0, sizeof(_SSStack)*maxDepth);
+	nextRebecToExeStack = new _NextRebecToExe[maxDepth];
+
+	systemStates = new SystemState[1 << hashmapSize];
+	systemStatesMap = new CTLHashMap;
+	long* rebs = new long [REBEC_COUNT];
+	initialize(rebs);
+	printHashedState(rebs);
+	systemStatesMap->exists(rebs);
+	struct _SystemState* initialSS = addSystemState(rebs);
+	SS_PUSH(initialSS);
+	NRE_PUSH(0);
+	amshalidfs(initialSS, mode);
+}
+
+/*
+void printSystemStates() {
+	//printf("digraph systemStates {\n\t\n");
+	for (int i = 0; i < systemStatesSize; i++) {
+		SystemState s = systemStates[i];
+		printf("state id: %ld\n", s->id);
+		//printf("\tnode_%d [label=\"", i);
+		//printf("\"];\n");
+		for (int j = 0; j < REBEC_COUNT; j++) {
+			rebecs[j]->printStatePlain(s->rebecStates[j], cout);
+			//printf("\tedge [color=red, frontcolor=red]; node_%d -> node_%d [label=\"%d\"];\n", i, findId(s->nextStates[j]->rebecStates), j);
+		}
+	}
+	//printf("}\n");
+}
+
+void printSystemStateGraph() {
+	printf("digraph systemStates {\r\n\t\r\n");
+	for (int i = 0; i < systemStatesSize; i++) {
+		SystemState s = systemStates[i];
+		rebecs[REBEC_COUNT]->unmarshal(s->rebecStates[REBEC_COUNT]);
+		printf("\tnode_%d [label=\"%d, p1=%d, z1=%d", i, i, _ref_main_out1.unmarshal(), _ref_main_in.unmarshal());
+		printf("\"];\r\n");
+		for(int j=0;j < s->nextStates.size(); j++) {
+			printf("\tedge [color=red, frontcolor=red]; node_%d -> node_%d [label=\"%d\"];\r\n", i, s->nextStates.at(j)->id, j);
+		}
+	}
+	printf("}\r\n");
+}
+*/
