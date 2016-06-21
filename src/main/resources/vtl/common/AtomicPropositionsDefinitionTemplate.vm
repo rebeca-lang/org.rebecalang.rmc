@@ -1,0 +1,32 @@
+#*In the name of Allah*#
+
+#macro (putDefinitionSignatures $propertyDefinitions)
+    #foreach($definition in $propertyDefinitions)
+    	$TypesUtilities.getTypeName($definition.getExpression().getType()) _propDef_$definition.getName() ();
+    #end
+
+	#foreach($patch in $patches)
+		#parse("$patch")
+		#set($call = "#${patchRelatedTo}$methodName($param)")
+		#evaluate($call)
+	#end
+#end
+
+#macro (putDefinitionBodies $mainDefinition $propertyDefinitions)
+	#set($cnt = 0)
+	#foreach($instance in $mainDefinition.getMainRebecDefinition())
+		#set($type = $TypesUtilities.getTypeName($instance.getType()))
+		\#define _ref_${instance.getName()} (dynamic_cast<${type}Actor*>(rebecs[$cnt]))
+	    #set($cnt = $cnt + 1)
+	#end
+	
+	#foreach($definition in $propertyDefinitions)
+		$TypesUtilities.getTypeName($definition.getExpression().getType()) AbstractCoreRebecaAnalyzer::_propDef_$definition.getName() () {
+			return $translator.translate($definition.getExpression(), "");
+		}
+	#end
+	
+	#foreach($instance in $mainDefinition.getMainRebecDefinition())
+		#undef _ref_${instance.getName()}
+	#end
+#end

@@ -106,7 +106,22 @@ short int CoreRebecaModelChecker::getNextClaimState(short int claim, short int c
 }
 
 boolean CoreRebecaModelChecker::isAccepting(short int claim, int propertySelector) {
-	return false;
+	switch (propertySelector) {
+	#set($cnt = 1)
+	#foreach($graphSpec in $propertyGraph)
+		case $cnt:
+			switch(claim) {
+			#foreach($graphNode in $graphSpec.getSecond().getNodes())
+				case $graphNode.getId():
+					return $graphNode.getBooleanAttribute("accepting");
+			#end
+			}
+		break;
+		#set($cnt = $cnt + 1)
+	#end
+	default:
+		return false;
+	}
 }
 
 #foreach($definition in $propertyDefinitions)
@@ -487,20 +502,23 @@ void CoreRebecaModelChecker::printCounterExample() {
 
 	unmarshalRebecs(stack[0].state->rebecs);
 	exportState(stack[0].state, out);
+	short int rebecId = stack[0].rebec;
 	short int parent = 0;
 	
-    for (int cnt = 1; cnt < depth; cnt++) {
+    for (int cnt = 1; cnt <= depth; cnt++) {
         // non_det BFS state(not visited in DFS)
-        if (stack[cnt].rebec == (byte)-1)
+        if (stack[cnt].rebec == (byte)-1 && cnt != depth)
             continue;
         //if (stack[cnt].state->equals(sys, claim))
         //    loopID = counter;
-
+		
+        string rebecName = rebecs[rebecId]->getName();
+        string action = rebecs[rebecId]->activeAction();
 		unmarshalRebecs(stack[cnt].state->rebecs);
 		exportState(stack[cnt].state, out);
-		short int rebecId = stack[cnt].rebec;
-		exportTransition(stack[parent].state, stack[cnt].state, rebecs[rebecId]->getName(), rebecs[rebecId]->activeAction(), out);
-        
+		exportTransition(stack[parent].state, stack[cnt].state, rebecName, action, out);
+		rebecId = stack[cnt].rebec;
+        parent = cnt;
 	}
 }
 

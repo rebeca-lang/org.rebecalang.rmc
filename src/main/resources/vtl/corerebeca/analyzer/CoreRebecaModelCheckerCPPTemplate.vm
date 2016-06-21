@@ -33,7 +33,7 @@ void CoreRebecaModelChecker::exportModelCheckingResult(string userSelectedProper
 	exportModelCheckingDetails(userSelectedPropertyName, userSelectedPropertyType, result, message);
 	exportModelCheckingReportExtraDetails();
     out  <<  "<counter-example-trace>"  <<  std::endl;
-	if (result != HEAP_OVERFLOW && result != SATISFIED)
+	if (result != HEAP_OVERFLOW && result != SATISFIED && result != UNKNOWN_PROPERTY)
 		printCounterExample();
     out  <<  "</counter-example-trace>"  <<  std::endl;
 	

@@ -15,12 +15,14 @@ import org.apache.commons.cli.OptionGroup;
 import org.apache.velocity.Template;
 import org.apache.velocity.VelocityContext;
 import org.apache.velocity.app.Velocity;
+import org.rebecalang.compiler.modelcompiler.corerebeca.CoreRebecaLabelUtility;
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.ArrayType;
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.BinaryExpression;
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.BlockStatement;
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.BreakStatement;
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.CastExpression;
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.ConditionalStatement;
+import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.ConstructorDeclaration;
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.ContinueStatement;
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.DotPrimary;
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.FieldDeclaration;
@@ -31,6 +33,7 @@ import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.MainRebecDef
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.MethodDeclaration;
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.MsgsrvDeclaration;
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.NonDetExpression;
+import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.ParentSuffixPrimary;
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.PlusSubExpression;
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.ReactiveClassDeclaration;
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.RebecaModel;
@@ -56,9 +59,7 @@ import org.rebecalang.rmc.AnalysisFeature;
 import org.rebecalang.rmc.MethodBodyConvertor;
 import org.rebecalang.rmc.StatementTranslatorContainer;
 import org.rebecalang.rmc.corerebeca.ltl.LTLPropertyHandler;
-import org.rebecalang.rmc.corerebeca.ltl.gov.nasa.ltl.graph.Edge;
 import org.rebecalang.rmc.corerebeca.ltl.gov.nasa.ltl.graph.Graph;
-import org.rebecalang.rmc.corerebeca.ltl.gov.nasa.ltl.graph.Node;
 import org.rebecalang.rmc.corerebeca.translator.BinaryExpressionTranslator;
 import org.rebecalang.rmc.corerebeca.translator.BlockStatementTranslator;
 import org.rebecalang.rmc.corerebeca.translator.BreakStatementTranslator;
@@ -73,10 +74,10 @@ import org.rebecalang.rmc.corerebeca.translator.NondetExpressionTranslator;
 import org.rebecalang.rmc.corerebeca.translator.PlusSubExpressionTranslator;
 import org.rebecalang.rmc.corerebeca.translator.ReturnStatementTranslator;
 import org.rebecalang.rmc.corerebeca.translator.SwitchStatementTranslator;
+import org.rebecalang.rmc.corerebeca.translator.TermPrimaryExpressionTranslator;
 import org.rebecalang.rmc.corerebeca.translator.TernaryExpressionTranslator;
 import org.rebecalang.rmc.corerebeca.translator.UnaryExpressionTranslator;
 import org.rebecalang.rmc.corerebeca.translator.WhileStatementTranslator;
-import org.rebecalang.rmc.corerebeca.translator.TermPrimaryExpressionTranslator;
 import org.rebecalang.rmc.utils.TypeAnalysisException;
 import org.rebecalang.rmc.utils.TypesAnalysisUtilities;
 
@@ -105,6 +106,57 @@ public class CoreRebecaFileGenerator extends AbstractFileGenerator {
 
 		analysisFeaturesNames = getFeaturesNames(aFeatures);
 
+		/*
+		 * For the case of CORE_2_0, a constructor is created which sends initial message to self to keep
+		 * translation mechanism consistent with the other core versions. 
+		 */
+		if (cFeatures.contains(CompilerFeature.CORE_2_0)) {
+			for (ReactiveClassDeclaration rcd : rebecaModel.getRebecaCode().getReactiveClassDeclaration()) {
+				ConstructorDeclaration constructorDeclaration = new ConstructorDeclaration();
+				constructorDeclaration.setName(rcd.getName());
+				MsgsrvDeclaration initialMsgsrv = null;
+				for (MsgsrvDeclaration md : rcd.getMsgsrvs()) {
+					if (md.getName().equals("initial"))
+						initialMsgsrv = md;
+				}
+				for (FormalParameterDeclaration initialFPD : initialMsgsrv.getFormalParameters()) {
+					FormalParameterDeclaration fpd = new FormalParameterDeclaration();
+					fpd.setName(initialFPD.getName());
+					fpd.setType(initialFPD.getType());
+					constructorDeclaration.getFormalParameters().add(fpd);
+				}
+				
+				TermPrimary initialMessageSend = new TermPrimary();
+				initialMessageSend.setName("initial");
+				initialMessageSend.setType(TypesUtilities.MSGSRV_TYPE);
+				initialMessageSend.setLabel(CoreRebecaLabelUtility.MSGSRV);
+				ParentSuffixPrimary psp = new ParentSuffixPrimary();
+				for (FormalParameterDeclaration initialFPD : initialMsgsrv.getFormalParameters()) {
+					TermPrimary param = new TermPrimary();
+					param.setName(initialFPD.getName());
+					param.setType(initialFPD.getType());
+					psp.getArguments().add(param);		
+				}
+				initialMessageSend.setParentSuffixPrimary(psp);
+				
+				TermPrimary self = new TermPrimary();
+				self.setType(TypesUtilities.getInstance().getType(rcd.getName()));
+				self.setName("self");
+				
+				DotPrimary sendStatement = new DotPrimary();
+				sendStatement.setLeft(self);
+				sendStatement.setRight(initialMessageSend);
+				
+				BlockStatement constructorStatements = new BlockStatement();
+				constructorStatements.getStatements().add(sendStatement);
+				
+				constructorDeclaration.setBlock(constructorStatements);
+				
+				rcd.getConstructors().add(constructorDeclaration);
+
+			}
+		}
+		
 		// Initialize Velocity Library.
 		Velocity.addProperty("resource.loader", "class");
 		// Set vtl loader to the classpath to be able to load vtl files that are embedded in the result jar file 
@@ -164,7 +216,9 @@ public class CoreRebecaFileGenerator extends AbstractFileGenerator {
 					graphs.add(new Pair<String, Graph>(ltlDefinition.getName(), 
 							propertyHandler.ltl2BA(ltlDefinition.getExpression())));
 					Pair<String, Graph> pair = graphs.get(graphs.size() - 1);
-					
+					boolean booleanAttribute = pair.getSecond().getNode(0).getBooleanAttribute("accepting");
+					int a = 10;
+					if (a == 20);
 				}
 			}
 

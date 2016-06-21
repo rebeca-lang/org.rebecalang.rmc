@@ -1,6 +1,8 @@
 #ifndef __ABSTRACT_CORE_REBECA_ANALYZER_H__
 \#define __ABSTRACT_CORE_REBECA_ANALYZER_H__
 
+#parse ("/vtl/common/AtomicPropositionsDefinitionTemplate.vm")
+
 \#include "CoreRebecaDFSHashmap.h"
 \#include "AbstractActor.h"
 
@@ -35,9 +37,7 @@ protected:
     virtual void marshalRebecs(long* node);
     virtual void unmarshalRebecs(long* node);
 
-    #foreach($definition in $propertyDefinitions)
-    	$TypesUtilities.getTypeName($definition.getExpression().getType()) _propDef_$definition.getName() ();
-    #end
+    #putDefinitionSignatures($propertyDefinitions)
     
 public:
 
