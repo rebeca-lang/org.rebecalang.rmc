@@ -14,17 +14,23 @@ import org.apache.commons.cli.OptionGroup;
 import org.apache.velocity.Template;
 import org.apache.velocity.VelocityContext;
 import org.apache.velocity.app.Velocity;
+import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.BinaryExpression;
+import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.Expression;
+import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.Literal;
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.MainRebecDefinition;
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.NonDetExpression;
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.ReactiveClassDeclaration;
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.RebecaModel;
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.TermPrimary;
-import org.rebecalang.compiler.propertycompiler.corerebeca.objectmodel.PropertyModel;
+import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.UnaryExpression;
+import org.rebecalang.compiler.propertycompiler.generalrebeca.objectmodel.PropertyModel;
+import org.rebecalang.compiler.propertycompiler.timedrebeca.objectmodel.TCTLDefinition;
 import org.rebecalang.compiler.utils.CodeCompilationException;
 import org.rebecalang.compiler.utils.CompilerFeature;
 import org.rebecalang.compiler.utils.ExceptionContainer;
 import org.rebecalang.compiler.utils.Pair;
 import org.rebecalang.compiler.utils.TypesUtilities;
+import org.rebecalang.rmc.AbstractStatementTranslator;
 import org.rebecalang.rmc.AnalysisFeature;
 import org.rebecalang.rmc.StatementTranslatorContainer;
 import org.rebecalang.rmc.corerebeca.CoreRebecaFileGenerator;
@@ -94,11 +100,54 @@ public class TimedRebecaFileGenerator extends CoreRebecaFileGenerator {
 			} else { 
 				createTimedModelChecker();
 			}
+			
+			if (propertyModel != null) {
+				createDecomposedProperty();
+			}
 
 		} catch (IOException e) {
 			container.addException(e);
 		}
 
+	}
+
+
+	private void createDecomposedProperty(Expression expression, FileWriter fileWriter) throws IOException {
+		if (expression instanceof BinaryExpression) {
+			fileWriter.write(((BinaryExpression)expression).getOperator() + AbstractStatementTranslator.NEW_LINE);
+			createDecomposedProperty(((BinaryExpression)expression).getLeft(), fileWriter); 
+			createDecomposedProperty(((BinaryExpression)expression).getRight(), fileWriter);
+		} else if (expression instanceof UnaryExpression) {
+			fileWriter.write(((UnaryExpression)expression).getOperator() + AbstractStatementTranslator.NEW_LINE);
+			createDecomposedProperty(((UnaryExpression)expression).getExpression(), fileWriter); 
+		} else if (expression instanceof Literal) {
+			fileWriter.write(((Literal)expression).getLiteralValue() + AbstractStatementTranslator.NEW_LINE);
+		} else if (expression instanceof TermPrimary) {
+			TermPrimary term = (TermPrimary) expression;
+			if (term.getParentSuffixPrimary() == null) {
+				fileWriter.write(term.getName() + AbstractStatementTranslator.NEW_LINE);
+			} else {
+				BinaryExpression timePart = (BinaryExpression) term.getParentSuffixPrimary().getArguments().get(0);
+				fileWriter.write(term.getName() + ", " + timePart.getOperator() + ", " +
+						((Literal)timePart.getRight()).getLiteralValue() + AbstractStatementTranslator.NEW_LINE);
+				createDecomposedProperty(term.getParentSuffixPrimary().getArguments().get(1), fileWriter);
+				if (term.getParentSuffixPrimary().getArguments().size() == 3)
+					createDecomposedProperty(term.getParentSuffixPrimary().getArguments().get(2), fileWriter);
+				
+			}
+		}
+	}
+	
+	private void createDecomposedProperty() throws IOException {
+		
+		FileWriter fileWriter = new FileWriter(destinationLocation.getPath()
+				+ File.separatorChar + FilesNames.TCTL_DECOMPOSED_OUTPUT_SPEC);
+		List<TCTLDefinition> tctlDefinitions =
+		((org.rebecalang.compiler.propertycompiler.timedrebeca.objectmodel.PropertyModel) propertyModel).getTCTLDefinitions();
+		for (TCTLDefinition tctlDefinition : tctlDefinitions) {
+			createDecomposedProperty(tctlDefinition.getExpression(), fileWriter);
+		}
+		fileWriter.close();
 	}
 
 	protected void createActors(List<String> patches) throws IOException {
@@ -216,8 +265,8 @@ public class TimedRebecaFileGenerator extends CoreRebecaFileGenerator {
 		context.put("TypesUtilities", TypesUtilities.getInstance());
 		context.put("translator", translator);
 		context.put("sizes", sizes);
-
-
+		context.put("propertyDefinitions", propertyModel.getDefinitions());
+		
 
 		Template template = Velocity
 				.getTemplate(FilesNames.ABSTRACT_TIMED_REBECA_ANALYZER_HEADER_TEMPLATE);

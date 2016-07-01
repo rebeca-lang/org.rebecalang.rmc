@@ -1,15 +1,20 @@
 package org.rebecalang.rmc;
 
 import java.io.File;
+import java.io.StringWriter;
 import java.util.HashSet;
 import java.util.Set;
 
 import org.apache.commons.cli.CommandLine;
+import org.apache.velocity.Template;
+import org.apache.velocity.VelocityContext;
+import org.apache.velocity.app.Velocity;
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.RebecaModel;
-import org.rebecalang.compiler.propertycompiler.corerebeca.objectmodel.PropertyModel;
+import org.rebecalang.compiler.propertycompiler.generalrebeca.objectmodel.PropertyModel;
 import org.rebecalang.compiler.utils.CodeCompilationException;
 import org.rebecalang.compiler.utils.CompilerFeature;
 import org.rebecalang.compiler.utils.ExceptionContainer;
+import org.rebecalang.rmc.corerebeca.FilesNames;
 
 public abstract class AbstractFileGenerator {
 	
@@ -49,6 +54,18 @@ public abstract class AbstractFileGenerator {
 		if(commandLine.hasOption("debug2"))
 			analysisFeatures.add(AnalysisFeature.DEBUG_LEVEL_2);
 		destinationLocation.mkdirs();
+		
+		// Initialize Velocity Library.
+		Velocity.addProperty("resource.loader", "class");
+		// Set vtl loader to the classpath to be able to load vtl files that are embedded in the result jar file 
+		Velocity.addProperty("class.resource.loader.class",
+				"org.apache.velocity.runtime.resource.loader.ClasspathResourceLoader");
+		Velocity.init();
+		Velocity.setProperty("directive.set.null.allowed", true);
+		Template template = Velocity
+				.getTemplate(FilesNames.MACROS_TEMPLATE);
+		template.merge(new VelocityContext(), new StringWriter());
+
 	}
 	
 	public abstract void generateFiles();

@@ -23,10 +23,10 @@ public class MethodBodyConvertor {
 		String retValue = NEW_LINE + StatementTranslatorContainer.translate(methodDeclaration.getBlock(), TAB + TAB);
 		NondetExpressionTranslator ndExpressionTranslator = 
 				((NondetExpressionTranslator)StatementTranslatorContainer.getTranslator(NonDetExpression.class));
-		if (analysisFeatures.contains(AnalysisFeature.SAFE_MODE))
-			retValue = TAB + TAB + "int arrayIndexChecker = 0;" + NEW_LINE + retValue; 
 		retValue = TAB + TAB + "shift = 1;" + NEW_LINE +
 				ndExpressionTranslator.getNonDetHeadString() + retValue;
+		if (analysisFeatures.contains(AnalysisFeature.SAFE_MODE))
+			retValue = TAB + TAB + "int arrayIndexChecker = 0;" + NEW_LINE + retValue; 
 		retValue += ndExpressionTranslator.getNonDetTailString();
 		retValue += TAB + TAB + "return 0;" + NEW_LINE;
 		return retValue;

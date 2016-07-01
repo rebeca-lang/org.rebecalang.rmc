@@ -9,8 +9,7 @@ import org.apache.commons.cli.OptionGroup;
 import org.rebecalang.compiler.modelcompiler.RebecaCompiler;
 import org.rebecalang.compiler.modelcompiler.SymbolTable;
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.RebecaModel;
-import org.rebecalang.compiler.propertycompiler.corerebeca.PropertyCompiler;
-import org.rebecalang.compiler.propertycompiler.corerebeca.objectmodel.PropertyModel;
+import org.rebecalang.compiler.propertycompiler.generalrebeca.objectmodel.PropertyModel;
 import org.rebecalang.compiler.utils.CodeCompilationException;
 import org.rebecalang.compiler.utils.CompilerFeature;
 import org.rebecalang.compiler.utils.ExceptionContainer;
@@ -46,29 +45,38 @@ public class GenerateFiles {
 		}
 		try {
 			PropertyModel propertyModel = null;
-			if (propertyFile != null) {
-				PropertyCompiler propertyCompiler = new PropertyCompiler();
-				propertyModel = propertyCompiler.compilePropertyModel(
-						rebecaModel, compilationResult.getSecond(), propertyFile, compilerFeatures);
-				container.addAll(propertyCompiler.getExceptionContainer());
-				if (!container.getExceptions().isEmpty()) {
-					return;
-				}
-			}
 			AbstractFileGenerator fileGenerator = null;
 			if (compilerFeatures.contains(CompilerFeature.PROBABILISTIC_REBECA) && compilerFeatures.contains(CompilerFeature.TIMED_REBECA)) {
 				fileGenerator = new ProbabilisticTimedRebecaFileGenerator();
-				fileGenerator.prepare(rebecaModel, propertyModel, compilerFeatures, analysisFeatures, commandLine, destinationLocation, container);
-				
 			} else if (compilerFeatures.contains(CompilerFeature.TIMED_REBECA)) {
+				if (propertyFile != null) {
+					org.rebecalang.compiler.propertycompiler.timedrebeca.PropertyCompiler propertyCompiler = 
+							new org.rebecalang.compiler.propertycompiler.timedrebeca.PropertyCompiler();
+					propertyModel = propertyCompiler.compilePropertyModel(
+							rebecaModel, compilationResult.getSecond(), propertyFile, compilerFeatures);
+					container.addAll(propertyCompiler.getExceptionContainer());
+					if (!container.getExceptions().isEmpty()) {
+						return;
+					}
+				}
 				fileGenerator = new TimedRebecaFileGenerator();
-				fileGenerator.prepare(rebecaModel, propertyModel, compilerFeatures, analysisFeatures, commandLine, destinationLocation, container);
 			} else if (compilerFeatures.contains(CompilerFeature.PROBABILISTIC_REBECA)) {
-				
+				return;
 			} else {
+				if (propertyFile != null) {
+					org.rebecalang.compiler.propertycompiler.corerebeca.PropertyCompiler propertyCompiler = 
+							new org.rebecalang.compiler.propertycompiler.corerebeca.PropertyCompiler();
+					propertyModel = propertyCompiler.compilePropertyModel(
+							rebecaModel, compilationResult.getSecond(), propertyFile, compilerFeatures);
+					container.addAll(propertyCompiler.getExceptionContainer());
+					if (!container.getExceptions().isEmpty()) {
+						return;
+					}
+				}
 				fileGenerator = new CoreRebecaFileGenerator();
-				fileGenerator.prepare(rebecaModel, propertyModel, compilerFeatures, analysisFeatures, commandLine, destinationLocation, container);
 			}
+			fileGenerator.prepare(rebecaModel, propertyModel, 
+					compilerFeatures, analysisFeatures, commandLine, destinationLocation, container);
 			fileGenerator.generateFiles();
 		} catch(CodeCompilationException ce) {
 			container.addException(ce);

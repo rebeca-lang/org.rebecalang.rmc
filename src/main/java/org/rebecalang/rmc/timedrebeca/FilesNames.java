@@ -49,4 +49,6 @@ public interface FilesNames {
 	public static final String MAIN_PATCH_TEMPLATE = BASE + "MainPatch.vm";
 	public static final String CONFIG_PATCH_TEMPLATE = BASE + "ConfigPatchTemplate.vm";
 
+	public static final String TCTL_DECOMPOSED_OUTPUT_SPEC = "tctl.spec";
+
 }

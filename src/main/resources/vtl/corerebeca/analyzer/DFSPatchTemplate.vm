@@ -180,7 +180,7 @@ void CoreRebecaModelChecker::doDFSModelChecking(string userSelectedPropertyName,
  	#endif
 	depth = 0;
     #ifdef EXPORT_STATE_SPACE
-	    string label;
+	    string label, sender;
     #endif
 
 
@@ -270,6 +270,7 @@ void CoreRebecaModelChecker::doDFSModelChecking(string userSelectedPropertyName,
  			qOverflow = false;
 		    #ifdef EXPORT_STATE_SPACE
 			    label = rebecs[r]->messageNames[rebecs[r]->messageQueue[0]];
+			    sender = rebecs[rebecs[r]->senderQueue[0]]->getName();
 		    #endif
             nonDetTrans = rebecs[r]->execute();	// The parameter should be removed actually I believe!
  			/*
@@ -412,7 +413,7 @@ void CoreRebecaModelChecker::doDFSModelChecking(string userSelectedPropertyName,
  		if (result & NEW_STATE) {	// bitwise AND
 		    #ifdef EXPORT_STATE_SPACE
 		    	exportState(newState, statespace);
-			    exportTransition(stack[depth].state, newState, rebecs[r]->getName(), label, statespace);
+			    exportTransition(stack[depth].state, newState, sender, rebecs[r]->getName(), label, statespace);
 		    #endif
  			// Move one step deeper in the stack
  			if (!incDepth()) break;
@@ -425,7 +426,7 @@ void CoreRebecaModelChecker::doDFSModelChecking(string userSelectedPropertyName,
  			*/
 	    #ifdef EXPORT_STATE_SPACE
  		} else {
-		    exportTransition(stack[depth].state, newState, rebecs[r]->getName(), label, statespace);
+		    exportTransition(stack[depth].state, newState, sender, rebecs[r]->getName(), label, statespace);
 		#endif
  		}
         #if ($aFeatures.contains("REDUCTION"))
@@ -514,9 +515,10 @@ void CoreRebecaModelChecker::printCounterExample() {
 		
         string rebecName = rebecs[rebecId]->getName();
         string action = rebecs[rebecId]->activeAction();
+        string sender = rebecs[rebecs[rebecId]->senderQueue[0]]->getName();
 		unmarshalRebecs(stack[cnt].state->rebecs);
 		exportState(stack[cnt].state, out);
-		exportTransition(stack[parent].state, stack[cnt].state, rebecName, action, out);
+		exportTransition(stack[parent].state, stack[cnt].state, sender, rebecName, action, out);
 		rebecId = stack[cnt].rebec;
         parent = cnt;
 	}

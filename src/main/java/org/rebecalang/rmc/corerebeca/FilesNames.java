@@ -65,12 +65,12 @@ public interface FilesNames {
     
     
     
-	public final static  String ACAUT_OUTPUT_HEADER = "AcAut.h";
-    public final static  String ACAUT_HEADER_TEMPLATE = BASE + "AcAutHeaderTemplate.vm";
-    public final static  String ACAUT_OUTPUT_CPP = "AcAut.cpp";
-    public final static  String ACAUT_CPP_TEMPLATE = BASE + "AcAutCPPTemplate.vm";
-    public final static  String REBEC_CLASS_HEADER_TEMPLATE = BASE + "RebecClassHeaderTemplate.vm";
-    public final static  String REBEC_CLASS_CPP_TEMPLATE = BASE + "RebecClassCPPTemplate.vm";
+//	public final static  String ACAUT_OUTPUT_HEADER = "AcAut.h";
+//    public final static  String ACAUT_HEADER_TEMPLATE = BASE + "AcAutHeaderTemplate.vm";
+//    public final static  String ACAUT_OUTPUT_CPP = "AcAut.cpp";
+//    public final static  String ACAUT_CPP_TEMPLATE = BASE + "AcAutCPPTemplate.vm";
+//    public final static  String REBEC_CLASS_HEADER_TEMPLATE = BASE + "RebecClassHeaderTemplate.vm";
+//    public final static  String REBEC_CLASS_CPP_TEMPLATE = BASE + "RebecClassCPPTemplate.vm";
     public final static  String REBECMGR_OUTPUT_HEADER = "RebecMgr.h";
     public final static  String REBECMGR_HEADER_TEMPLATE = BASE + "RebecMgrHeaderTemplate.vm";
     public final static  String REBECMGR_OUTPUT_CPP = "RebecMgr.cpp";
@@ -90,22 +90,22 @@ public interface FilesNames {
 
 
     //General predicate logic's definitions
-    public final static  String PROP_DEFINITION_OUTPUT_HEADER = "PropertyDefinition.h";
-    public final static  String PROP_DEFINITION_HEADER_TEMPLATE = BASE + "PropertyDefinitionHeaderTemplate.vm";
-    public final static  String PROP_DEFINITION_OUTPUT_CPP = "PropertyDefinition.cpp";
-    public final static  String PROP_DEFINITION_CPP_TEMPLATE = BASE + "PropertyDefinitionCPPTemplate.vm";
+//    public final static  String PROP_DEFINITION_OUTPUT_HEADER = "PropertyDefinition.h";
+//    public final static  String PROP_DEFINITION_HEADER_TEMPLATE = BASE + "PropertyDefinitionHeaderTemplate.vm";
+//    public final static  String PROP_DEFINITION_OUTPUT_CPP = "PropertyDefinition.cpp";
+//    public final static  String PROP_DEFINITION_CPP_TEMPLATE = BASE + "PropertyDefinitionCPPTemplate.vm";
 
     //'ltl' Files
-    public final static  String CLAIMAUT_OUTPUT_HEADER = "ClaimAut.h";
-    public final static  String CLAIMAUT_HEADER_TEMPLATE = BASE + "ltl/ClaimAutHeaderTemplate.vm";
-    public final static  String CLAIMAUT_OUTPUT_CPP = "ClaimAut.cpp";
-    public final static  String CLAIMAUT_CPP_TEMPLATE = BASE + "ltl/ClaimAutCPPTemplate.vm";
-    public final static  String HASHMAP_OUTPUT_HEADER = "HashMap.h";
-    public final static  String HASHMAP_HEADER_TEMPLATE = BASE + "ltl/HashMapHeaderTemplate.vm";
-    public final static  String HASHMAP_OUTPUT_CPP = "HashMap.cpp";
-    public final static  String HASHMAP_CPP_TEMPLATE = BASE + "ltl/HashMapCPPTemplate.vm";
-    public final static  String RMC_OUTPUT_CPP = "Modere.cpp";
-    public final static  String MODERE_CPP_TEMPLATE = BASE + "ltl/MODERECPPTemplate.vm";
+//    public final static  String CLAIMAUT_OUTPUT_HEADER = "ClaimAut.h";
+//    public final static  String CLAIMAUT_HEADER_TEMPLATE = BASE + "ltl/ClaimAutHeaderTemplate.vm";
+//    public final static  String CLAIMAUT_OUTPUT_CPP = "ClaimAut.cpp";
+//    public final static  String CLAIMAUT_CPP_TEMPLATE = BASE + "ltl/ClaimAutCPPTemplate.vm";
+//    public final static  String HASHMAP_OUTPUT_HEADER = "HashMap.h";
+//    public final static  String HASHMAP_HEADER_TEMPLATE = BASE + "ltl/HashMapHeaderTemplate.vm";
+//    public final static  String HASHMAP_OUTPUT_CPP = "HashMap.cpp";
+//    public final static  String HASHMAP_CPP_TEMPLATE = BASE + "ltl/HashMapCPPTemplate.vm";
+//    public final static  String RMC_OUTPUT_CPP = "Modere.cpp";
+//    public final static  String MODERE_CPP_TEMPLATE = BASE + "ltl/MODERECPPTemplate.vm";
 
 
     //'ctl' Files

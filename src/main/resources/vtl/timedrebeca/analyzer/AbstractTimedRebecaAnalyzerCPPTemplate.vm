@@ -1,5 +1,7 @@
 \#include "AbstractTimedRebecaAnalyzer.h"
 
+#putDefinitionBodies($mainDefinition, $propertyDefinitions "AbstractTimedRebecaAnalyzer")
+
 bool operator > (const OpenBorderNode& node1, const OpenBorderNode& node2) {
     return node1.currentTime > node2.currentTime;
 }
@@ -194,17 +196,20 @@ void AbstractTimedRebecaAnalyzer::instantiationPart() {
 
 void AbstractTimedRebecaAnalyzer::exportState(OpenBorderNode &current, ostream& outStream) {
 	outStream << "<state id=\"" << current.state->stateID << "_" << 
-		(int)current.stateActiveBundleNumber << "\">" << endl;
+		(int)current.stateActiveBundleNumber << "\" ";
+	#putAtomicPropositions($propertyDefinitions)
+	outStream << ">" << endl;
 	for (int cnt = 0; cnt < REBEC_COUNT; cnt++)
 		rebecs[cnt]->exportStateInXML(outStream, "\t");
 	outStream << "</state>" << endl;
 }
 
 void AbstractTimedRebecaAnalyzer::exportTransition(OpenBorderNode &source, OpenBorderNode &destination, 
-		string owner, string label, TIME_TYPE executionTime, TIME_TYPE shift, ostream& outStream) {
+		string sender, string owner, string label, TIME_TYPE executionTime, TIME_TYPE shift, ostream& outStream) {
     outStream << "<transition source=\"" << source.state->stateID << "_" << 
 		(int)source.stateActiveBundleNumber << "\" destination=\"" << 
 		destination.state->stateID << "_" << (int)destination.stateActiveBundleNumber <<
-    	"\" executionTime=\"" << (int)executionTime << "\" shift=\"" << (int) shift << "\"> <messageserver owner=\"" << 
+    	"\" executionTime=\"" << (int)executionTime << "\" shift=\"" << (int) shift << 
+    	"\"> <messageserver sender=\"" << sender << "\" owner=\"" << 
     	owner << "\" title=\"" << label << "\"/></transition>" << endl;
 }

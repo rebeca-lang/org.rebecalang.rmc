@@ -3,7 +3,6 @@ package org.rebecalang.rmc.corerebeca;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.StringWriter;
 import java.util.Hashtable;
 import java.util.LinkedList;
 import java.util.List;
@@ -46,9 +45,9 @@ import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.UnaryExpress
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.VariableDeclarator;
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.VariableInitializer;
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.WhileStatement;
-import org.rebecalang.compiler.propertycompiler.corerebeca.objectmodel.Definition;
+import org.rebecalang.compiler.propertycompiler.generalrebeca.objectmodel.Definition;
 import org.rebecalang.compiler.propertycompiler.corerebeca.objectmodel.LTLDefinition;
-import org.rebecalang.compiler.propertycompiler.corerebeca.objectmodel.PropertyModel;
+import org.rebecalang.compiler.propertycompiler.generalrebeca.objectmodel.PropertyModel;
 import org.rebecalang.compiler.utils.CodeCompilationException;
 import org.rebecalang.compiler.utils.CompilerFeature;
 import org.rebecalang.compiler.utils.ExceptionContainer;
@@ -157,17 +156,6 @@ public class CoreRebecaFileGenerator extends AbstractFileGenerator {
 			}
 		}
 		
-		// Initialize Velocity Library.
-		Velocity.addProperty("resource.loader", "class");
-		// Set vtl loader to the classpath to be able to load vtl files that are embedded in the result jar file 
-		Velocity.addProperty("class.resource.loader.class",
-				"org.apache.velocity.runtime.resource.loader.ClasspathResourceLoader");
-		Velocity.init();
-		Velocity.setProperty("directive.set.null.allowed", true);
-		Template template = Velocity
-				.getTemplate(FilesNames.MACROS_TEMPLATE);
-		template.merge(new VelocityContext(), new StringWriter());
-		
 		StatementTranslatorContainer.registerTranslator(BinaryExpression.class, new BinaryExpressionTranslator(cFeatures, aFeatures));
 		StatementTranslatorContainer.registerTranslator(BlockStatement.class, new BlockStatementTranslator(cFeatures, aFeatures));
 		StatementTranslatorContainer.registerTranslator(BreakStatement.class, new BreakStatementTranslator(cFeatures, aFeatures));
@@ -212,7 +200,7 @@ public class CoreRebecaFileGenerator extends AbstractFileGenerator {
 			List<Pair<String, Graph>> graphs = new LinkedList<Pair<String, Graph>>();
 			LTLPropertyHandler propertyHandler = new LTLPropertyHandler();
 			if (propertyModel != null) {
-				for (LTLDefinition ltlDefinition : propertyModel.getLTLDefinitions()) {
+				for (LTLDefinition ltlDefinition : ((org.rebecalang.compiler.propertycompiler.corerebeca.objectmodel.PropertyModel)propertyModel).getLTLDefinitions()) {
 					graphs.add(new Pair<String, Graph>(ltlDefinition.getName(), 
 							propertyHandler.ltl2BA(ltlDefinition.getExpression())));
 					Pair<String, Graph> pair = graphs.get(graphs.size() - 1);

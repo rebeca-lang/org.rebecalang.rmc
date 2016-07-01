@@ -40,7 +40,8 @@ void TimedModelChecker::printCounterExampleTransition(TimedBFSState* parent, Tim
 			label += "tau=>";
 		}
 		label += rebecs[rebecId]->activeAction();
-		exportTransition(parentNode, childNode, rebecs[rebecId]->getName(), label, rebecs[rebecId]->getNow(), 0, out);
+		string sender = rebecs[rebecs[rebecId]->senderQueue[0]]->getName();
+		exportTransition(parentNode, childNode, sender, rebecs[rebecId]->getName(), label, rebecs[rebecId]->getNow(), 0, out);
 	}
 }
 
@@ -168,6 +169,7 @@ long TimedModelChecker::executeRebec(int rebecId) {
 	#ifdef EXPORT_STATE_SPACE
 	    char* actionName = rebecs[rebecId]->activeAction();
 	    string prefix="";
+		string sender = rebecs[rebecs[rebecId]->senderQueue[0]]->getName();
 	#endif
 	#ifdef DEBUG
 	    out << "Enabled rebec is found. Try to excute message \"" << rebecs[rebecId]->getName() << "::" << rebecs[rebecId]->activeAction() << "\"."<< endl;
@@ -176,9 +178,7 @@ long TimedModelChecker::executeRebec(int rebecId) {
 		#ifdef EXPORT_STATE_SPACE
 			prefix = "tau=>";
 		#endif
-		//currentTime = rebecs[rebecId]->__res;
 	}
-	
 	TIME_TYPE currentTime = rebecs[rebecId]->getNow();//(currentTime);
 	nonDetTrans = rebecs[rebecId]->execute();
 	#ifdef DEBUG
@@ -246,7 +246,7 @@ long TimedModelChecker::executeRebec(int rebecId) {
 	#ifdef EXPORT_STATE_SPACE
 	string label = prefix;
 	label += actionName;
-	exportTransition(current, newState, rebecs[rebecId]->getName(), label, currentTime, shift, statespace);
+	exportTransition(current, newState, sender, rebecs[rebecId]->getName(), label, currentTime, shift, statespace);
 	#endif
 	return nonDetTrans;
 }

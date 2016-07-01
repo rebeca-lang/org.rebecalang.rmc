@@ -4,6 +4,8 @@
 \#include "TimedRebecaBFSHashmap.h"
 \#include "AbstractTimedActor.h"
 
+#parse ("/vtl/common/AtomicPropositionsDefinitionTemplate.vm")
+
 #foreach($reactiveClassDeclaration in $reactiveClassDeclarations)
     \#include "${reactiveClassDeclaration.getName()}Actor.h"
 #end
@@ -48,7 +50,7 @@ protected:
 
 	virtual void exportState(OpenBorderNode &current, ostream& outStream);
 	virtual void exportTransition(OpenBorderNode &source, OpenBorderNode &destination, 
-		string owner, string label, TIME_TYPE executionTime, TIME_TYPE shift, ostream& outStream);
+		string sender, string owner, string label, TIME_TYPE executionTime, TIME_TYPE shift, ostream& outStream);
 
 	OpenBorderNode storeRecentlyCreatedState(byte &result, TIME_TYPE &shift,
 		TimedBFSState *parent, int parentBundleIndex, int executedRebecIndex);
@@ -59,6 +61,8 @@ protected:
 	void changeOrder(int rebecId, int alternativesCounter);
 	int getNumberOfAlternatives(int rebecId, TIME_TYPE executionTime);
 	TIME_TYPE prepareWithNewState();
+	
+    #putDefinitionSignatures($propertyDefinitions)
 
 public:
 
