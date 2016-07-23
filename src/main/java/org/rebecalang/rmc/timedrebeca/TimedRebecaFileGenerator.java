@@ -115,8 +115,12 @@ public class TimedRebecaFileGenerator extends CoreRebecaFileGenerator {
 	private void createDecomposedProperty(Expression expression, FileWriter fileWriter) throws IOException {
 		if (expression instanceof BinaryExpression) {
 			fileWriter.write(((BinaryExpression)expression).getOperator() + AbstractStatementTranslator.NEW_LINE);
+			fileWriter.write("(" + AbstractStatementTranslator.NEW_LINE);
 			createDecomposedProperty(((BinaryExpression)expression).getLeft(), fileWriter); 
+			fileWriter.write(")" + AbstractStatementTranslator.NEW_LINE);
+			fileWriter.write("(" + AbstractStatementTranslator.NEW_LINE);
 			createDecomposedProperty(((BinaryExpression)expression).getRight(), fileWriter);
+			fileWriter.write(")" + AbstractStatementTranslator.NEW_LINE);
 		} else if (expression instanceof UnaryExpression) {
 			fileWriter.write(((UnaryExpression)expression).getOperator() + AbstractStatementTranslator.NEW_LINE);
 			createDecomposedProperty(((UnaryExpression)expression).getExpression(), fileWriter); 
@@ -130,10 +134,11 @@ public class TimedRebecaFileGenerator extends CoreRebecaFileGenerator {
 				BinaryExpression timePart = (BinaryExpression) term.getParentSuffixPrimary().getArguments().get(0);
 				fileWriter.write(term.getName() + ", " + timePart.getOperator() + ", " +
 						((Literal)timePart.getRight()).getLiteralValue() + AbstractStatementTranslator.NEW_LINE);
+				fileWriter.write("(" + AbstractStatementTranslator.NEW_LINE);
 				createDecomposedProperty(term.getParentSuffixPrimary().getArguments().get(1), fileWriter);
 				if (term.getParentSuffixPrimary().getArguments().size() == 3)
 					createDecomposedProperty(term.getParentSuffixPrimary().getArguments().get(2), fileWriter);
-				
+				fileWriter.write(")" + AbstractStatementTranslator.NEW_LINE);
 			}
 		}
 	}
@@ -265,7 +270,8 @@ public class TimedRebecaFileGenerator extends CoreRebecaFileGenerator {
 		context.put("TypesUtilities", TypesUtilities.getInstance());
 		context.put("translator", translator);
 		context.put("sizes", sizes);
-		context.put("propertyDefinitions", propertyModel.getDefinitions());
+		if (propertyModel != null)
+			context.put("propertyDefinitions", propertyModel.getDefinitions());
 		
 
 		Template template = Velocity
