@@ -99,7 +99,7 @@ void TimedModelChecker::storeInitialState() {
 		#endif
 		
 	    #ifdef EXPORT_STATE_SPACE
-	    exportState(current, statespace);
+	    exportState(newState2, statespace);
 	    exportProgressOfTimeTransition(current, newState2, nextRebecTime, 0, 0, statespace);
 	    #endif
 		openBorderQueue.push(newState2);

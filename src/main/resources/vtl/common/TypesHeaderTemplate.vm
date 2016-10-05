@@ -109,5 +109,4 @@ public:
 
 \#define randint(x) (rand() % (x + 1))
 
-
 #endif

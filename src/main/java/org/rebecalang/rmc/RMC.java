@@ -74,6 +74,7 @@ public class RMC {
 			options.addOption(option);
 
 			options.addOption(new Option("safemode", "Checks for array index out of bound during the model checking."));
+			options.addOption(new Option("simplified_statespace", "Eliminates the content of states in the XML file of the state space."));
 			
 			options.addOption(new Option("debug", "Enables debug mode in result C++ files."));
 			options.addOption(new Option("debug2", "Enables debug level 2 mode in result C++ files."));
@@ -141,7 +142,9 @@ public class RMC {
 			
 			if(commandLine.hasOption("safemode"))
 				analysisFeatures.add(AnalysisFeature.SAFE_MODE);
-
+			if(commandLine.hasOption("simplified_statespace"))
+				analysisFeatures.add(AnalysisFeature.SIMPLIFIED_STATESPACE);
+			
 			GenerateFiles.getInstance().generateFiles(rebecaFile, propertyFile, destination, compilerFeatures, analysisFeatures, commandLine);
 			for (Exception e : GenerateFiles.getInstance().getExceptionContainer().getWarnings()) {
 				if (e instanceof CodeCompilationException) {

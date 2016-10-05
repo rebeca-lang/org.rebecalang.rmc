@@ -96,6 +96,8 @@ public class TypesAnalysisUtilities {
 			else 
 				if (TypesUtilities.getInstance().canTypeCastTo(type, TypesUtilities.INT_TYPE)) 
 					retValue = "((int)" + varName +")";
+				else if (TypesUtilities.getInstance().canTypeCastTo(type, TypesUtilities.REACTIVE_CLASS_TYPE)) 
+					retValue = "(" + varName + " == NULL ? \"NULL\" : " + varName +"->getName())";
 				else
 					retValue = "\"unknown type " + TypesUtilities.getTypeName(type) + "\"";
 		}
