@@ -44,9 +44,9 @@ public class TermPrimaryExpressionTranslator extends AbstractStatementTranslator
 			if (aFeatures.contains(AnalysisFeature.SAFE_MODE)) {
 				retValue += "[(arrayIndexChecker=" + StatementTranslatorContainer.translate(expression, "") + 
 						", _synchmethod_assertion(arrayIndexChecker >= 0" +
-						", string(\"Array index out of bound: \") + to_string(arrayIndexChecker)) " +
+						", string(\"Array index out of bound: \") + to_string((long)arrayIndexChecker)) " +
 						", _synchmethod_assertion(arrayIndexChecker <" + ((ArrayType)termPrimary.getType()).getDimensions().get(indexCounter) +
-						", string(\"Array index out of bound: \") + to_string(arrayIndexChecker)) " +
+						", string(\"Array index out of bound: \") + to_string((long)arrayIndexChecker)) " +
 						", arrayIndexChecker)]";
 			} else
 				retValue += "[" + StatementTranslatorContainer.translate(expression, "") + "]";

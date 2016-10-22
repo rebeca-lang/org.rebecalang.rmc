@@ -12,10 +12,20 @@ import org.rebecalang.rmc.AbstractStatementTranslator;
 import org.rebecalang.rmc.StatementTranslatorContainer;
 
 public class DotPrimaryExpressionTranslator extends AbstractStatementTranslator {
-
+	
+	int tempCounter = 0;
+	private String safeModeBeforeUsageDefinitions = "";
+	
 	public DotPrimaryExpressionTranslator(Set<CompilerFeature> cFeatures,
 			Set<AnalysisFeature> aFeatures) {
 		super(cFeatures, aFeatures);
+	}
+	
+	@Override
+	public void initialize() {
+		super.initialize();
+		this.tempCounter = 0;
+		this.safeModeBeforeUsageDefinitions = "";
 	}
 
 	public String translate(Statement statement, String tab)
@@ -25,6 +35,14 @@ public class DotPrimaryExpressionTranslator extends AbstractStatementTranslator 
 		retValue = StatementTranslatorContainer.translate(dotPrimary.getLeft(), tab);
 		if (TypesUtilities.getInstance().canTypeCastTo(
 				dotPrimary.getLeft().getType(), TypesUtilities.REACTIVE_CLASS_TYPE)) {
+			if (aFeatures.contains(AnalysisFeature.SAFE_MODE)) {
+				String tempVariable = "temp" + (tempCounter++);
+				setSafeModeBeforeUsageDefinitions(getSafeModeBeforeUsageDefinitions()
+						+ TypesUtilities.getTypeName(
+								dotPrimary.getLeft().getType()) + "Actor *" + tempVariable + ";");
+				retValue = tab + "(" +  tempVariable + "=" + retValue.trim();
+				retValue += ", _synchmethod_assertion(" + tempVariable + "!= null, \"Null Pointer Exception\"), " + tempVariable + ")";
+			}
 			retValue += "->";
 		} else {
 			retValue += ".";
@@ -33,4 +51,12 @@ public class DotPrimaryExpressionTranslator extends AbstractStatementTranslator 
 		return retValue;
 	}
 
+	public String getSafeModeBeforeUsageDefinitions() {
+		return safeModeBeforeUsageDefinitions;
+	}
+
+	public void setSafeModeBeforeUsageDefinitions(
+			String safeModeBeforeUsageDefinitions) {
+		this.safeModeBeforeUsageDefinitions = safeModeBeforeUsageDefinitions;
+	}
 }
