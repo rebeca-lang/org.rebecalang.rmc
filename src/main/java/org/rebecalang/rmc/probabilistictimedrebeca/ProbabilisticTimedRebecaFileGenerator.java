@@ -16,7 +16,7 @@ import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.RebecaModel;
 import org.rebecalang.compiler.modelcompiler.probabilisticrebeca.objectmodel.PAltStatement;
 import org.rebecalang.compiler.modelcompiler.probabilisticrebeca.objectmodel.ProbabilisticExpression;
 import org.rebecalang.compiler.modelcompiler.probabilisticrebeca.statementsemanticchecker.statement.PALTStatementSemanticCheck;
-import org.rebecalang.compiler.propertycompiler.corerebeca.objectmodel.PropertyModel;
+import org.rebecalang.compiler.propertycompiler.generalrebeca.objectmodel.PropertyModel;
 import org.rebecalang.compiler.utils.CodeCompilationException;
 import org.rebecalang.compiler.utils.CompilerFeature;
 import org.rebecalang.compiler.utils.ExceptionContainer;
@@ -27,14 +27,16 @@ import org.rebecalang.rmc.probabilisticrebeca.translator.ProbabilisticExpression
 import org.rebecalang.rmc.timedrebeca.TimedRebecaFileGenerator;
 
 public class ProbabilisticTimedRebecaFileGenerator extends TimedRebecaFileGenerator {
-	
-	public void prepare(RebecaModel rebecaModel, PropertyModel propertyModel,
-			Set<CompilerFeature> compilerFeatures, 
-			Set<AnalysisFeature> analysisFeatures,
-			CommandLine commandLine,
-			File destinationLocation, ExceptionContainer container) throws CodeCompilationException {
 
-		super.prepare(rebecaModel, propertyModel, compilerFeatures, analysisFeatures,
+	public void prepare(RebecaModel rebecaModel, 
+			PropertyModel propertyModel,
+			Set<CompilerFeature> cFeatures,
+			Set<AnalysisFeature> aFeatures,
+			CommandLine commandLine,
+			File destinationLocation,
+			ExceptionContainer container) throws CodeCompilationException {
+		
+		super.prepare(rebecaModel, propertyModel, cFeatures, aFeatures,
 				commandLine, destinationLocation, container);
 
 		StatementTranslatorContainer.registerTranslator(PAltStatement.class, new PAltStatementTranslator(cFeatures, aFeatures));
