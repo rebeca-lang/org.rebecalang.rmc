@@ -20,7 +20,7 @@ long ProbabilisticTimedModelChecker::executeRebec(int rebecId) {
 
 
 void ProbabilisticTimedModelChecker::exportTransition(OpenBorderNode &source, OpenBorderNode &destination, 
-		string owner, string label, TIME_TYPE executionTime, TIME_TYPE shift, ostream& outStream) {
+		string sender, string owner, string label, TIME_TYPE executionTime, TIME_TYPE shift, ostream& outStream) {
 	static int accProb = 0;
 	static stringstream probabilityAggregator;
 	accProb += round(probability * $PROB_ACCURACY);
@@ -28,7 +28,7 @@ void ProbabilisticTimedModelChecker::exportTransition(OpenBorderNode &source, Op
 	probabilityAggregator.unsetf (ios::floatfield);
 	probabilityAggregator.precision($PROB_PREC); 
     probabilityAggregator << "<choice probability=\"" << probability << "\">" << endl;
-	TimedModelChecker::exportTransition(source, destination, owner, label, executionTime, shift, probabilityAggregator); 
+	TimedModelChecker::exportTransition(source, destination, sender, owner, label, executionTime, shift, probabilityAggregator); 
 	probabilityAggregator << "</choice>" << endl;
 	if(accProb == $PROB_ACCURACY) {
 	    outStream << "<probabilistictransition>" << endl << probabilityAggregator.str() <<
