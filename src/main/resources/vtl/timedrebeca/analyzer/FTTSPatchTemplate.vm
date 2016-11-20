@@ -85,7 +85,7 @@ void TimedModelChecker::doTimedModelChecking(string userSelectedPropertyName, st
             if (execTime > currentTime) {
                 continue;
             }
-            byte nonDetTrans;
+            long nonDetTrans;
             int numberOfAlternatives = getNumberOfAlternatives(r, execTime);
             for(int alternativesCounter = 0; alternativesCounter < numberOfAlternatives; alternativesCounter++) {
 	            do {
@@ -110,7 +110,7 @@ void TimedModelChecker::doTimedModelChecking(string userSelectedPropertyName, st
 
 long TimedModelChecker::executeRebec(int rebecId) {
 
-	byte nonDetTrans;
+	long nonDetTrans;
     byte result;
     TIME_TYPE shift;
 
@@ -128,7 +128,7 @@ long TimedModelChecker::executeRebec(int rebecId) {
     nonDetTrans = rebecs[rebecId]->execute();
     #ifdef DEBUG
         out << "Message \"" << rebecs[rebecId]->getName() << "::" << rebecs[rebecId]->activeAction() << "\" is executed " 
-        	<< "and the return value is \"" << (int)nonDetTrans << "\"." << endl;
+        	<< "and the return value is \"" << (long)nonDetTrans << "\"." << endl;
     #endif
 
     int nextRebecTime = MAX_TIME;

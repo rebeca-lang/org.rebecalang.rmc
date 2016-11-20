@@ -121,7 +121,7 @@ void AbstractTimedTraceGenerator::generateOneTrace() {
 	    rebecs[rebecId]->execute();
 	    #ifdef DEBUG
 	        analysisOutputStream << "Message \"" << rebecs[rebecId]->getName() << "::" << rebecs[rebecId]->activeAction() << "\" is executed " 
-	        	<< "and the return value is \"" << (int)nonDetTrans << "\"." << endl;
+	        	<< "and the return value is \"" << (long)nonDetTrans << "\"." << endl;
 	    #endif
 	
 	    int nextRebecTime = MAX_TIME;

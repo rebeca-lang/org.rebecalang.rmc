@@ -104,7 +104,7 @@ public class NondetExpressionTranslator extends AbstractStatementTranslator {
 
 	protected String nondetResolverForTraceGenerator(NonDetExpression ndExpression, String nonDetVariableName) throws StatementTranslationException {
 		if (nonDetHeadString.isEmpty()) {
-			nonDetHeadString = TAB + TAB + "int __tNumber = 0;" + NEW_LINE;
+			nonDetHeadString = TAB + TAB + "long __tNumber = 0;" + NEW_LINE;
 		}
 		String retValue = "(__tNumber = randint(" + ndExpression.getChoices().size() + "), ";
 		for (int cnt = 0; cnt < ndExpression.getChoices().size() - 1; cnt++) {
@@ -117,7 +117,7 @@ public class NondetExpressionTranslator extends AbstractStatementTranslator {
 	
 	protected void prepareCodeForHeaader(NonDetExpression ndExpression, String nonDetVariableName) throws StatementTranslationException {
 		if (nonDetHeadString.isEmpty()) {
-			nonDetHeadString = TAB + TAB + "int __tNumber = 0;" + NEW_LINE;
+			nonDetHeadString = TAB + TAB + "long __tNumber = 0;" + NEW_LINE;
 		}
 		nonDetHeadString += TAB + TAB + "static " + TypesUtilities.getTypeName(ndExpression.getType()) + 
 				" " + nonDetVariableName + " = " + 
