@@ -243,7 +243,7 @@ long ${reactiveClassName}Actor::execute() {
     long ${reactiveClassName}Actor::constructor$reactiveClassName (byte creatorId 
     	#putParameters($methodDeclaration.getFormalParameters() true)
     ) {
-    	$methodBodyConvertor.convertConstructorBody($methodDeclaration)
+    	$methodBodyConvertor.convertConstructorBody($reactiveClassDeclaration, $methodDeclaration)
 	}
 #end
 
@@ -252,7 +252,7 @@ long ${reactiveClassName}Actor::execute() {
     $TypesUtilities.getTypeName($methodDeclaration.getReturnType()) ${reactiveClassName}Actor::_synchmethod_$methodDeclaration.getName() (
     	#putParameters($methodDeclaration.getFormalParameters() false)
     ) {
-    	$methodBodyConvertor.convertSynchMethodBody($methodDeclaration)
+    	$methodBodyConvertor.convertSynchMethodBody($reactiveClassDeclaration, $methodDeclaration)
 	}
 #end
 
@@ -281,6 +281,6 @@ long ${reactiveClassName}Actor::execute() {
     long ${reactiveClassName}Actor::msgsrv$methodDeclaration.getName() (
     	#putParameters($methodDeclaration.getFormalParameters() false)
     ) {
-    	$methodBodyConvertor.convertMsgsrvBody($methodDeclaration)
+    	$methodBodyConvertor.convertMsgsrvBody($reactiveClassDeclaration, $methodDeclaration)
 }
 #end

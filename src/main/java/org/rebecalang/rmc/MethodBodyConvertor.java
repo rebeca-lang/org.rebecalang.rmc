@@ -5,6 +5,7 @@ import java.util.Set;
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.DotPrimary;
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.MethodDeclaration;
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.NonDetExpression;
+import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.ReactiveClassDeclaration;
 import org.rebecalang.compiler.utils.ExceptionContainer;
 import org.rebecalang.rmc.corerebeca.translator.DotPrimaryExpressionTranslator;
 import org.rebecalang.rmc.corerebeca.translator.NondetExpressionTranslator;
@@ -21,10 +22,14 @@ public class MethodBodyConvertor {
 	}
 	
 	
-	private String attachInitiativePart(String retValue) {
+	private String attachInitiativePart(ReactiveClassDeclaration reactiveClassDeclaration, MethodDeclaration methodDeclaration, String retValue) {
 		NondetExpressionTranslator ndExpressionTranslator = 
 				((NondetExpressionTranslator)StatementTranslatorContainer.getTranslator(NonDetExpression.class));
 		retValue = TAB + TAB + "shift = 1;" + NEW_LINE +
+				TAB + TAB + "#ifdef SAFE_MODE" + NEW_LINE + 
+				TAB + TAB + TAB + "string reactiveClassName = this->getName();" + NEW_LINE +
+				TAB + TAB + TAB + "string methodName = \"" + methodDeclaration.getName() + "\";" + NEW_LINE +
+				TAB + TAB +  "#endif" + NEW_LINE +
 				ndExpressionTranslator.getNonDetHeadString() + retValue;
 		if (analysisFeatures.contains(AnalysisFeature.SAFE_MODE)) {
 			String temp = "long arrayIndexChecker = 0;";
@@ -35,18 +40,20 @@ public class MethodBodyConvertor {
 		retValue += ndExpressionTranslator.getNonDetTailString();
 		return retValue;
 	}
-	public String convertMsgsrvBody(MethodDeclaration methodDeclaration) throws StatementTranslationException {
+	public String convertMsgsrvBody(ReactiveClassDeclaration reactiveClassDeclaration, 
+			MethodDeclaration methodDeclaration) throws StatementTranslationException {
 		StatementTranslatorContainer.initialize();
 		String retValue = NEW_LINE + StatementTranslatorContainer.translate(methodDeclaration.getBlock(), TAB + TAB);
-		retValue = attachInitiativePart(retValue);
+		retValue = attachInitiativePart(reactiveClassDeclaration, methodDeclaration, retValue);
 		retValue += TAB + TAB + "return 0;" + NEW_LINE;
 		return retValue;
 	}
 	
-	public String convertSynchMethodBody(MethodDeclaration methodDeclaration) throws StatementTranslationException {
+	public String convertSynchMethodBody(ReactiveClassDeclaration reactiveClassDeclaration,
+			MethodDeclaration methodDeclaration) throws StatementTranslationException {
 		StatementTranslatorContainer.initialize();
 		String retValue = NEW_LINE + StatementTranslatorContainer.translate(methodDeclaration.getBlock(), TAB + TAB);
-		retValue = attachInitiativePart(retValue);
+		retValue = attachInitiativePart(reactiveClassDeclaration, methodDeclaration, retValue);
 		NondetExpressionTranslator ndExpressionTranslator = 
 				((NondetExpressionTranslator)StatementTranslatorContainer.getTranslator(NonDetExpression.class));
 		if (!ndExpressionTranslator.getNonDetHeadString().equals(""))
@@ -56,10 +63,11 @@ public class MethodBodyConvertor {
 		return retValue;
 	}
 	
-	public String convertConstructorBody(MethodDeclaration methodDeclaration) throws StatementTranslationException {
+	public String convertConstructorBody(ReactiveClassDeclaration reactiveClassDeclaration,
+			MethodDeclaration methodDeclaration) throws StatementTranslationException {
 		StatementTranslatorContainer.initialize();
 		String retValue = NEW_LINE + StatementTranslatorContainer.translate(methodDeclaration.getBlock(), TAB + TAB);
-		retValue = attachInitiativePart(retValue);
+		retValue = attachInitiativePart(reactiveClassDeclaration, methodDeclaration, retValue);
 		NondetExpressionTranslator ndExpressionTranslator = 
 				((NondetExpressionTranslator)StatementTranslatorContainer.getTranslator(NonDetExpression.class));
 		if (!ndExpressionTranslator.getNonDetHeadString().equals(""))

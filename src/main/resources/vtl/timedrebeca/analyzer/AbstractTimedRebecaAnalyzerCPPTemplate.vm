@@ -128,11 +128,18 @@ void AbstractTimedRebecaAnalyzer::changeOrder(int rebecId, int alternativesCount
 
 int AbstractTimedRebecaAnalyzer::getNumberOfAlternatives(int rebecId, TIME_TYPE executionTime) {
 	int numberOfAlternatives = 1;
+    //while((numberOfAlternatives < rebecs[rebecId]->maxQueueLength) &&
+    //		(rebecs[rebecId]->messageQueue[numberOfAlternatives]) &&
+    //		(max(rebecs[rebecId]->getNow(), rebecs[rebecId]->executionTime[numberOfAlternatives])) == executionTime) {
+    //	numberOfAlternatives++;
+    //}
+	long baseTime = rebecs[rebecId]->executionTime[0];
     while((numberOfAlternatives < rebecs[rebecId]->maxQueueLength) &&
-    		(rebecs[rebecId]->messageQueue[numberOfAlternatives]) &&
-    		(max(rebecs[rebecId]->getNow(), rebecs[rebecId]->executionTime[numberOfAlternatives])) == executionTime) {
+		(rebecs[rebecId]->messageQueue[numberOfAlternatives]) &&
+		(rebecs[rebecId]->executionTime[numberOfAlternatives] == baseTime)) {
     	numberOfAlternatives++;
     }
+    
     return numberOfAlternatives;
 }
 

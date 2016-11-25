@@ -41,7 +41,11 @@ public class DotPrimaryExpressionTranslator extends AbstractStatementTranslator 
 						+ TypesUtilities.getTypeName(
 								dotPrimary.getLeft().getType()) + "Actor *" + tempVariable + ";");
 				retValue = tab + "(" +  tempVariable + "=" + retValue.trim();
-				retValue += ", _synchmethod_assertion(" + tempVariable + "!= null, \"Null Pointer Exception\"), " + tempVariable + ")";
+				retValue += ", _synchmethod_assertion(" + tempVariable + "!= null, "
+						+ "\"Null Pointer Exception in access to '" + 
+						StatementTranslatorContainer.translate(dotPrimary.getLeft(), "").trim() + 
+						"' in method \" + reactiveClassName + " +
+						"\".\" + methodName), " + tempVariable + ")";
 			}
 			retValue += "->";
 		} else {
