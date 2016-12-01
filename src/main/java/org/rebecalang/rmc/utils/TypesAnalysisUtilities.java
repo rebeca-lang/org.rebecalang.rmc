@@ -36,8 +36,9 @@ public class TypesAnalysisUtilities {
 			size *= 2;
 		else if (type == TypesUtilities.INT_TYPE)
 			size *= 4;
+		//I have to think about dynamic pointer size in OSx and 32bit systems
 		else if (TypesUtilities.getInstance().canTypeUpCastTo(type, TypesUtilities.REACTIVE_CLASS_TYPE))
-			size *= 6;
+			size *= 8;
 		else 
 			throw new TypeAnalysisException("Unknown type " + TypesUtilities.getTypeName(type));
 		return size;
