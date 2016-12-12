@@ -29,6 +29,9 @@ public class NondetExpressionTranslator extends AbstractStatementTranslator {
 		nonDetHeadString = "";
 	}
 	
+	public boolean hasNonDetStatement() {
+		return !nonDetHeadString.equals("");
+	}
 	public String getNonDetHeadString() {
 		return nonDetHeadString;
 	}

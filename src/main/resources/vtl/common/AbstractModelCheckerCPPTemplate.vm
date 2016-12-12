@@ -30,7 +30,7 @@ string AbstractModelChecker::getModelCheckingResultName(int id) {
         id == DEADLOCK ? "deadlock" :
         id == BOUND_REACHED ? "bound reached" :
         id == COUNTER_EXAMPLE ? "counter example" :
-        id == QUEUE_OVERFLOW ? "queue over flow" :
+        id == QUEUE_OVERFLOW ? "queue overflow" :
         id == HEAP_OVERFLOW ? "state space explosion (heap overflow)" :
         id == ASSERTION_FAILED ? "assertion failed" :
         id == SEGMENTATION_FAULT ? "Runtime segmentation fault" :

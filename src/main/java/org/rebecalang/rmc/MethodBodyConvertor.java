@@ -70,7 +70,7 @@ public class MethodBodyConvertor {
 		retValue = attachInitiativePart(reactiveClassDeclaration, methodDeclaration, retValue);
 		NondetExpressionTranslator ndExpressionTranslator = 
 				((NondetExpressionTranslator)StatementTranslatorContainer.getTranslator(NonDetExpression.class));
-		if (!ndExpressionTranslator.getNonDetHeadString().equals(""))
+		if (ndExpressionTranslator.hasNonDetStatement())
 			container.addException(new StatementTranslationException("This version of translator does not support " +
 					"nonedeterministic assignment inside constructors.", 
 					methodDeclaration.getLineNumber(), methodDeclaration.getCharacter()));
