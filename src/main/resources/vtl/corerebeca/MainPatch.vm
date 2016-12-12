@@ -6,7 +6,7 @@
 	#else
 		\#include "CoreRebecaModelChecker.h"
 	#end
-
+	int maxDepth;
 #end
 
 #macro (mainMacroPutInstanceReference)
@@ -35,6 +35,7 @@
 		#endif
 	#end
 	parser.addOption('p', "propertyName", "The name of the property which model must be checked against it", "property name");
+	parser.addOption('d', "searchDepth", "The depth of search in DFS based model checking algorithm or the size of the open border in BFS based model checking", "maximum search depth");
 #end
 
 
@@ -56,6 +57,7 @@
 			
 		}
 		#endif
+		maxDepth = parser.hasOption('d') ? atoi(parser.getOptionValue('d').c_str()) : 10000;
 		string propertyName;
 		if (parser.hasOption('p')) {
 			propertyName = parser.getOptionValue('p');

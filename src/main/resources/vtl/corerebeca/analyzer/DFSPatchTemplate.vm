@@ -3,9 +3,8 @@
 #set($patchRelatedTo = "coreRebecaDFS")
 
 #macro (coreRebecaDFSAdditionalSignatures $noParam)
-
 	virtual void doDFSModelChecking(string userSelectedPropertyName, string userSelectedPropertyType);
-	int maxDepth, depth, maxReached;// depth in manual stack
+	int depth, maxReached;// depth in manual stack
 	string getModelCheckingResultName(int id);
 	bool incDepth();
 	
@@ -16,9 +15,11 @@
 #macro (coreRebecaDFSAdditionalBodies $noParam)
 
 \#define UNDEFINED 0
+	extern int maxDepth;
 
 // the PUSH macro is used in BFS, therefore assigning -1 to rebec & flag
 #ifdef DEBUG
+
 	\#define PUSH(d, newState) \
 		stack[d].state = newState;	\
 		stack[d].rebec = (unsigned char)-1; \
@@ -131,7 +132,6 @@ boolean CoreRebecaModelChecker::isAccepting(short int claim, int propertySelecto
 void CoreRebecaModelChecker::doDFSModelChecking(string userSelectedPropertyName, string userSelectedPropertyType) {
 	int propertySelector;
 	short int claim;
-	maxDepth = 100000;
 	stack = new StackEl[maxDepth];
 
 	byte fairnessCounter;	// for fairness algorithm
