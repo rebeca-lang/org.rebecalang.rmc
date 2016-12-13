@@ -13,8 +13,8 @@ import org.rebecalang.rmc.corerebeca.translator.NondetExpressionTranslator;
 public class MethodBodyConvertor {
 	
 	protected ExceptionContainer container = new ExceptionContainer();
-	private static String TAB = AbstractStatementTranslator.TAB;
-	private static String NEW_LINE = AbstractStatementTranslator.NEW_LINE;
+	protected static String TAB = AbstractStatementTranslator.TAB;
+	protected static String NEW_LINE = AbstractStatementTranslator.NEW_LINE;
 	private Set<AnalysisFeature> analysisFeatures;
 	
 	public MethodBodyConvertor(Set<AnalysisFeature> analysisFeatures) {

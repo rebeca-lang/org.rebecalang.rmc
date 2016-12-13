@@ -64,7 +64,7 @@ public class TimedRebecaFileGenerator extends CoreRebecaFileGenerator {
 		}
 		
 		analysisFeaturesNames = getFeaturesNames(analysisFeatures);
-		
+		methodBodyConvertor = new TimedMethodBodyConvertor(analysisFeatures);
 		StatementTranslatorContainer.registerTranslator(NonDetExpression.class, new NondetExpressionTranslator(cFeatures, aFeatures));
 		StatementTranslatorContainer.registerTranslator(TermPrimary.class, new TermPrimaryExpressionTranslator(cFeatures, aFeatures));
 	}
