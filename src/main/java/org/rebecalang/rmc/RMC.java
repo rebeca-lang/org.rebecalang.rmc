@@ -89,9 +89,16 @@ public class RMC {
 				throw new ParseException("");
 
 			File rebecaFile = new File(commandLine.getOptionValue("source"));
+			if (!rebecaFile.exists() || rebecaFile.isDirectory())
+				throw new ParseException("No such file: \'" + commandLine.getOptionValue("source") + "'");
+
 			File propertyFile = null;
-			if (commandLine.hasOption("property"))
+			if (commandLine.hasOption("property")) {
 				propertyFile = new File(commandLine.getOptionValue("property"));
+				if (!propertyFile.exists() || propertyFile.isDirectory())
+					throw new ParseException("No such file: \'" + commandLine.getOptionValue("property") + "'");
+
+			}
 
 			// Set output location. Default location is rmc-output folder.
 			File destination;
