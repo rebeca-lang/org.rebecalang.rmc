@@ -37,13 +37,13 @@ public class GenerateFiles {
 		
 		RebecaCompiler rebecaCompiler = new RebecaCompiler();
 		Pair<RebecaModel, SymbolTable> compilationResult = rebecaCompiler.compileRebecaFile(rebecaFile, compilerFeatures);
-		RebecaModel rebecaModel = compilationResult.getFirst();
 		this.container = rebecaCompiler.getExceptionContainer();
 		
 		if (!container.getExceptions().isEmpty()) {
 			return;
 		}
 		try {
+			RebecaModel rebecaModel = compilationResult.getFirst();
 			PropertyModel propertyModel = null;
 			AbstractFileGenerator fileGenerator = null;
 			if (compilerFeatures.contains(CompilerFeature.PROBABILISTIC_REBECA) && compilerFeatures.contains(CompilerFeature.TIMED_REBECA)) {

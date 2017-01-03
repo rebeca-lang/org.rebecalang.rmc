@@ -158,8 +158,10 @@ void CoreRebecaModelChecker::doDFSModelChecking(string userSelectedPropertyName,
 	if (userSelectedPropertyName.empty())
 		propertySelector = 0;
 	#foreach($graphSpec in $propertyGraph)
-		else if (userSelectedPropertyName == "$graphSpec.getFirst()")
+		else if (userSelectedPropertyName == "$graphSpec.getFirst()") {
 			propertySelector = $cnt;
+			claim = $graphSpec.getSecond().getInit().getId();
+		}
 		#set($cnt = $cnt + 1)
 	#end
 	else {

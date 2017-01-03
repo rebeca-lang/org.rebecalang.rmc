@@ -11,6 +11,7 @@ import java.util.Set;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.OptionBuilder;
 import org.apache.commons.cli.OptionGroup;
+import org.apache.log4j.Logger;
 import org.apache.velocity.Template;
 import org.apache.velocity.VelocityContext;
 import org.apache.velocity.app.Velocity;
@@ -86,6 +87,8 @@ public class CoreRebecaFileGenerator extends AbstractFileGenerator {
 	protected MethodBodyConvertor methodBodyConvertor;
 	protected Set<String> helperHeaders;
 	protected String fileNameOfStateSpaceInXML;
+	
+	private final static Logger logger = Logger.getLogger(CoreRebecaFileGenerator.class);
 	
 	public void prepare(RebecaModel rebecaModel, PropertyModel propertyModel,
 			Set<CompilerFeature> cFeatures,
@@ -201,12 +204,15 @@ public class CoreRebecaFileGenerator extends AbstractFileGenerator {
 			LTLPropertyHandler propertyHandler = new LTLPropertyHandler();
 			if (propertyModel != null) {
 				for (LTLDefinition ltlDefinition : ((org.rebecalang.compiler.propertycompiler.corerebeca.objectmodel.PropertyModel)propertyModel).getLTLDefinitions()) {
+					UnaryExpression theNegationOfFormula = new UnaryExpression();
+					theNegationOfFormula.setOperator("!");
+					theNegationOfFormula.setExpression(ltlDefinition.getExpression());
+					
 					graphs.add(new Pair<String, Graph>(ltlDefinition.getName(), 
-							propertyHandler.ltl2BA(ltlDefinition.getExpression())));
-					Pair<String, Graph> pair = graphs.get(graphs.size() - 1);
-					boolean booleanAttribute = pair.getSecond().getNode(0).getBooleanAttribute("accepting");
-					int a = 10;
-					if (a == 20);
+							propertyHandler.ltl2BA(theNegationOfFormula)));
+					logger.debug("\n" + graphs.get(graphs.size() - 1).getFirst() + ": " +
+							LTLPropertyHandler.exportGraph(graphs.get(graphs.size() - 1).getSecond()));
+					
 				}
 			}
 
@@ -380,7 +386,7 @@ public class CoreRebecaFileGenerator extends AbstractFileGenerator {
 		context.put("propertyDefinitions", definitions);
 
 
-
+		boolean isSafeMode = aFeatures.remove(AnalysisFeature.SAFE_MODE);
 		Template template = Velocity
 				.getTemplate(FilesNames.ABSTRACT_CORE_REBECA_ANALYZER_HEADER_TEMPLATE);
 		FileWriter fileWriter = new FileWriter(destinationLocation.getPath()
@@ -392,6 +398,9 @@ public class CoreRebecaFileGenerator extends AbstractFileGenerator {
 				+ File.separatorChar + FilesNames.ABSTRACT_CORE_REBECA_ANALYZER_OUTPUT_CPP);
 		template.merge(context, fileWriter);
 		fileWriter.close();
+		
+		if(isSafeMode)
+			aFeatures.add(AnalysisFeature.SAFE_MODE);
 	}	
 
 	protected void createCoreRebecaModelChecker(List<Pair<String, Graph>> propertyGraphs) throws IOException {
@@ -512,7 +521,6 @@ public class CoreRebecaFileGenerator extends AbstractFileGenerator {
 	 * @throws IOException
 	 *             All velocity exceptions that occurs in function.
 	 */
-	
 	public void createAnActor(ReactiveClassDeclaration reactiveClassDeclaration, 
 			List<String> baseClasses, List<String> constructorCallClasses, List<String> patches) throws IOException
 			{
@@ -695,182 +703,6 @@ public class CoreRebecaFileGenerator extends AbstractFileGenerator {
 		fileWriter.close();
 
 	}
-
-	
-	
-	/**
-	 * This method sets property buchi-automata start point and creates RMC
-	 * file.
-	 * 
-	 * @throws IOException
-	 *             All velocity exceptions that occures in function.
-	 */
-//	protected void createRBFSMC() throws IOException {
-//
-//		VelocityContext context = new VelocityContext();
-//		if (propertyModel != null) {
-////			LTLPropertyHandler handler = new LTLPropertyHandler();
-////			context.put("ltlSpecifications", handler.getLTLSpecification(null));
-//		}
-//
-//		context.put("REBEC_COUNT", rebecaModel.getRebecaCode().getMainDeclaration().getMainRebecDefinition().size());
-//		context.put("aFeatures", analysisFeaturesNames);
-//		context.put("reactiveClassDeclarations", rebecaModel.getRebecaCode().getReactiveClassDeclaration());
-//		context.put("mainDeclaration", rebecaModel.getRebecaCode().getMainDeclaration().getMainRebecDefinition());
-////		context.put("guardNameSeperator", new GuardNameSeperator());
-//
-//		// Create C++ File
-//		Template template = Velocity.getTemplate(FilesNames.BODERE_CPP_TEMPLATE);
-//		FileWriter fileWriter = new FileWriter(destinationLocation.getPath()
-//				+ File.separatorChar + FilesNames.RBFSMC_OUTPUT_CPP);
-//		template.merge(context, fileWriter);
-//		fileWriter.close();
-//		// Create Header File
-//		template = Velocity.getTemplate(FilesNames.BODERE_HEADER_TEMPLATE);
-//		fileWriter = new FileWriter(destinationLocation.getPath()
-//				+ File.separatorChar + FilesNames.RBFSMC_OUTPUT_HEADER);
-//		template.merge(context, fileWriter);
-//		fileWriter.close();
-//
-//		// Create Header File
-//		template = Velocity
-//				.getTemplate(FilesNames.BFSHASHMAP_HEADER_TEMPLATE);
-//		fileWriter = new FileWriter(destinationLocation.getPath()
-//				+ File.separatorChar + FilesNames.BFSHASHMAP_OUTPUT_HEADER);
-//		template.merge(context, fileWriter);
-//		fileWriter.close();
-//
-//		// Create C++ File
-//		template = Velocity.getTemplate(FilesNames.BFSHASHMAP_CPP_TEMPLATE);
-//		fileWriter = new FileWriter(destinationLocation.getPath()
-//				+ File.separatorChar + FilesNames.BFSHASHMAP_OUTPUT_CPP);
-//		template.merge(context, fileWriter);
-//		fileWriter.close();
-//
-//		// Create Header File
-//		template = Velocity
-//				.getTemplate(FilesNames.BACKWARD_BFS_STATE_HEADER_TEMPLATE);
-//		fileWriter = new FileWriter(destinationLocation.getPath()
-//				+ File.separatorChar
-//				+ FilesNames.BACKWARD_BFS_STATE_OUTPUT_HEADER);
-//		template.merge(context, fileWriter);
-//		fileWriter.close();
-//
-//
-//		// Create C++ File
-//		template = Velocity.getTemplate(FilesNames.MODERE_CPP_TEMPLATE);
-//		fileWriter = new FileWriter(destinationLocation.getPath()
-//				+ File.separatorChar + FilesNames.RMC_OUTPUT_CPP);
-//		template.merge(context, fileWriter);
-//		fileWriter.close();
-//
-//		// Create Header File
-//		template = Velocity
-//				.getTemplate(FilesNames.HASHMAP_HEADER_TEMPLATE);
-//		fileWriter = new FileWriter(destinationLocation.getPath()
-//				+ File.separatorChar + FilesNames.HASHMAP_OUTPUT_HEADER);
-//		template.merge(context, fileWriter);
-//		fileWriter.close();
-//
-//		// Create C++ File
-//		template = Velocity.getTemplate(FilesNames.HASHMAP_CPP_TEMPLATE);
-//		fileWriter = new FileWriter(destinationLocation.getPath()
-//				+ File.separatorChar + FilesNames.HASHMAP_OUTPUT_CPP);
-//		template.merge(context, fileWriter);
-//		fileWriter.close();
-//
-//		// Create Header File
-//		template = Velocity
-//				.getTemplate(FilesNames.CLAIMAUT_HEADER_TEMPLATE);
-//		fileWriter = new FileWriter(destinationLocation.getPath()
-//				+ File.separatorChar + FilesNames.CLAIMAUT_OUTPUT_HEADER);
-//		template.merge(context, fileWriter);
-//		fileWriter.close();
-//
-//		// Create C++ File
-//		template = Velocity.getTemplate(FilesNames.CLAIMAUT_CPP_TEMPLATE);
-//		fileWriter = new FileWriter(destinationLocation.getPath()
-//				+ File.separatorChar + FilesNames.CLAIMAUT_OUTPUT_CPP);
-//		template.merge(context, fileWriter);
-//		fileWriter.close();
-//	}
-
-	/**
-	 * This method creates ctl static files according to the velocity templates.
-	 * 
-	 * @throws IOException
-	 *             All velocity exceptions that occures in function.
-	 */
-//	protected void createCTLStaticFiles() throws IOException {
-//
-//		VelocityContext context = new VelocityContext();
-//		// Create C++ File
-//		Template template = Velocity.getTemplate(FilesNames.CTLMC_CPP_TEMPLATE);
-//		FileWriter fileWriter = new FileWriter(destinationLocation.getPath()
-//				+ File.separatorChar + FilesNames.CTLMC_OUTPUT_CPP);
-//		template.merge(context, fileWriter);
-//		fileWriter.close();
-//
-//		template = Velocity.getTemplate(FilesNames.CTLMC_HEADER_TEMPLATE);
-//		fileWriter = new FileWriter(destinationLocation.getPath()
-//				+ File.separatorChar + FilesNames.CTLMC_OUTPUT_HEADER);
-//		template.merge(context, fileWriter);
-//		fileWriter.close();
-//
-//		template = Velocity.getTemplate(FilesNames.CTLPROP_HEADER_TEMPLATE);
-//		fileWriter = new FileWriter(destinationLocation.getPath()
-//				+ File.separatorChar + FilesNames.CTLPROP_OUTPUT_HEADER);
-//		template.merge(context, fileWriter);
-//		fileWriter.close();
-//
-//		template = Velocity.getTemplate(FilesNames.CTLPROP_CPP_TEMPLATE);
-//		fileWriter = new FileWriter(destinationLocation.getPath()
-//				+ File.separatorChar + FilesNames.CTLPROP_OUTPUT_CPP);
-//		template.merge(context, fileWriter);
-//		fileWriter.close();
-//
-//		template = Velocity.getTemplate(FilesNames.CTLSS_CPP_TEMPLATE);
-//		fileWriter = new FileWriter(destinationLocation.getPath()
-//				+ File.separatorChar + FilesNames.CTLSS_OUTPUT_CPP);
-//		template.merge(context, fileWriter);
-//		fileWriter.close();
-//
-//		template = Velocity.getTemplate(FilesNames.CTLSS_HEADER_TEMPLATE);
-//		fileWriter = new FileWriter(destinationLocation.getPath()
-//				+ File.separatorChar + FilesNames.CTLSS_OUTPUT_HEADER);
-//		template.merge(context, fileWriter);
-//		fileWriter.close();
-//
-//		template = Velocity.getTemplate(FilesNames.CTLHASHMAP_CPP_TEMPLATE);
-//		fileWriter = new FileWriter(destinationLocation.getPath()
-//				+ File.separatorChar + FilesNames.CTLHASHMAP_OUTPUT_CPP);
-//		template.merge(context, fileWriter);
-//		fileWriter.close();
-//
-//		template = Velocity.getTemplate(FilesNames.CTLHASHMAP_HEADER_TEMPLATE);
-//		fileWriter = new FileWriter(destinationLocation.getPath()
-//				+ File.separatorChar + FilesNames.CTLHASHMAP_OUTPUT_HEADER);
-//		template.merge(context, fileWriter);
-//		fileWriter.close();
-//
-//	}
-
-//	public void updateConfigFile(File outputLocation,
-//			Set<CompilerFeature> cFeatures, Set<AnalysisFeature> aFeatures)
-//			throws IOException {
-//		VelocityContext context = new VelocityContext();
-//
-//		context.put("aFeatures", analysisFeaturesNames);
-//
-//		// Create Header File
-//		Template template = Velocity
-//				.getTemplate(FilesNames.CONFIG_HEADER_TEMPLATE);
-//		FileWriter fileWriter = new FileWriter(outputLocation.getPath()
-//				+ File.separatorChar + FilesNames.CONFIG_OUTPUT_HEADER);
-//
-//		template.merge(context, fileWriter);
-//		fileWriter.close();
-//	}
 
 	@SuppressWarnings("static-access")
 	public static OptionGroup getOptions() {

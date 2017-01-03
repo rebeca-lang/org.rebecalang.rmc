@@ -1,6 +1,9 @@
 package org.rebecalang.rmc.corerebeca.ltl;
 
+import java.util.HashSet;
 import java.util.Hashtable;
+import java.util.LinkedList;
+import java.util.Set;
 
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.BinaryExpression;
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.DotPrimary;
@@ -9,6 +12,7 @@ import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.PrimaryExpre
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.TermPrimary;
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.UnaryExpression;
 import org.rebecalang.rmc.corerebeca.ltl.gov.nasa.ltl.graph.Degeneralize;
+import org.rebecalang.rmc.corerebeca.ltl.gov.nasa.ltl.graph.Edge;
 import org.rebecalang.rmc.corerebeca.ltl.gov.nasa.ltl.graph.Graph;
 import org.rebecalang.rmc.corerebeca.ltl.gov.nasa.ltl.graph.SCCReduction;
 import org.rebecalang.rmc.corerebeca.ltl.gov.nasa.ltl.graph.SFSReduction;
@@ -154,5 +158,30 @@ public class LTLPropertyHandler {
 		Formula.reset_static();
 		Pool.reset_static();
 		return ba;
+	}
+
+	public static String exportGraph(Graph graph) {
+		StringBuffer result = new StringBuffer("\n");
+		LinkedList<org.rebecalang.rmc.corerebeca.ltl.gov.nasa.ltl.graph.Node> openBorder = 
+				new LinkedList<org.rebecalang.rmc.corerebeca.ltl.gov.nasa.ltl.graph.Node>();
+		Set<org.rebecalang.rmc.corerebeca.ltl.gov.nasa.ltl.graph.Node> visited = 
+				new HashSet<org.rebecalang.rmc.corerebeca.ltl.gov.nasa.ltl.graph.Node>();
+		openBorder.add(graph.getInit());
+		visited.add(graph.getInit());
+		while(!openBorder.isEmpty()) {
+			org.rebecalang.rmc.corerebeca.ltl.gov.nasa.ltl.graph.Node node = openBorder.removeFirst();
+			if (node.getBooleanAttribute("accepting"))
+				result.insert(0, node.getId() + ", ");
+			for (Edge next : node.getOutgoingEdges()) {
+				result.append(node.getId() + "->" + next.getNext().getId() + "[" +
+						next.getAction() + ", " + next.getGuard() + "]\n");
+				if (!visited.contains(next.getNext())) {
+					visited.add(next.getNext());
+					openBorder.addLast(next.getNext());
+				}
+			}
+		}
+		
+		return result.toString();
 	}
 }
