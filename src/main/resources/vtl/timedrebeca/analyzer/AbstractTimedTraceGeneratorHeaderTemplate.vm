@@ -5,6 +5,7 @@
 
 \#include <iostream>
 \#include <queue>
+\#include <time.h>
 
 class AbstractTimedTraceGenerator : public AbstractTimedRebecaAnalyzer {
 
