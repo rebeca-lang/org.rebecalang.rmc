@@ -69,6 +69,12 @@ void AbstractTimedTraceGenerator::shiftQueueContentOfRebec(int rebecId) {
 
 void AbstractTimedTraceGenerator::generateOneTrace() {
 
+    byte result;
+    TIME_TYPE shift;
+
+	current = storeRecentlyCreatedState (result, shift, NULL, 0, 0);
+	current.state->stateID = 1;
+
 	TIME_TYPE currentTime = MAX_TIME;
 	for (int r = 0; r < REBEC_COUNT; r++) {
 		if (!rebecs[r]->messageQueue[0])
@@ -144,14 +150,16 @@ void AbstractTimedTraceGenerator::generateOneTrace() {
 	    OpenBorderNode newState = storeRecentlyCreatedState(result, shift, current.state, current.stateActiveBundleNumber, rebecId);
 	    if (timeLimit == 0) {
 		    if (!(result & NEW_STATE)) {
-		    	exportTransition(current, newState, rebecs[rebecId]->getName(), actionName, shift, analysisOutputStream);
+		    	string sender = rebecs[rebecs[rebecId]->senderQueue[0]]->getName();
+		    	exportTransition(current, newState, sender, rebecs[rebecId]->getName(), actionName, rebecs[rebecId]->getNow(), shift, analysisOutputStream);
 		    	return;
 		    }
 	    } else if(timeLimit < currentTime)
 	    	return;
         newState.currentTime = nextRebecTime;
 	    exportState(newState, analysisOutputStream);
-	    exportTransition(current, newState, rebecs[rebecId]->getName(), actionName, shift, analysisOutputStream);
+	    string sender = rebecs[rebecs[rebecId]->senderQueue[0]]->getName();
+	    exportTransition(current, newState, sender, rebecs[rebecId]->getName(), actionName, rebecs[rebecId]->getNow(), shift, analysisOutputStream);
 		shiftQueueContentOfRebec(rebecId);
 	    current = newState;
     }		  
