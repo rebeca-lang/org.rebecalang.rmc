@@ -52,7 +52,7 @@ public class NondetExpressionTranslator extends AbstractStatementTranslator {
 			throws StatementTranslationException {
 		NonDetExpression ndExpression = (NonDetExpression) statement;
 		String retValue = tab;
-		String nonDetVariableName = "nonDetVariable" + nonDetCounter;
+		String nonDetVariableName = getNondetVariableName();
 		if (aFeatures.contains(AnalysisFeature.TRACE_GENERATOR)) {
 			retValue = nondetResolverForTraceGenerator(ndExpression, nonDetVariableName);
 		} else {
@@ -66,6 +66,10 @@ public class NondetExpressionTranslator extends AbstractStatementTranslator {
 		}
 		nonDetCounter++;
 		return retValue;
+	}
+
+	protected String getNondetVariableName() {
+		return "nonDetVariable" + nonDetCounter;
 	}
 	
 	protected void prepareCodeForTail(NonDetExpression ndExpression,

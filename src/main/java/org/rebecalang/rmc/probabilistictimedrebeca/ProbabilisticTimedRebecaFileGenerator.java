@@ -70,6 +70,7 @@ public class ProbabilisticTimedRebecaFileGenerator extends TimedRebecaFileGenera
 			super.createAbstractCoreRebecaAnalyzer();
 			
 			createProbabilisticModelChecker();
+			createTimedModelChecker();
 			
 			if (aFeatures.contains(AnalysisFeature.TRACE_GENERATOR)) {
 				super.createTraceGenerator();
