@@ -17,7 +17,7 @@ class AbstractTimedActor : virtual public AbstractActor {
 
 public:
 
-    AbstractTimedActor(byte myID, char *myName, byte maxQueueLength, byte maxParamQueueLength, vector<AbstractActor*>& rebecsRef
+    AbstractTimedActor(byte myID, char *myName, int maxQueueLength, int maxParamQueueLength, vector<AbstractActor*>& rebecsRef
 		#ifdef DEBUG_LEVEL_2 
 			, ostream &out
 		#endif

@@ -31,7 +31,7 @@ using namespace std;
 *#
 
 #ifndef byte
-//Modified by Ehsan (byte is a signed value, why MMJ changed in to unsigned?)
+//Modified by Ehsan (byte is a signed value, why MMJ changed it to unsigned?)
 \#define byte char
 #endif
 
@@ -108,5 +108,7 @@ public:
 \#define NEW_STATE 1
 
 \#define randint(x) (rand() % (x + 1))
+
+extern int BOOLEAN_SIZE, BYTE_SIZE, SHORT_SIZE, INT_SIZE, FLOAT_SIZE, DOUBLE_SIZE, REACTIVE_CLASS_SIZE;
 
 #endif

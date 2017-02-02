@@ -33,7 +33,7 @@
     #set($cnt = $cnt + 1)
 #end
 
-${reactiveClassName}Actor::${reactiveClassName}Actor(byte myID, char* myName, byte maxQueueLength, byte maxParamLength, vector<AbstractActor*>& rebecsRef
+${reactiveClassName}Actor::${reactiveClassName}Actor(byte myID, char* myName, int maxQueueLength, int maxParamLength, vector<AbstractActor*>& rebecsRef
 		#ifdef DEBUG_LEVEL_2 
 			, ostream &out
 		#endif

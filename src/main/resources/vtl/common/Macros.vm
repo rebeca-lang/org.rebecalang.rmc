@@ -54,8 +54,12 @@
             #set($name = $variableDec.getName())
             #set($pointerName = $prefix + $name)
             #set($type = $variableDec.getType())
-            #set($size = $TypesAnalysisUtilities.getInstance().getTypeSize($type))
-
+            
+            #if ($type == $TypesUtilities.BOOLEAN_TYPE)
+	            #set($size = $TypesAnalysisUtilities.getInstance().getTypeSize($type))
+			#else
+	            #set($size = $TypesAnalysisUtilities.getInstance().getTypeSizeLabel($type))
+			#end
             #if ($printVariableType)
             	$translator.translator($variableDec);
             #end
@@ -107,7 +111,11 @@
             #set($name = $variableDec.getName())
             #set($pointerName = $prefix + $name)
             #set($type = $variableDec.getType())
-            #set($size = $TypesAnalysisUtilities.getInstance().getTypeSize($type))
+            #if ($type == $TypesUtilities.BOOLEAN_TYPE)
+	            #set($size = $TypesAnalysisUtilities.getInstance().getTypeSize($type))
+			#else
+	            #set($size = $TypesAnalysisUtilities.getInstance().getTypeSizeLabel($type))
+			#end
             
             #if($ArrayType.getClass().isAssignableFrom($type.getClass()))
 				#foreach($dimension in $type.getDimensions())

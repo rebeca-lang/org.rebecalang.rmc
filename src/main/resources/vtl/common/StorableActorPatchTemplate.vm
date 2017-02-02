@@ -76,6 +76,9 @@
 	long AbstractActor::marshalActor() {
 		byte currentValues[stateSize];
 		marshalActorToArray(currentValues);
+		#ifndef __LP64__
+			memset(currentValues, 0, stateSize);
+		#endif
 		#ifdef DEBUG_LEVEL_2
 			analysisOutputStream << "Rebec " << myName << " is marshaled to array [";
 			for (int cnt = 0; cnt < stateSize; cnt++)

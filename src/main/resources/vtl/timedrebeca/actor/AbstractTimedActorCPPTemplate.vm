@@ -4,7 +4,7 @@
 \#include <stdio.h>
 \#include <string.h>
 
-AbstractTimedActor::AbstractTimedActor(byte myID, char* myName, byte maxQueueLength, byte maxParamLength, vector<AbstractActor*>& rebecsRef
+AbstractTimedActor::AbstractTimedActor(byte myID, char* myName, int maxQueueLength, int maxParamLength, vector<AbstractActor*>& rebecsRef
 		#ifdef DEBUG_LEVEL_2 
 			, ostream &out
 		#endif

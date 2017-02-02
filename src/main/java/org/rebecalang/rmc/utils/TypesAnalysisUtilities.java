@@ -48,6 +48,33 @@ public class TypesAnalysisUtilities {
 		return size;
 	}
 	
+	public String getTypeSizeLabel(Type type) throws TypeAnalysisException {
+		int size = 1;
+		if (type instanceof ArrayType) {
+			for (Integer dimention : ((ArrayType) type).getDimensions())
+				size *= dimention;
+			type = ((ArrayType) type).getPrimitiveType();
+		}
+		String label = "(" + size + " * ";
+		if (type == TypesUtilities.BOOLEAN_TYPE)
+			label += "BOOLEAN_SIZE";
+		else if (type == TypesUtilities.BYTE_TYPE)
+			label += "BYTE_SIZE";
+		else if (type == TypesUtilities.SHORT_TYPE)
+			label += "SHORT_SIZE";
+		else if (type == TypesUtilities.INT_TYPE)
+			label += "INT_SIZE";
+		else if (type == TypesUtilities.FLOAT_TYPE)
+			label += "FLOAT_SIZE";
+		else if (type == TypesUtilities.DOUBLE_TYPE)
+			label += "DOUBLE_SIZE";
+		else if (TypesUtilities.getInstance().canTypeUpCastTo(type, TypesUtilities.REACTIVE_CLASS_TYPE))
+			label += "REACTIVE_CLASS_SIZE";
+		else 
+			throw new TypeAnalysisException("Unknown type " + TypesUtilities.getTypeName(type));
+		return label + ")";
+	}
+
 	public static List<FieldDeclaration> convertToFieldDeclaration(List<FormalParameterDeclaration> formalParameters) {
 		List<FieldDeclaration> fields = new LinkedList<FieldDeclaration>();
 		for (FormalParameterDeclaration fpd : formalParameters) {

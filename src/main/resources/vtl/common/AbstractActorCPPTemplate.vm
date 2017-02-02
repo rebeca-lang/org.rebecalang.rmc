@@ -36,7 +36,7 @@ string to_string(int number){
 
 const byte AbstractActor::coeff[] = {0x01, 0x02, 0x04, 0x08, 0x10, 0x20, 0x40, 0x80};
 
-AbstractActor::AbstractActor(byte myID, char* myName, byte maxQueueLength, byte maxParamLength, vector<AbstractActor*>& rebecsRef
+AbstractActor::AbstractActor(byte myID, char* myName, int maxQueueLength, int maxParamLength, vector<AbstractActor*>& rebecsRef
 		#ifdef DEBUG_LEVEL_2 
 			, ostream &out
 		#endif
