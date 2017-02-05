@@ -67,7 +67,7 @@ public:
     
 protected:
 	const static byte coeff[];
-    byte queueTail;
+    int queueTail;
     vector<AbstractActor*>& rebecs;
 
     void enqueue(byte *queue, byte message);
