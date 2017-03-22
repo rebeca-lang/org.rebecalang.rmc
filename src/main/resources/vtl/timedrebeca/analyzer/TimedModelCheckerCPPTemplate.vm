@@ -1,5 +1,14 @@
 \#include "TimedModelChecker.h"
 
+#ifdef PROGRESS_REPORT
+
+void TimedModelChecker::progressReport(ostream& reportStream) {
+    AbstractModelChecker::numberOfStates = AbstractTimedRebecaAnalyzer::numberOfStates;
+    AbstractModelChecker::numberOfTransitions = AbstractTimedRebecaAnalyzer::numberOfTransitions;
+	AbstractModelChecker::progressReport(reportStream);
+}
+#endif
+
 TimedModelChecker::TimedModelChecker(ostream &outStream
 	#ifdef EXPORT_STATE_SPACE
 	    , ostream &statespaceStream

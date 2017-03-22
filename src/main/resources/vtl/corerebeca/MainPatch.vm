@@ -44,6 +44,9 @@
 		int numberOfTraces = parser.hasOption('g') ? atoi(parser.getOptionValue('g').c_str()) : 1;
 		TIME_TYPE timeLimit = parser.hasOption('l') ? atoi(parser.getOptionValue('l').c_str()) : 0;
 		analyzer = new AbstractCoreRebecaTraceGenerator(*result, hashmapSize, numberOfTraces, depthLimit);
+		#ifdef PROGRESS_REPORT
+			std::thread t1(progressReport);
+		#endif
 		analyzer->generateTraces();
 	#else
 		#ifdef EXPORT_STATE_SPACE
@@ -68,6 +71,9 @@
 			#endif
 			, hashmapSize
 			);
+		#ifdef PROGRESS_REPORT
+			std::thread t1(progressReport);
+		#endif
 		analyzer->doModelChecking(propertyName, "LTL");
 	#end
 #end

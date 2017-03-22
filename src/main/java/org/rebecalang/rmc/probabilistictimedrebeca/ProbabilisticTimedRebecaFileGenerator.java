@@ -5,10 +5,9 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Properties;
 import java.util.Set;
 
-import org.apache.commons.cli.CommandLine;
-import org.apache.commons.cli.OptionGroup;
 import org.apache.velocity.Template;
 import org.apache.velocity.VelocityContext;
 import org.apache.velocity.app.Velocity;
@@ -32,12 +31,12 @@ public class ProbabilisticTimedRebecaFileGenerator extends TimedRebecaFileGenera
 			PropertyModel propertyModel,
 			Set<CompilerFeature> cFeatures,
 			Set<AnalysisFeature> aFeatures,
-			CommandLine commandLine,
 			File destinationLocation,
+			Properties properties,
 			ExceptionContainer container) throws CodeCompilationException {
 		
 		super.prepare(rebecaModel, propertyModel, cFeatures, aFeatures,
-				commandLine, destinationLocation, container);
+				destinationLocation, properties, container);
 
 		StatementTranslatorContainer.registerTranslator(PAltStatement.class, new PAltStatementTranslator(cFeatures, aFeatures));
 		StatementTranslatorContainer.registerTranslator(ProbabilisticExpression.class, new ProbabilisticExpressionTranslator(cFeatures, aFeatures));
@@ -100,11 +99,6 @@ public class ProbabilisticTimedRebecaFileGenerator extends TimedRebecaFileGenera
 				+ File.separatorChar + FilesNames.PROBABILISTIC_TIMED_MODEL_CHECKER_OUTPUT_CPP);
 		template.merge(context, fileWriter);
 		fileWriter.close();
-	}
-
-	public static OptionGroup getOptions() {
-		OptionGroup group = new OptionGroup();
-		return group;
 	}
 
 }

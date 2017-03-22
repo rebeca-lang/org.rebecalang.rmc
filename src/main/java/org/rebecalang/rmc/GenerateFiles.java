@@ -1,11 +1,9 @@
 package org.rebecalang.rmc;
 
 import java.io.File;
-import java.util.HashSet;
+import java.util.Properties;
 import java.util.Set;
 
-import org.apache.commons.cli.CommandLine;
-import org.apache.commons.cli.OptionGroup;
 import org.rebecalang.compiler.modelcompiler.RebecaCompiler;
 import org.rebecalang.compiler.modelcompiler.SymbolTable;
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.RebecaModel;
@@ -22,7 +20,12 @@ public class GenerateFiles {
 	
 	private static GenerateFiles instance = new GenerateFiles();
 	private ExceptionContainer container;
+	PropertyModel propertyModel;
 	
+	public PropertyModel getPropertyModel() {
+		return propertyModel;
+	}
+
 	public static GenerateFiles getInstance() {
 		return instance;
 	}
@@ -33,7 +36,7 @@ public class GenerateFiles {
 
 	public void generateFiles(File rebecaFile, File propertyFile,
 			File destinationLocation, Set<CompilerFeature> compilerFeatures,
-			Set<AnalysisFeature> analysisFeatures, CommandLine commandLine) {
+			Set<AnalysisFeature> analysisFeatures, Properties properties) {
 		
 		RebecaCompiler rebecaCompiler = new RebecaCompiler();
 		Pair<RebecaModel, SymbolTable> compilationResult = rebecaCompiler.compileRebecaFile(rebecaFile, compilerFeatures);
@@ -44,7 +47,6 @@ public class GenerateFiles {
 		}
 		try {
 			RebecaModel rebecaModel = compilationResult.getFirst();
-			PropertyModel propertyModel = null;
 			AbstractFileGenerator fileGenerator = null;
 			if (compilerFeatures.contains(CompilerFeature.PROBABILISTIC_REBECA) && compilerFeatures.contains(CompilerFeature.TIMED_REBECA)) {
 				fileGenerator = new ProbabilisticTimedRebecaFileGenerator();
@@ -76,7 +78,7 @@ public class GenerateFiles {
 				fileGenerator = new CoreRebecaFileGenerator();
 			}
 			fileGenerator.prepare(rebecaModel, propertyModel, 
-					compilerFeatures, analysisFeatures, commandLine, destinationLocation, container);
+					compilerFeatures, analysisFeatures, destinationLocation, properties, container);
 			fileGenerator.generateFiles();
 		} catch(CodeCompilationException ce) {
 			container.addException(ce);
@@ -84,11 +86,19 @@ public class GenerateFiles {
 
 	}
 
-	public Set<OptionGroup> getOptions() {
-		Set<OptionGroup> retValue = new HashSet<OptionGroup>();
-		retValue.add(TimedRebecaFileGenerator.getOptions());
-		retValue.add(CoreRebecaFileGenerator.getOptions());
-		return retValue;
-	}
+//	public Set<OptionGroup> getOptions() {
+//		Set<OptionGroup> retValue = new HashSet<OptionGroup>();
+//		retValue.add(TimedRebecaFileGenerator.getOptions());
+//		retValue.add(CoreRebecaFileGenerator.getOptions());
+//		return retValue;
+//	}
+	
+//	public void parseAdditionalCommands(CommandLine commandLine, Set<CompilerFeature> compilerFeatures,
+//			Set<AnalysisFeature> analysisFeatures) {
+//		if(commandLine.hasOption("debug"))
+//			analysisFeatures.add(AnalysisFeature.DEBUG);
+//		if(commandLine.hasOption("debug2"))
+//			analysisFeatures.add(AnalysisFeature.DEBUG_LEVEL_2);
+//	}
 
 }

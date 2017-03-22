@@ -12,6 +12,9 @@
 \#include <fstream>
 \#include <iostream>
 \#include <stdlib.h>
+\#include <thread> 
+\#include <chrono> 
+
 using namespace std;
 
 #foreach ($fieldDeclaration in $envVariables) 
@@ -24,6 +27,16 @@ void segmentationFaultHandler(int signum) {
 	analyzer->segmentationFault();
 	exit(0);
 }
+
+#ifdef PROGRESS_REPORT
+ostream *progressReportStream;
+void progressReport() {
+	while(true) {
+		analyzer->progressReport(*progressReportStream);
+	    std::this_thread::sleep_for(std::chrono::milliseconds(2000));
+	}
+}
+#endif
 
 int BOOLEAN_SIZE, BYTE_SIZE, SHORT_SIZE, INT_SIZE, FLOAT_SIZE, DOUBLE_SIZE, REACTIVE_CLASS_SIZE;
 int main(int argc, char* argv[]) {
@@ -42,6 +55,9 @@ int main(int argc, char* argv[]) {
 	parser.addOption('h', "help", "Print this message.");
 	parser.addOption('s', "hashmapSize", "Set the size of the hashmap to \"2^value\" (default size is 20 and the value should be bigger that 20).", "value");
 	parser.addOption('o', "exportResult", "Exporting the model checking result in file \"fileName\".", "fileName");
+	#ifdef PROGRESS_REPORT
+		parser.addOption('g', "progress", "Report progress in file \"fileName\".", "fileName");
+	#endif
 	
 	#mainMacroPutAdditionalCommandOptions()
 	    
@@ -67,6 +83,11 @@ int main(int argc, char* argv[]) {
 	if (parser.hasOption('o')) {
 		result = new ofstream(parser.getOptionValue('o').c_str(), ofstream::out|ofstream::trunc);
 	}
+	#ifdef PROGRESS_REPORT
+		if (parser.hasOption('g')) {
+			progressReportStream = new ofstream(parser.getOptionValue('g').c_str(), ofstream::out|ofstream::trunc);
+		}
+	#endif
 
 	for (list<string>::iterator it = parser.getEnvironmentVariables().begin(); it != parser.getEnvironmentVariables().end(); ++it) {
 		string envVar = *it;

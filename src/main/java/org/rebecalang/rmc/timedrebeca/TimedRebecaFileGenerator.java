@@ -6,11 +6,9 @@ import java.io.IOException;
 import java.util.Hashtable;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Properties;
 import java.util.Set;
 
-import org.apache.commons.cli.CommandLine;
-import org.apache.commons.cli.Option;
-import org.apache.commons.cli.OptionGroup;
 import org.apache.velocity.Template;
 import org.apache.velocity.VelocityContext;
 import org.apache.velocity.app.Velocity;
@@ -44,24 +42,13 @@ public class TimedRebecaFileGenerator extends CoreRebecaFileGenerator {
 	public void prepare(RebecaModel rebecaModel, PropertyModel propertyModel,
 			Set<CompilerFeature> compilerFeatures, 
 			Set<AnalysisFeature> analysisFeatures,
-			CommandLine commandLine,
-			File destinationLocation, ExceptionContainer container) throws CodeCompilationException {
+			File destinationLocation, 
+			Properties properties, 
+			ExceptionContainer container) throws CodeCompilationException {
 
 		super.prepare(rebecaModel, propertyModel, compilerFeatures, analysisFeatures,
-				commandLine, destinationLocation, container);
+				destinationLocation, properties, container);
 
-		if (commandLine.hasOption("tts")) {
-			analysisFeatures.add(AnalysisFeature.TTS);
-		}
-		if (commandLine.hasOption("compactdtg")) {
-			analysisFeatures.add(AnalysisFeature.COMPACT_DTG);
-		}
-		if (commandLine.hasOption("tracegenerator")) {
-			if (analysisFeatures.contains(AnalysisFeature.EXPORT_STATE_SPACE)) {
-				throw new CodeCompilationException("\"Trace Generator\" and \"Export State Space\" options are incompatible.", 0, 0);
-			}
-			analysisFeatures.add(AnalysisFeature.TRACE_GENERATOR);
-		}
 		
 		analysisFeaturesNames = getFeaturesNames(analysisFeatures);
 		methodBodyConvertor = new TimedMethodBodyConvertor(analysisFeatures);
@@ -316,14 +303,6 @@ public class TimedRebecaFileGenerator extends CoreRebecaFileGenerator {
 			e.printStackTrace();
 		}
 		return 0;
-	}
-
-	public static OptionGroup getOptions() {
-		OptionGroup group = new OptionGroup();
-		group.addOption(new Option(null, "tts", false, "Using TTS semantics of Rebeca instead of FTTS."));
-		group.addOption(new Option(null, "tracegenerator", false, "Instead of model checking, some traces of the model is generated."));
-		group.addOption(new Option(null, "compactdtg", false, "Using this feature, compact DTG is generated on-the-fly from TTS."));
-		return group;
 	}
 
 }

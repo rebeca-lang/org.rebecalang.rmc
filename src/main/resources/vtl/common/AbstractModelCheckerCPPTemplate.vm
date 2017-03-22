@@ -1,5 +1,14 @@
 \#include "AbstractModelChecker.h"
 
+#ifdef PROGRESS_REPORT
+void AbstractModelChecker::progressReport(ostream& reportStream) {
+    reportStream.imbue( std::locale( std::locale::classic(), new MyNumPunct ) );
+    reportStream << numberOfStates
+		<< " states and " << numberOfTransitions
+    	<< " transitions" << endl;
+}
+#endif
+
 AbstractModelChecker::AbstractModelChecker(std::ostream &outStream
 		#ifdef EXPORT_STATE_SPACE
 		    , ostream &statespaceStream

@@ -5,6 +5,7 @@
 \#include "AbstractTimedRebecaAnalyzer.h"
 
 \#include <iostream>
+\#include <locale>
 
 \#define DEADLINE_MISSED 10
 
@@ -38,6 +39,11 @@ public:
 	#applyPatch($patches 'AdditionalSignatures' false)
 		
 	void segmentationFault();
+	
+	#ifdef PROGRESS_REPORT
+	virtual void progressReport(ostream& reportStream);
+	#endif
+	
 };
 
 \#define QUEUE_TYPE std::priority_queue<OpenBorderNode, std::vector<OpenBorderNode>, std::greater<OpenBorderNode> >

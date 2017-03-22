@@ -6,7 +6,6 @@ AbstractCoreRebecaAnalyzer::AbstractCoreRebecaAnalyzer(ostream &outStream, int h
 	this->hashmapSize = hashmapSize;
 }
 
-
 void AbstractCoreRebecaAnalyzer::unmarshalRebecs(long* node) {
 	int i;
 	for (i = 0; i < REBEC_COUNT; i++) {

@@ -45,6 +45,18 @@ public:
 	virtual void doModelChecking(string userSelectedPropertyName, string userSelectedPropertyType);
 	virtual void exportModelCheckingDetails(string userSelectedPropertyName, 
 		string userSelectedPropertyType, int result, string message);
+		
+	#ifdef PROGRESS_REPORT
+		virtual void progressReport(ostream& reportStream);
+	#endif
+		
 };
 
+#ifdef PROGRESS_REPORT
+	class MyNumPunct : public std::numpunct<char> {
+	protected:
+	    virtual char do_thousands_sep() const { return ','; }
+	    virtual std::string do_grouping() const { return "\03"; }
+	};
+#endif
 #endif

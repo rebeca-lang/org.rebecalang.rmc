@@ -2,7 +2,7 @@
 
 package org.rebecalang.rmc;
 
-import org.apache.log4j.*;
+import org.apache.log4j.PropertyConfigurator;
 
 public class RMCLogger {
     private static RMCLogger ourInstance = new RMCLogger();
@@ -27,4 +27,5 @@ public class RMCLogger {
         logger = org.apache.log4j.Logger.getLogger(name);
         PropertyConfigurator.configure("log4j.properties");
     }
+    
 }

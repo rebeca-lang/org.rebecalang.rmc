@@ -6,11 +6,9 @@ import java.io.IOException;
 import java.util.Hashtable;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Properties;
 import java.util.Set;
 
-import org.apache.commons.cli.CommandLine;
-import org.apache.commons.cli.OptionBuilder;
-import org.apache.commons.cli.OptionGroup;
 import org.apache.log4j.Logger;
 import org.apache.velocity.Template;
 import org.apache.velocity.VelocityContext;
@@ -93,24 +91,22 @@ public class CoreRebecaFileGenerator extends AbstractFileGenerator {
 	public void prepare(RebecaModel rebecaModel, PropertyModel propertyModel,
 			Set<CompilerFeature> cFeatures,
 			Set<AnalysisFeature> aFeatures,
-			CommandLine commandLine,
 			File destinationLocation,
+			Properties properties,
 			ExceptionContainer container) throws CodeCompilationException {
-		super.prepare(rebecaModel, propertyModel, cFeatures, aFeatures, commandLine,
-				destinationLocation, container);
+		super.prepare(rebecaModel, propertyModel, cFeatures, aFeatures,
+				destinationLocation, properties, container);
 		methodBodyConvertor = new MethodBodyConvertor(aFeatures);
-		if (commandLine.hasOption("x")) {
-			if ((fileNameOfStateSpaceInXML = commandLine.getOptionValue("statespace")) == null){
-				fileNameOfStateSpaceInXML = "statespace.xml";
-			}
-			aFeatures.add(AnalysisFeature.EXPORT_STATE_SPACE);
+
+		if ((fileNameOfStateSpaceInXML = (String) properties.get("statespace")) == null){
+			fileNameOfStateSpaceInXML = "statespace.xml";
 		}
 
 		analysisFeaturesNames = getFeaturesNames(aFeatures);
 
 		/*
-		 * For the case of CORE_2_0, a constructor is created which sends initial message to self to keep
-		 * translation mechanism consistent with the other core versions. 
+		 * For the case of CORE_2_0, default constructor is created which sends initial message to self to make
+		 * the translation mechanism consistent with the other core versions. 
 		 */
 		if (cFeatures.contains(CompilerFeature.CORE_2_0)) {
 			for (ReactiveClassDeclaration rcd : rebecaModel.getRebecaCode().getReactiveClassDeclaration()) {
@@ -704,16 +700,18 @@ public class CoreRebecaFileGenerator extends AbstractFileGenerator {
 
 	}
 
-	@SuppressWarnings("static-access")
-	public static OptionGroup getOptions() {
-		OptionGroup group = new OptionGroup();
-		group.addOption(
-				OptionBuilder.withArgName("file")
-                .hasArg()
-                .withDescription("Rebeca model property file.")
-                .withLongOpt("property").create('p')
-				);
-		return group;
-	}
+//	@SuppressWarnings("static-access")
+//	public static OptionGroup getOptions() {
+//		OptionGroup group = new OptionGroup();
+//		group.addOption(
+//				OptionBuilder.withArgName("file")
+//                .hasArg()
+//                .withDescription("Rebeca model property file.")
+//                .withLongOpt("property").create('p')
+//				);
+//		return group;
+//	}
+	
+	
 
 }
