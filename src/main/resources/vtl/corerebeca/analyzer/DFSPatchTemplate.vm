@@ -519,8 +519,8 @@ void CoreRebecaModelChecker::printCounterExample() {
         string action = rebecs[rebecId]->activeAction();
         string sender = rebecs[rebecs[rebecId]->senderQueue[0]]->getName();
 		unmarshalRebecs(stack[cnt].state->rebecs);
-		exportState(stack[cnt].state, out);
 		exportTransition(stack[parent].state, stack[cnt].state, sender, rebecName, action, out);
+		exportState(stack[cnt].state, out);
 		rebecId = stack[cnt].rebec;
         parent = cnt;
 	}

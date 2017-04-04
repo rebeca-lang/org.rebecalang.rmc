@@ -66,6 +66,9 @@ void AbstractModelChecker::exportModelCheckingDetails(string userSelectedPropert
     #ifdef EXPORT_STATE_SPACE
         out << "\t<option>Export state space</option>" << std::endl;
     #endif
+    #ifdef SAFE_MODE
+        out << "\t<option>Safe mode is enabled</option>" << std::endl;
+    #endif
     printModelCheckingOptions();
     out << "</options>" << std::endl;
     out  <<  "</checked-property>"  <<  std::endl;

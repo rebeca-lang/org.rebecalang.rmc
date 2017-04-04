@@ -30,8 +30,9 @@ void segmentationFaultHandler(int signum) {
 
 #ifdef PROGRESS_REPORT
 ostream *progressReportStream;
+boolean continueReportProgress;
 void progressReport() {
-	while(true) {
+	while(continueReportProgress) {
 		analyzer->progressReport(*progressReportStream);
 	    std::this_thread::sleep_for(std::chrono::milliseconds(2000));
 	}

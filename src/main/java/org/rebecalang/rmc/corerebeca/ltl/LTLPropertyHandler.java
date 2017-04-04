@@ -8,6 +8,7 @@ import java.util.Set;
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.BinaryExpression;
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.DotPrimary;
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.Expression;
+import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.Literal;
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.PrimaryExpression;
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.TermPrimary;
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.UnaryExpression;
@@ -100,6 +101,12 @@ public class LTLPropertyHandler {
 			} else {
 				throw new PropertyCompileException("Unknown expression " + expression);
 			}
+		} else if (expression instanceof Literal) {
+			Literal literal = (Literal) expression;
+			if(literal.getLiteralValue().equals("true"))
+				return unique(new Formula('t', true, null, null, null));
+			else if(literal.getLiteralValue().equals("false"))
+				return unique(new Formula('f', true, null, null, null));
 		}
 		throw new PropertyCompileException("Unknown operator");
 	}
