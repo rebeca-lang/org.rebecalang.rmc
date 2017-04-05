@@ -74,7 +74,7 @@ int main(int argc, char* argv[]) {
 		exit(0);
 	}
 	
-    int hashmapSize = 20;
+    int hashmapSize = 24;
 	ostream *result = &cout;
 
 	if (parser.hasOption('s')) {
