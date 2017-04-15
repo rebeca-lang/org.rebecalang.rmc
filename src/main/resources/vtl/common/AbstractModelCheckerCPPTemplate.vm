@@ -21,7 +21,7 @@ AbstractModelChecker::AbstractModelChecker(std::ostream &outStream
 }
 
 #foreach($definition in $propertyDefinitions)
-	$TypesUtilities.getTypeName($definition.getExpression().getType())  AbstractModelChecker::_propDef_$definition.getName() () {
+	$TypesUtilities.getInstance().getTypeName($definition.getExpression().getType())  AbstractModelChecker::_propDef_$definition.getName() () {
 		
 	}
 #end

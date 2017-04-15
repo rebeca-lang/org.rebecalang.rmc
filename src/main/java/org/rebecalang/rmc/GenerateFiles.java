@@ -38,6 +38,8 @@ public class GenerateFiles {
 			File destinationLocation, Set<CompilerFeature> compilerFeatures,
 			Set<AnalysisFeature> analysisFeatures, Properties properties) {
 		
+		propertyModel = null;
+		
 		RebecaCompiler rebecaCompiler = new RebecaCompiler();
 		Pair<RebecaModel, SymbolTable> compilationResult = rebecaCompiler.compileRebecaFile(rebecaFile, compilerFeatures);
 		this.container = rebecaCompiler.getExceptionContainer();

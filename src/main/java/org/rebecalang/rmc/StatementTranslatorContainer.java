@@ -18,6 +18,12 @@ public class StatementTranslatorContainer {
 	static {
 		translatorsRepository.put(Statement.class, new EmptyStatementTranslator(null, null));
 	}
+	
+	public static void clearTranslator() {
+		translatorsRepository = 
+				new Hashtable<Class<? extends Statement>, AbstractStatementTranslator>();
+		translatorsRepository.put(Statement.class, new EmptyStatementTranslator(null, null));
+	}
 
 	public static void initialize() {
 		for(AbstractStatementTranslator translator : translatorsRepository.values())

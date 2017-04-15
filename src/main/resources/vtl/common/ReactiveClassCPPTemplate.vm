@@ -23,7 +23,7 @@
 #set($cnt = 1)
 #foreach($fieldDec in $reactiveClassDeclaration.getKnownRebecs())
     #foreach ($varDec in $fieldDec.getVariableDeclarators())
-    	\#define _ref_$varDec.getVariableName() (dynamic_cast<$TypesUtilities.getTypeName($fieldDec.getType())Actor*>(rebecs[known[$cnt]]))
+    	\#define _ref_$varDec.getVariableName() (dynamic_cast<$TypesUtilities.getInstance().getTypeName($fieldDec.getType())Actor*>(rebecs[known[$cnt]]))
 	    #set($cnt = $cnt + 1)
     #end
 #end
@@ -89,7 +89,7 @@ void ${reactiveClassName}Actor::exportStateVariablesInXML(ostream &out, string t
 	        #set($name = $variableDec.getVariableName())
 	        #set($refName = "_ref_" + $name)
 	        #set($type = $fieldDec.getType())
-	    	out << tab << '\t' << "<variable name=\"$name\" type=\"$TypesUtilities.getTypeName($type)\">" <<  
+	    	out << tab << '\t' << "<variable name=\"$name\" type=\"$TypesUtilities.getInstance().getTypeName($type)\">" <<  
 	    		$TypesAnalysisUtilities.getVaribleValue($refName, $type) << "</variable>" << endl;
 		#end
 	#end
@@ -249,7 +249,7 @@ long ${reactiveClassName}Actor::execute() {
 
 #foreach ($methodDeclaration in $reactiveClassDeclaration.getSynchMethods())
 
-    $TypesUtilities.getTypeName($methodDeclaration.getReturnType()) ${reactiveClassName}Actor::_synchmethod_$methodDeclaration.getName() (
+    $TypesUtilities.getInstance().getTypeName($methodDeclaration.getReturnType()) ${reactiveClassName}Actor::_synchmethod_$methodDeclaration.getName() (
     	#putParameters($methodDeclaration.getFormalParameters() false)
     ) {
     	$methodBodyConvertor.convertSynchMethodBody($reactiveClassDeclaration, $methodDeclaration)

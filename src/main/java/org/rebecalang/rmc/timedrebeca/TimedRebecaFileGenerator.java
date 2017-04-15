@@ -162,14 +162,14 @@ public class TimedRebecaFileGenerator extends CoreRebecaFileGenerator {
 	protected void createTimedRebecaBFSHashmap() throws IOException {
 		VelocityContext context = new VelocityContext();
 
-		Template template = Velocity
+		Template template = velocityEngine
 				.getTemplate(FilesNames.TIMED_REBECA_BFS_HASHMAP_HEADER_TEMPLATE);
 		FileWriter fileWriter = new FileWriter(destinationLocation.getPath()
 				+ File.separatorChar + FilesNames.TIMED_REBECA_BFS_HASHMAP_OUTPUT_HEADER);
 		template.merge(context, fileWriter);
 		fileWriter.close();
 
-		template = Velocity.getTemplate(FilesNames.TIMED_REBECA_BFS_HASHMAP_CPP_TEMPLATE);
+		template = velocityEngine.getTemplate(FilesNames.TIMED_REBECA_BFS_HASHMAP_CPP_TEMPLATE);
 		fileWriter = new FileWriter(destinationLocation.getPath()
 				+ File.separatorChar + FilesNames.TIMED_REBECA_BFS_HASHMAP_OUTPUT_CPP);
 		template.merge(context, fileWriter);
@@ -181,13 +181,13 @@ public class TimedRebecaFileGenerator extends CoreRebecaFileGenerator {
 		VelocityContext context = new VelocityContext();
 		context.put("patches", patches);
 		
-		Template template = Velocity
+		Template template = velocityEngine
 				.getTemplate(FilesNames.ABSTRACT_TIMED_ACTOR_HEADER_TEMPLATE);
 		FileWriter fileWriter = new FileWriter(destinationLocation.getPath()
 				+ File.separatorChar + FilesNames.ABSTRACT_TIMED_ACTOR_OUTPUT_HEADER);
 		template.merge(context, fileWriter);
 		fileWriter.close();
-		template = Velocity.getTemplate(FilesNames.ABSTRACT_TIMED_ACTOR_CPP_TEMPLATE);
+		template = velocityEngine.getTemplate(FilesNames.ABSTRACT_TIMED_ACTOR_CPP_TEMPLATE);
 		fileWriter = new FileWriter(destinationLocation.getPath()
 				+ File.separatorChar + FilesNames.ABSTRACT_TIMED_ACTOR_OUTPUT_CPP);
 		template.merge(context, fileWriter);
@@ -209,13 +209,13 @@ public class TimedRebecaFileGenerator extends CoreRebecaFileGenerator {
 			patches.add(FilesNames.FTTS_PATCH_TEMPLATE);
 		context.put("patches", patches);
 		
-		Template template = Velocity
+		Template template = velocityEngine
 				.getTemplate(FilesNames.TIMED_MODEL_CHECKER_HEADER_TEMPLATE);
 		FileWriter fileWriter = new FileWriter(destinationLocation.getPath()
 				+ File.separatorChar + FilesNames.TIMED_MODEL_CHECKER_OUTPUT_HEADER);
 		template.merge(context, fileWriter);
 		fileWriter.close();
-		template = Velocity.getTemplate(FilesNames.TIMED_MODEL_CHECKER_CPP_TEMPLATE);
+		template = velocityEngine.getTemplate(FilesNames.TIMED_MODEL_CHECKER_CPP_TEMPLATE);
 		fileWriter = new FileWriter(destinationLocation.getPath()
 				+ File.separatorChar + FilesNames.TIMED_MODEL_CHECKER_OUTPUT_CPP);
 		template.merge(context, fileWriter);
@@ -261,13 +261,13 @@ public class TimedRebecaFileGenerator extends CoreRebecaFileGenerator {
 			context.put("propertyDefinitions", propertyModel.getDefinitions());
 		
 
-		Template template = Velocity
+		Template template = velocityEngine
 				.getTemplate(FilesNames.ABSTRACT_TIMED_REBECA_ANALYZER_HEADER_TEMPLATE);
 		FileWriter fileWriter = new FileWriter(destinationLocation.getPath()
 				+ File.separatorChar + FilesNames.ABSTRACT_TIMED_REBECA_ANALYZER_OUTPUT_HEADER);
 		template.merge(context, fileWriter);
 		fileWriter.close();
-		template = Velocity.getTemplate(FilesNames.ABSTRACT_TIMED_REBECA_ANALYZER_CPP_TEMPLATE);
+		template = velocityEngine.getTemplate(FilesNames.ABSTRACT_TIMED_REBECA_ANALYZER_CPP_TEMPLATE);
 		fileWriter = new FileWriter(destinationLocation.getPath()
 				+ File.separatorChar + FilesNames.ABSTRACT_TIMED_REBECA_ANALYZER_OUTPUT_CPP);
 		template.merge(context, fileWriter);
@@ -277,14 +277,14 @@ public class TimedRebecaFileGenerator extends CoreRebecaFileGenerator {
 	protected void createTraceGenerator() throws IOException {
 		VelocityContext context = new VelocityContext();
 
-		Template template = Velocity
+		Template template = velocityEngine
 				.getTemplate(FilesNames.ABSTRACT_TIMED_TRACE_GENERATOR_HEADER_TEMPLATE);
 		FileWriter fileWriter = new FileWriter(destinationLocation.getPath()
 				+ File.separatorChar + FilesNames.ABSTRACT_TIMED_TRACE_GENERATOR_OUTPUT_HEADER);
 		template.merge(context, fileWriter);
 		fileWriter.close();
 
-		template = Velocity.getTemplate(FilesNames.ABSTRACT_TIMED_TRACE_GENERATOR_CPP_TEMPLATE);
+		template = velocityEngine.getTemplate(FilesNames.ABSTRACT_TIMED_TRACE_GENERATOR_CPP_TEMPLATE);
 		fileWriter = new FileWriter(destinationLocation.getPath()
 				+ File.separatorChar + FilesNames.ABSTRACT_TIMED_TRACE_GENERATOR_OUTPUT_CPP);
 		template.merge(context, fileWriter);

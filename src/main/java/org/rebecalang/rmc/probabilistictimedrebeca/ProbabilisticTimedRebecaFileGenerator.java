@@ -87,14 +87,14 @@ public class ProbabilisticTimedRebecaFileGenerator extends TimedRebecaFileGenera
 		context.put("PROB_ACCURACY", PALTStatementSemanticCheck.PROB_ACCURACY);
 		context.put("PROB_PREC", (int)Math.log10(PALTStatementSemanticCheck.PROB_ACCURACY));
 
-		Template template = Velocity
+		Template template = velocityEngine
 				.getTemplate(FilesNames.PROBABILISTIC_TIMED_MODEL_CHECKER_HEADER_TEMPLATE);
 		FileWriter fileWriter = new FileWriter(destinationLocation.getPath()
 				+ File.separatorChar + FilesNames.PROBABILISTIC_TIMED_MODEL_CHECKER_OUTPUT_HEADER);
 		template.merge(context, fileWriter);
 		fileWriter.close();
 
-		template = Velocity.getTemplate(FilesNames.PROBABILISTIC_TIMED_MODEL_CHECKER_CPP_TEMPLATE);
+		template = velocityEngine.getTemplate(FilesNames.PROBABILISTIC_TIMED_MODEL_CHECKER_CPP_TEMPLATE);
 		fileWriter = new FileWriter(destinationLocation.getPath()
 				+ File.separatorChar + FilesNames.PROBABILISTIC_TIMED_MODEL_CHECKER_OUTPUT_CPP);
 		template.merge(context, fileWriter);

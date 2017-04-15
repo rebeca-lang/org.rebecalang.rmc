@@ -2,7 +2,7 @@
 
 #macro (putDefinitionSignatures $propertyDefinitions)
     #foreach($definition in $propertyDefinitions)
-    	$TypesUtilities.getTypeName($definition.getExpression().getType()) _propDef_$definition.getName() ();
+    	$TypesUtilities.getInstance().getTypeName($definition.getExpression().getType()) _propDef_$definition.getName() ();
     #end
 
 	#foreach($patch in $patches)
@@ -15,13 +15,13 @@
 #macro (putDefinitionBodies $mainDefinition $propertyDefinitions $className)
 	#set($cnt = 0)
 	#foreach($instance in $mainDefinition.getMainRebecDefinition())
-		#set($type = $TypesUtilities.getTypeName($instance.getType()))
+		#set($type = $TypesUtilities.getInstance().getTypeName($instance.getType()))
 		\#define _ref_${instance.getName()} (dynamic_cast<${type}Actor*>(rebecs[$cnt]))
 	    #set($cnt = $cnt + 1)
 	#end
 	
 	#foreach($definition in $propertyDefinitions)
-		$TypesUtilities.getTypeName($definition.getExpression().getType()) $className::_propDef_$definition.getName() () {
+		$TypesUtilities.getInstance().getTypeName($definition.getExpression().getType()) $className::_propDef_$definition.getName() () {
 			return $translator.translate($definition.getExpression(), "");
 		}
 	#end

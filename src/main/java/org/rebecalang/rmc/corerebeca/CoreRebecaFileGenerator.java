@@ -155,6 +155,7 @@ public class CoreRebecaFileGenerator extends AbstractFileGenerator {
 			}
 		}
 		
+		StatementTranslatorContainer.clearTranslator();
 		StatementTranslatorContainer.registerTranslator(BinaryExpression.class, new BinaryExpressionTranslator(cFeatures, aFeatures));
 		StatementTranslatorContainer.registerTranslator(BlockStatement.class, new BlockStatementTranslator(cFeatures, aFeatures));
 		StatementTranslatorContainer.registerTranslator(BreakStatement.class, new BreakStatementTranslator(cFeatures, aFeatures));
@@ -260,17 +261,17 @@ public class CoreRebecaFileGenerator extends AbstractFileGenerator {
 		context.put("maxMethodNumber", maxMethodNumber);
 		context.put("aFeatures", analysisFeaturesNames);
 		context.put("cFeatures", compilerFeaturesNames);
-		context.put("Integer", 0);
+		context.put("Integer", Integer.MIN_VALUE);
 		context.put("TypesUtilities", TypesUtilities.getInstance());
 		context.put("patches", patches);
 
-		Template template = Velocity
+		Template template = velocityEngine
 				.getTemplate(FilesNames.ABSTRACT_ACTOR_HEADER_TEMPLATE);
 		FileWriter fileWriter = new FileWriter(destinationLocation.getPath()
 				+ File.separatorChar + FilesNames.ABSTRACT_ACTOR_OUTPUT_HEADER);
 		template.merge(context, fileWriter);
 		fileWriter.close();
-		template = Velocity.getTemplate(FilesNames.ABSTRACT_ACTOR_CPP_TEMPLATE);
+		template = velocityEngine.getTemplate(FilesNames.ABSTRACT_ACTOR_CPP_TEMPLATE);
 		fileWriter = new FileWriter(destinationLocation.getPath()
 				+ File.separatorChar + FilesNames.ABSTRACT_ACTOR_OUTPUT_CPP);
 		template.merge(context, fileWriter);
@@ -296,7 +297,7 @@ public class CoreRebecaFileGenerator extends AbstractFileGenerator {
 	public void createBFSHashmapTemplate() throws IOException {
 		VelocityContext context = new VelocityContext();
 
-		Template template = Velocity
+		Template template = velocityEngine
 				.getTemplate(FilesNames.BFS_HASHMAP_TEMPLATE_HEADER_TEMPLATE);
 		FileWriter fileWriter = new FileWriter(destinationLocation.getPath()
 				+ File.separatorChar + FilesNames.BFS_HASHMAP_TEMPLATE_OUTPUT_HEADER);
@@ -307,14 +308,14 @@ public class CoreRebecaFileGenerator extends AbstractFileGenerator {
 	public void createCoreRebecaBFSHashmap() throws IOException {
 		VelocityContext context = new VelocityContext();
 
-		Template template = Velocity
+		Template template = velocityEngine
 				.getTemplate(FilesNames.CORE_REBECA_BFS_HASHMAP_HEADER_TEMPLATE);
 		FileWriter fileWriter = new FileWriter(destinationLocation.getPath()
 				+ File.separatorChar + FilesNames.CORE_REBECA_BFS_HASHMAP_OUTPUT_HEADER);
 		template.merge(context, fileWriter);
 		fileWriter.close();
 
-		template = Velocity.getTemplate(FilesNames.CORE_REBECA_BFS_HASHMAP_CPP_TEMPLATE);
+		template = velocityEngine.getTemplate(FilesNames.CORE_REBECA_BFS_HASHMAP_CPP_TEMPLATE);
 		fileWriter = new FileWriter(destinationLocation.getPath()
 				+ File.separatorChar + FilesNames.CORE_REBECA_BFS_HASHMAP_OUTPUT_CPP);
 		template.merge(context, fileWriter);
@@ -326,14 +327,14 @@ public class CoreRebecaFileGenerator extends AbstractFileGenerator {
 		VelocityContext context = new VelocityContext();
 		context.put("REBEC_COUNT", rebecaModel.getRebecaCode().getMainDeclaration().getMainRebecDefinition().size());
 
-		Template template = Velocity
+		Template template = velocityEngine
 				.getTemplate(FilesNames.CORE_REBECA_DFS_HASHMAP_HEADER_TEMPLATE);
 		FileWriter fileWriter = new FileWriter(destinationLocation.getPath()
 				+ File.separatorChar + FilesNames.CORE_REBECA_DFS_HASHMAP_OUTPUT_HEADER);
 		template.merge(context, fileWriter);
 		fileWriter.close();
 
-		template = Velocity.getTemplate(FilesNames.CORE_REBECA_DFS_HASHMAP_CPP_TEMPLATE);
+		template = velocityEngine.getTemplate(FilesNames.CORE_REBECA_DFS_HASHMAP_CPP_TEMPLATE);
 		fileWriter = new FileWriter(destinationLocation.getPath()
 				+ File.separatorChar + FilesNames.CORE_REBECA_DFS_HASHMAP_OUTPUT_CPP);
 		template.merge(context, fileWriter);
@@ -383,13 +384,13 @@ public class CoreRebecaFileGenerator extends AbstractFileGenerator {
 
 
 		boolean isSafeMode = aFeatures.remove(AnalysisFeature.SAFE_MODE);
-		Template template = Velocity
+		Template template = velocityEngine
 				.getTemplate(FilesNames.ABSTRACT_CORE_REBECA_ANALYZER_HEADER_TEMPLATE);
 		FileWriter fileWriter = new FileWriter(destinationLocation.getPath()
 				+ File.separatorChar + FilesNames.ABSTRACT_CORE_REBECA_ANALYZER_OUTPUT_HEADER);
 		template.merge(context, fileWriter);
 		fileWriter.close();
-		template = Velocity.getTemplate(FilesNames.ABSTRACT_CORE_REBECA_ANALYZER_CPP_TEMPLATE);
+		template = velocityEngine.getTemplate(FilesNames.ABSTRACT_CORE_REBECA_ANALYZER_CPP_TEMPLATE);
 		fileWriter = new FileWriter(destinationLocation.getPath()
 				+ File.separatorChar + FilesNames.ABSTRACT_CORE_REBECA_ANALYZER_OUTPUT_CPP);
 		template.merge(context, fileWriter);
@@ -418,13 +419,13 @@ public class CoreRebecaFileGenerator extends AbstractFileGenerator {
 		patches.add(FilesNames.DFS_PATCH_TEMPLATE);
 		context.put("patches", patches);
 		
-		Template template = Velocity
+		Template template = velocityEngine
 				.getTemplate(FilesNames.CORE_REBECA_MODEL_CHECKER_HEADER_TEMPLATE);
 		FileWriter fileWriter = new FileWriter(destinationLocation.getPath()
 				+ File.separatorChar + FilesNames.CORE_REBECA_MODEL_CHECKER_OUTPUT_HEADER);
 		template.merge(context, fileWriter);
 		fileWriter.close();
-		template = Velocity.getTemplate(FilesNames.CORE_REBECA_MODEL_CHECKER_CPP_TEMPLATE);
+		template = velocityEngine.getTemplate(FilesNames.CORE_REBECA_MODEL_CHECKER_CPP_TEMPLATE);
 		fileWriter = new FileWriter(destinationLocation.getPath()
 				+ File.separatorChar + FilesNames.CORE_REBECA_MODEL_CHECKER_OUTPUT_CPP);
 		template.merge(context, fileWriter);
@@ -496,13 +497,13 @@ public class CoreRebecaFileGenerator extends AbstractFileGenerator {
 		context.put("cFeatures", compilerFeaturesNames);
 		
 		//Creating .h and .cpp files of AbstractModelChecker
-		Template template = Velocity
+		Template template = velocityEngine
 				.getTemplate(FilesNames.ABSTRACT_MODEL_CHECKER_HEADER_TEMPLATE);
 		FileWriter fileWriter = new FileWriter(destinationLocation.getPath()
 				+ File.separatorChar + FilesNames.ABSTRACT_MODEL_CHECKER_OUTPUT_HEADER);
 		template.merge(context, fileWriter);
 		fileWriter.close();
-		template = Velocity.getTemplate(FilesNames.ABSTRACT_MODEL_CHECKER_CPP_TEMPLATE);
+		template = velocityEngine.getTemplate(FilesNames.ABSTRACT_MODEL_CHECKER_CPP_TEMPLATE);
 		fileWriter = new FileWriter(destinationLocation.getPath()
 				+ File.separatorChar + FilesNames.ABSTRACT_MODEL_CHECKER_OUTPUT_CPP);
 		template.merge(context, fileWriter);
@@ -527,7 +528,7 @@ public class CoreRebecaFileGenerator extends AbstractFileGenerator {
 		context.put("reactiveClassDeclarations", rebecaModel
 				.getRebecaCode().getReactiveClassDeclaration());
 		context.put("reactiveClassDeclaration", reactiveClassDeclaration);
-		context.put("Integer", 0);
+		context.put("Integer", Integer.MIN_VALUE);
 		context.put("aFeatures", analysisFeaturesNames);
 		context.put("cFeatures", compilerFeaturesNames);
 		context.put("TypesUtilities", TypesUtilities.getInstance());
@@ -543,7 +544,7 @@ public class CoreRebecaFileGenerator extends AbstractFileGenerator {
 		context.put("patches", patches);
 		context.put("stateSize", getStateSize(reactiveClassDeclaration));
 		// Create Header File
-		Template template = Velocity
+		Template template = velocityEngine
 				.getTemplate(FilesNames.REACTIVE_CLASS_HEADER_TEMPLATE);
 		FileWriter fileWriter = new FileWriter(
 				destinationLocation.getPath() + File.separatorChar
@@ -552,7 +553,7 @@ public class CoreRebecaFileGenerator extends AbstractFileGenerator {
 		fileWriter.close();
 
 		// Create C++ Class File
-		template = Velocity.getTemplate(FilesNames.REACTIVE_CLASS_CPP_TEMPLATE);
+		template = velocityEngine.getTemplate(FilesNames.REACTIVE_CLASS_CPP_TEMPLATE);
 		fileWriter = new FileWriter(destinationLocation.getPath()
 				+ File.separatorChar + fileName + "Actor.cpp");
 		template.merge(context, fileWriter);
@@ -573,7 +574,7 @@ public class CoreRebecaFileGenerator extends AbstractFileGenerator {
 		context.put("cFeatures", compilerFeaturesNames);
 
 		// Create Header File
-		Template template = Velocity
+		Template template = velocityEngine
 				.getTemplate(FilesNames.REBECMGR_HEADER_TEMPLATE);
 		FileWriter fileWriter = new FileWriter(destinationLocation.getPath()
 				+ File.separatorChar + FilesNames.REBECMGR_OUTPUT_HEADER);
@@ -605,7 +606,7 @@ public class CoreRebecaFileGenerator extends AbstractFileGenerator {
 		context.put("aFeatures", analysisFeaturesNames);
 		context.put("TypesUtilities", TypesUtilities.getInstance());
 
-		template = Velocity.getTemplate(FilesNames.REBECMGR_CPP_TEMPLATE);
+		template = velocityEngine.getTemplate(FilesNames.REBECMGR_CPP_TEMPLATE);
 		fileWriter = new FileWriter(destinationLocation.getPath()
 				+ File.separatorChar + FilesNames.REBECMGR_OUTPUT_CPP);
 		template.merge(context, fileWriter);
@@ -637,7 +638,7 @@ public class CoreRebecaFileGenerator extends AbstractFileGenerator {
 		context.put("configPatch", configPatch);
 
 		// Create Header File
-		Template template = Velocity
+		Template template = velocityEngine
 				.getTemplate(FilesNames.TYPES_HEADER_TEMPLATE);
 
 		FileWriter fileWriter = new FileWriter(destinationLocation.getPath()
@@ -645,7 +646,7 @@ public class CoreRebecaFileGenerator extends AbstractFileGenerator {
 		template.merge(context, fileWriter);
 		fileWriter.close();
 
-		template = Velocity.getTemplate(FilesNames.CONFIG_HEADER_TEMPLATE);
+		template = velocityEngine.getTemplate(FilesNames.CONFIG_HEADER_TEMPLATE);
 		fileWriter = new FileWriter(destinationLocation.getPath()
 				+ File.separatorChar + FilesNames.CONFIG_OUTPUT_HEADER);
 
@@ -678,7 +679,7 @@ public class CoreRebecaFileGenerator extends AbstractFileGenerator {
 		context.put("mainPatch", mainPatch);
 		
 		// Create Header File
-		Template template = Velocity.getTemplate(FilesNames.MAIN_CPP_TEMPLATE);
+		Template template = velocityEngine.getTemplate(FilesNames.MAIN_CPP_TEMPLATE);
 		FileWriter fileWriter = new FileWriter(destinationLocation.getPath()
 				+ File.separatorChar + FilesNames.MAIN_OUTPUT_CPP);
 
@@ -686,13 +687,13 @@ public class CoreRebecaFileGenerator extends AbstractFileGenerator {
 		fileWriter.close();
 
 		//Creating .h and .cpp files of CommandLineParser
-		template = Velocity
+		template = velocityEngine
 				.getTemplate(FilesNames.COMMAND_LINE_PARSER_HEADER_TEMPLATE);
 		fileWriter = new FileWriter(destinationLocation.getPath()
 				+ File.separatorChar + FilesNames.COMMAND_LINE_PARSER_OUTPUT_HEADER);
 		template.merge(context, fileWriter);
 		fileWriter.close();
-		template = Velocity.getTemplate(FilesNames.COMMAND_LINE_PARSER_CPP_TEMPLATE);
+		template = velocityEngine.getTemplate(FilesNames.COMMAND_LINE_PARSER_CPP_TEMPLATE);
 		fileWriter = new FileWriter(destinationLocation.getPath()
 				+ File.separatorChar + FilesNames.COMMAND_LINE_PARSER_OUTPUT_CPP);
 		template.merge(context, fileWriter);

@@ -155,7 +155,7 @@ void AbstractTimedRebecaAnalyzer::instantiationPart() {
 	vector<AbstractActor*>* referenceToRebecs = new vector<AbstractActor*>();
 	byte maxRebecID = 0;
     #foreach($instance in $mainDefinition.getMainRebecDefinition())
-    	#set($type = $TypesUtilities.getTypeName($instance.getType()))
+    	#set($type = $TypesUtilities.getInstance().getTypeName($instance.getType()))
     	#set($maxQueueLength = $sizes.get($type).first)
     	#set($maxParamLength = $sizes.get($type).second)
     	${type}Actor* _ref_${instance.getName()} = new ${type}Actor(maxRebecID++, "${instance.getName()}", $maxQueueLength, $maxParamLength, *referenceToRebecs 
@@ -170,7 +170,7 @@ void AbstractTimedRebecaAnalyzer::instantiationPart() {
 
 	#set($counter = 0)
     #foreach($instance in $mainDefinition.getMainRebecDefinition())
-    	#set($type = $TypesUtilities.getTypeName($instance.getType()))
+    	#set($type = $TypesUtilities.getInstance().getTypeName($instance.getType()))
     	_ref_${instance.getName()}->known = new byte[MAX_KNOWN];
     	#set($counter2 = 1)
     	_ref_${instance.getName()}->known[0] = _ref_${instance.getName()}->myID;

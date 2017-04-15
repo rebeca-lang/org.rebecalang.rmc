@@ -54,7 +54,6 @@
             #set($name = $variableDec.getName())
             #set($pointerName = $prefix + $name)
             #set($type = $variableDec.getType())
-            
             #if ($type == $TypesUtilities.BOOLEAN_TYPE)
 	            #set($size = $TypesAnalysisUtilities.getInstance().getTypeSize($type))
 			#else
