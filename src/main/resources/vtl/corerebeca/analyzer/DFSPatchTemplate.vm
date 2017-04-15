@@ -8,12 +8,11 @@
 	string getModelCheckingResultName(int id);
 	bool incDepth();
 	
-	short int getNextClaimState(short int claim, short int claimNonDetTrans, int propertySelector);
+	std::list<short int> getNextClaimState(short int claim, int propertySelector);
 	boolean isAccepting(short int claim, int propertySelector);
 #end
 
 #macro (coreRebecaDFSAdditionalBodies $noParam)
-
 \#define UNDEFINED 0
 	extern int maxDepth;
 
@@ -75,7 +74,8 @@ bool CoreRebecaModelChecker::incDepth() {
 	\#define _ref_$definition.getName() _propDef_$definition.getName()()
 #end
 
-short int CoreRebecaModelChecker::getNextClaimState(short int claim, short int claimNonDetTrans, int propertySelector) {
+std::list<short int> CoreRebecaModelChecker::getNextClaimState(short int claim, int propertySelector) {
+	std::list<short int> result;
 	switch (propertySelector) {
 	#set($cnt = 1)
 	#foreach($graphSpec in $propertyGraph)
@@ -86,24 +86,20 @@ short int CoreRebecaModelChecker::getNextClaimState(short int claim, short int c
 					#set($defaultTransTarget = -1)
 					#foreach($edge in $graphNode.getOutgoingEdges())
 						#if($edge.getGuard() == "-")
-							#set($defaultTransTarget = $edge.getNext().getId())
+							result.push_back($edge.getNext().getId());
 						#else
-							if ($edge.getGuard()) return $edge.getNext().getId();
+							if ($edge.getGuard()) result.push_back($edge.getNext().getId());
 						#end
 					#end
-					#if($defaultTransTarget != -1)
-						return $defaultTransTarget;
-					#end
+					break;
 			#end
-			default:
-				return -1;
 			}
 		break;
 		#set($cnt = $cnt + 1)
 	#end
-	default:
-		return 0;
 	}
+	if (result.empty()) result.push_back(-1);	
+	return result;
 }
 
 boolean CoreRebecaModelChecker::isAccepting(short int claim, int propertySelector) {
@@ -133,6 +129,7 @@ void CoreRebecaModelChecker::doDFSModelChecking(string userSelectedPropertyName,
 	int propertySelector;
 	short int claim;
 	stack = new StackEl[maxDepth];
+	std::list<short int>claims;
 
 	byte fairnessCounter;	// for fairness algorithm
 	byte undoMark;			// undo mark for fairnessCounter
@@ -388,28 +385,18 @@ void CoreRebecaModelChecker::doDFSModelChecking(string userSelectedPropertyName,
  	}
  	goto Back2Claim;	// SystemDfs() is called from within ClaimDfs, so we return to there
  claimTurn:
- 	claimNonDetTrans = 0;	// Claim behavior is to be determined later!
  	newStateFlag = false;
- 	do {	// BFS due to claim non-det
- 		// Do Rebecs still have their unmarshaled state??? YES, because of BFS
- 		claim = getNextClaimState(stack[effectiveDepth].state->claim, claimNonDetTrans, propertySelector);	// we may use recently executed rebec
- 		/*
- 		The next claim state is returned. This function computes the synchronous product of system and claim.
- 		claimNonDetTrans:
- 			-1   : current state was disabled?! Do we have such a condition?
- 			0    : there was no more non-det transitions
- 			other: there are other (non_det) transistions
- 		*/
- 		if (claimNonDetTrans == -1){
- 		    claimNonDetTrans = 0;
-             break;	// if no further moves in current state of claim
-         }
+	// Do Rebecs still have their unmarshaled state??? YES, because of BFS
+	claims = getNextClaimState(stack[effectiveDepth].state->claim, propertySelector);	// we may use recently executed rebec
 
- 		/* The next state in the product automaton is reached when both system and claim move
- 		one state forward. So we can store() a new state here.
- 		*/
+	/* The next state in the product automaton is reached when both system and claim move
+	one state forward. So we can store() a new state here.
+	*/
+
+	for (std::list<short int>::iterator it = claims.begin(); it != claims.end(); ++it) {
+	
  		State *newState;
- 		newState = storeRecentlyCreatedState (result, claim, fairnessCounter/*, nonDetTrans || claimNonDetTrans*/);
+ 		newState = storeRecentlyCreatedState (result, *it, fairnessCounter);
 
 
  		if (result & NEW_STATE) {	// bitwise AND
@@ -452,7 +439,7 @@ void CoreRebecaModelChecker::doDFSModelChecking(string userSelectedPropertyName,
  			// If we are at the copy "REBEC_COUNT" of state-space, then the cycle is fair.
 	        throw CounterExampleException("Counter example if detected.");	// finished searching
  		}
- 	} while (claimNonDetTrans);
+ 	}
 
      if (newStateFlag && !nonDetTrans) {
 

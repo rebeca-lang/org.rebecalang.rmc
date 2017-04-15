@@ -5,6 +5,7 @@
 \#include "AbstractCoreRebecaAnalyzer.h"
 
 \#include <iostream>
+\#include <list>
 
 \#define STACK_OVERFLOW 10
 
