@@ -12,7 +12,6 @@ import java.util.Set;
 import org.apache.log4j.Logger;
 import org.apache.velocity.Template;
 import org.apache.velocity.VelocityContext;
-import org.apache.velocity.app.Velocity;
 import org.rebecalang.compiler.modelcompiler.corerebeca.CoreRebecaLabelUtility;
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.ArrayType;
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.BinaryExpression;
@@ -26,6 +25,7 @@ import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.DotPrimary;
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.FieldDeclaration;
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.ForStatement;
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.FormalParameterDeclaration;
+import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.InstanceofExpression;
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.Literal;
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.MainRebecDefinition;
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.MethodDeclaration;
@@ -67,6 +67,7 @@ import org.rebecalang.rmc.corerebeca.translator.ContinueStatementTranslator;
 import org.rebecalang.rmc.corerebeca.translator.DotPrimaryExpressionTranslator;
 import org.rebecalang.rmc.corerebeca.translator.FieldDeclarationStatementTranslator;
 import org.rebecalang.rmc.corerebeca.translator.ForStatementTranslator;
+import org.rebecalang.rmc.corerebeca.translator.InstanceofExpressionTranslator;
 import org.rebecalang.rmc.corerebeca.translator.LiteralTranslator;
 import org.rebecalang.rmc.corerebeca.translator.NondetExpressionTranslator;
 import org.rebecalang.rmc.corerebeca.translator.PlusSubExpressionTranslator;
@@ -156,6 +157,7 @@ public class CoreRebecaFileGenerator extends AbstractFileGenerator {
 		}
 		
 		StatementTranslatorContainer.clearTranslator();
+		StatementTranslatorContainer.registerTranslator(InstanceofExpression.class, new InstanceofExpressionTranslator(cFeatures, aFeatures));
 		StatementTranslatorContainer.registerTranslator(BinaryExpression.class, new BinaryExpressionTranslator(cFeatures, aFeatures));
 		StatementTranslatorContainer.registerTranslator(BlockStatement.class, new BlockStatementTranslator(cFeatures, aFeatures));
 		StatementTranslatorContainer.registerTranslator(BreakStatement.class, new BreakStatementTranslator(cFeatures, aFeatures));
