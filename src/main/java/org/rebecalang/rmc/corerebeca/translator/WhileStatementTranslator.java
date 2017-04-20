@@ -22,12 +22,12 @@ public class WhileStatementTranslator extends AbstractStatementTranslator {
 		WhileStatement whileStatement = (WhileStatement) statement; 
 		String retValue = tab + "while (";
 		retValue += StatementTranslatorContainer.translate(
-				whileStatement.getCondition(), "") + ")" + NEW_LINE;
+				whileStatement.getCondition(), "") + ") {" + NEW_LINE;
 		if (whileStatement.getStatement() != null) {
 			retValue += StatementTranslatorContainer.translate(whileStatement.getStatement(), tab + TAB);
 			retValue += super.adjustSemicolonForExpression(whileStatement.getStatement());
-		} else
-			retValue += ";";
+		}
+		retValue += "}";
 		return retValue;
 	}
 }

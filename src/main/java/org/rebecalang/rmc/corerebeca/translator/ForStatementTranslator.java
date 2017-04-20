@@ -50,13 +50,13 @@ public class ForStatementTranslator extends AbstractStatementTranslator {
 		if (forStatement.getForIncrement().size() != 0)
 			retValue = retValue.substring(0, retValue.length() - 2);
 
-		retValue += ")" + NEW_LINE;
+		retValue += ") {" + NEW_LINE;
 		if (forStatement.getStatement() != null) {
 			retValue += StatementTranslatorContainer.translate(forStatement.getStatement(), tab + TAB);
 			retValue += super.adjustSemicolonForExpression(forStatement.getStatement());
 
-		} else
-			retValue += ";";
+		}
+		retValue += "}";
 		return retValue;
 		
 	}

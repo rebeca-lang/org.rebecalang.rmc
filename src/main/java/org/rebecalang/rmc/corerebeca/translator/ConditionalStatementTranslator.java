@@ -23,13 +23,13 @@ public class ConditionalStatementTranslator extends AbstractStatementTranslator 
 		ConditionalStatement conditionalStatement = (ConditionalStatement) statement;
 		String retValue = tab + "if (";
 		retValue += StatementTranslatorContainer.translate(
-				conditionalStatement.getCondition(), "") + ")" + NEW_LINE;
+				conditionalStatement.getCondition(), "") + ") {" + NEW_LINE;
 		if (conditionalStatement.getStatement() != null) {
 			retValue += StatementTranslatorContainer.translate(conditionalStatement.getStatement(), tab + TAB);
-			retValue += super.adjustSemicolonForExpression(conditionalStatement.getStatement());
+			retValue += super.adjustSemicolonForExpression(conditionalStatement.getStatement()) + "}";
 			if (conditionalStatement.getElseStatement() != null) {
-				retValue += NEW_LINE + tab + "else" + NEW_LINE + StatementTranslatorContainer.translate(
-						conditionalStatement.getElseStatement(), tab + TAB);
+				retValue += NEW_LINE + tab + "else {" + NEW_LINE + StatementTranslatorContainer.translate(
+						conditionalStatement.getElseStatement(), tab + TAB) + "}";
 				retValue += super.adjustSemicolonForExpression(conditionalStatement.getElseStatement());
 			}
 		}
