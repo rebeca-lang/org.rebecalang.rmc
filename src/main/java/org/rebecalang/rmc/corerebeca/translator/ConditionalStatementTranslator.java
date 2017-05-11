@@ -29,8 +29,8 @@ public class ConditionalStatementTranslator extends AbstractStatementTranslator 
 			retValue += super.adjustSemicolonForExpression(conditionalStatement.getStatement()) + "}";
 			if (conditionalStatement.getElseStatement() != null) {
 				retValue += NEW_LINE + tab + "else {" + NEW_LINE + StatementTranslatorContainer.translate(
-						conditionalStatement.getElseStatement(), tab + TAB) + "}";
-				retValue += super.adjustSemicolonForExpression(conditionalStatement.getElseStatement());
+						conditionalStatement.getElseStatement(), tab + TAB);
+				retValue += super.adjustSemicolonForExpression(conditionalStatement.getElseStatement()) + "}";
 			}
 		}
 		else
