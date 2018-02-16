@@ -677,6 +677,7 @@ public class CoreRebecaFileGenerator extends AbstractFileGenerator {
 		context.put("envVariables", rebecaModel.getRebecaCode()
 				.getEnvironmentVariables());
 		context.put("translator", translator);
+		context.put("TypesUtilities", TypesUtilities.getInstance());
 
 		context.put("mainPatch", mainPatch);
 		

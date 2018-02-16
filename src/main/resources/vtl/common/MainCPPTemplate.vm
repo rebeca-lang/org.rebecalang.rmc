@@ -99,8 +99,31 @@ int main(int argc, char* argv[]) {
 		string value = envVar.substr(index + 1, envVar.length());
 		#foreach ($fieldDeclaration in $envVariables) 
 			#foreach ($variableDeclarator in $fieldDeclaration.getVariableDeclarators())
-				if (name == "$variableDeclarator.getVariableName()")
-					_ref_$variableDeclarator.getVariableName() = atoi(value.c_str());
+				
+				if (name == "$variableDeclarator.getVariableName()")				
+					try {
+						#if($TypesUtilities.getTypeName($fieldDeclaration.getType()) == "int")
+							_ref_$variableDeclarator.getVariableName() = stoi(value);
+						#elseif($TypesUtilities.getTypeName($fieldDeclaration.getType()) == "byte")
+							_ref_$variableDeclarator.getVariableName() = stoi(value);
+						#elseif($TypesUtilities.getTypeName($fieldDeclaration.getType()) == "short")
+							_ref_$variableDeclarator.getVariableName() = stoi(value);
+						#elseif($TypesUtilities.getTypeName($fieldDeclaration.getType()) == "float")
+							_ref_$variableDeclarator.getVariableName() = stof(value);
+						#elseif($TypesUtilities.getTypeName($fieldDeclaration.getType()) == "double")
+							_ref_$variableDeclarator.getVariableName() = stod(value);
+						#else
+							cout << "<!--Dynamic value assignment only supports numerical types not " <<
+								"\"$TypesUtilities.getTypeName($fieldDeclaration.getType())\" type of variable" << 
+								" \"$variableDeclarator.getVariableName()\".-->" << endl;
+						#end						
+					} catch(std::invalid_argument e) {
+						cout << "<!--Invalid value for variable \"$variableDeclarator.getVariableName()\".-->" << endl;
+					} catch(std::out_of_range e) {
+						cout << "<!--Value out of range for variable \"$variableDeclarator.getVariableName()\".-->" << endl;
+					}
+
+					
 			#end 
 		#end
     }
