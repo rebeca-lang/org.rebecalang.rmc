@@ -54,31 +54,39 @@
             #set($name = $variableDec.getName())
             #set($pointerName = $prefix + $name)
             #set($type = $variableDec.getType())
-            #if ($type == $TypesUtilities.BOOLEAN_TYPE)
-	            #set($size = $TypesAnalysisUtilities.getInstance().getTypeSize($type))
-			#else
-	            #set($size = $TypesAnalysisUtilities.getInstance().getTypeSizeLabel($type))
-			#end
+
             #if ($printVariableType)
             	$translator.translator($variableDec);
-            #end
+            #end            
             
             #if($ArrayType.getClass().isAssignableFrom($type.getClass()))
-            	#set($type = $type.getPrimitiveType())
+            	#set($isBoolean = ($type.getPrimitiveType() == $TypesUtilities.BOOLEAN_TYPE))
             #else
-            	#set($pointerName = "&" + $pointerName)
+            	#set($isBoolean = ($type == $TypesUtilities.BOOLEAN_TYPE))
             #end
             
-            #if ($type == $TypesUtilities.BOOLEAN_TYPE)
-            	#if ($size == 1)
+            #if ($isBoolean)
+            	#set($size = $TypesAnalysisUtilities.getInstance().getTypeSize($type))
+            	#if(!$ArrayType.getClass().isAssignableFrom($type.getClass()))
             		#retrieveBooleanValuation ("$prefix${name}")
             	#else
             		#set($size = $size - 1)
             		#foreach ($varCounter in [0 .. $size])
-            			#retrieveBooleanValuation ("((boolean *)$prefix${name})[${varCounter}]")
+						#set($varName = "$prefix${name}")
+						#set($rowCounter = 1)
+						#foreach($dimension in $type.getDimensions())
+							#set($tempIndex = $varCounter % $dimension)
+							#set($varName = $varName + "[" + $tempIndex + "]")
+							#set($varCounter = $varCounter / $dimension)
+						#end
+            			#retrieveBooleanValuation ($varName)
             		#end
             	#end
             #else
+            	#set($size = $TypesAnalysisUtilities.getInstance().getTypeSizeLabel($type))
+	            #if(!$ArrayType.getClass().isAssignableFrom($type.getClass()))
+	            	#set($pointerName = "&" + $pointerName)
+	            #end
                 memcpy($pointerName, &$arrayName [$indexName], $size);
                 $indexName += $size;
             #end
@@ -91,7 +99,6 @@
 #end
 
 #macro (putBooleanValuation $varName)
-
 	#if ($booleanCounter == 0)
 		#set($booleanResult = $booleanResult + "$arrayName [$indexName] = 0;$newline")
 	#end
@@ -102,6 +109,7 @@
 		#set($booleanResult = $booleanResult + "$indexName++;$newline")
 	#end
 #end
+
 #macro (putListToArray $arrayName $indexName $varList $prefix)
     #if($varList)
     	#set($booleanCounter = 0)
@@ -109,32 +117,35 @@
         #foreach($variableDec in $varList)
             #set($name = $variableDec.getName())
             #set($pointerName = $prefix + $name)
-            #set($type = $variableDec.getType())
-            #if ($type == $TypesUtilities.BOOLEAN_TYPE)
-	            #set($size = $TypesAnalysisUtilities.getInstance().getTypeSize($type))
-			#else
-	            #set($size = $TypesAnalysisUtilities.getInstance().getTypeSizeLabel($type))
-			#end
+            #set($type = $variableDec.getType())            
             
             #if($ArrayType.getClass().isAssignableFrom($type.getClass()))
-				#foreach($dimension in $type.getDimensions())
-					#set($typeSuffix = $typeSuffix + "[$dimension]")
-				#end
-            	#set($type = $type.getPrimitiveType())
+            	#set($isBoolean = ($type.getPrimitiveType() == $TypesUtilities.BOOLEAN_TYPE))
             #else
-            	#set($pointerName = "&" + $pointerName)
+            	#set($isBoolean = ($type == $TypesUtilities.BOOLEAN_TYPE))
             #end
-            
-            #if ($type == $TypesUtilities.BOOLEAN_TYPE)
-            	#if ($size == 1)
+            #if ($isBoolean)
+            	#set($size = $TypesAnalysisUtilities.getInstance().getTypeSize($type))
+            	#if (!$ArrayType.getClass().isAssignableFrom($type.getClass()))
             		#putBooleanValuation ("$prefix${name}")
             	#else
             		#set($size = $size - 1)
             		#foreach ($varCounter in [0 .. $size])
-            			#putBooleanValuation ("((boolean *)$prefix${name})[${varCounter}]")
+						#set($varName = "($prefix${name})")
+						#set($rowCounter = 1)
+						#foreach($dimension in $type.getDimensions())
+							#set($tempIndex = $varCounter % $dimension)
+							#set($varName = $varName + "[" + $tempIndex + "]")
+							#set($varCounter = $varCounter / $dimension)
+						#end
+            			#putBooleanValuation ($varName)
             		#end
             	#end
             #else
+            	#set($size = $TypesAnalysisUtilities.getInstance().getTypeSizeLabel($type))
+	            #if(!$ArrayType.getClass().isAssignableFrom($type.getClass()))
+	            	#set($pointerName = "&" + $pointerName)
+	            #end
                 memcpy(&$arrayName [$indexName], $pointerName, $size);
                 $indexName += $size;
             #end
