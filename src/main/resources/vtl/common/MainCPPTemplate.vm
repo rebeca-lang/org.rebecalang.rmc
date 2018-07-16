@@ -21,6 +21,29 @@ using namespace std;
 
 #mainMacroPutInstanceReference()
 
+string operator+(const string left, const int right) {
+	return left + std::to_string(right);
+}
+string operator+(const string left, const short right) {
+	return left + std::to_string(right);
+}
+string operator+(const string left, const float right) {
+	return left + std::to_string(right);
+}
+string operator+(const string left, const double right) {
+	return left + std::to_string(right);
+}
+string operator+(const string left, const byte right) {
+	return left + std::to_string(right);
+}
+string operator+(const string left, const boolean right) {
+	return left + (right ? "true" : "false");
+}
+
+string operator+(const string left, const AbstractActor *right) {
+	return left + right->getName();
+}
+
 void segmentationFaultHandler(int signum) {
 	analyzer->segmentationFault();
 	exit(0);

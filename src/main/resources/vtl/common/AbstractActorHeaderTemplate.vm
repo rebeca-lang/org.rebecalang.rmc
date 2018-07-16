@@ -46,7 +46,7 @@ public:
     virtual void marshalActorToArray(byte* array) = 0;
     virtual void unmarshalActorFromArray(byte* array) = 0;
 
-    char* getName();
+    char* getName() const;
     char* activeAction();					// the action at queue head
 
     byte myID;

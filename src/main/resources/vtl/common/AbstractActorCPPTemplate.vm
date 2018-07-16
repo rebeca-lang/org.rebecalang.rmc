@@ -92,7 +92,7 @@ void AbstractActor::enqueue(byte **queue, byte *message, int size){
     }
 }
 
-char* AbstractActor::getName() {
+char* AbstractActor::getName() const {
     return myName;
 }
 

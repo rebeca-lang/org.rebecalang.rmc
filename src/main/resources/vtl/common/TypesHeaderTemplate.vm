@@ -111,4 +111,13 @@ public:
 
 extern int BOOLEAN_SIZE, BYTE_SIZE, SHORT_SIZE, INT_SIZE, FLOAT_SIZE, DOUBLE_SIZE, REACTIVE_CLASS_SIZE;
 
+string operator+(const string left, const int right);
+string operator+(const string left, const short right);
+string operator+(const string left, const byte right);
+string operator+(const string left, const float right);
+string operator+(const string left, const double right);
+string operator+(const string left, const boolean right);
+class AbstractActor;
+string operator+(const string left, const AbstractActor *right);
+
 #endif
