@@ -77,6 +77,7 @@ import org.rebecalang.rmc.corerebeca.translator.TermPrimaryExpressionTranslator;
 import org.rebecalang.rmc.corerebeca.translator.TernaryExpressionTranslator;
 import org.rebecalang.rmc.corerebeca.translator.UnaryExpressionTranslator;
 import org.rebecalang.rmc.corerebeca.translator.WhileStatementTranslator;
+import org.rebecalang.rmc.utils.AnnotationsUtility;
 import org.rebecalang.rmc.utils.TypeAnalysisException;
 import org.rebecalang.rmc.utils.TypesAnalysisUtilities;
 
@@ -545,6 +546,7 @@ public class CoreRebecaFileGenerator extends AbstractFileGenerator {
 		context.put("constructorCallClasses", constructorCallClasses);
 		context.put("patches", patches);
 		context.put("stateSize", getStateSize(reactiveClassDeclaration));
+		context.put("AnnotationsUtility", AnnotationsUtility.getInstance());
 		// Create Header File
 		Template template = velocityEngine
 				.getTemplate(FilesNames.REACTIVE_CLASS_HEADER_TEMPLATE);

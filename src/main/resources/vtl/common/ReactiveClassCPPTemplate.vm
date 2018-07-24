@@ -85,12 +85,14 @@ ${reactiveClassName}Actor::~${reactiveClassName}Actor (){
 void ${reactiveClassName}Actor::exportStateVariablesInXML(ostream &out, string tab) {
 	out << tab << "<statevariables>" << endl;
     #foreach($fieldDec in $reactiveClassDeclaration.getStatevars())
-        #foreach($variableDec in $fieldDec.getVariableDeclarators())
-	        #set($name = $variableDec.getVariableName())
-	        #set($refName = "_ref_" + $name)
-	        #set($type = $fieldDec.getType())
-	    	out << tab << '\t' << "<variable name=\"$name\" type=\"$TypesUtilities.getInstance().getTypeName($type)\">" <<  
-	    		$TypesAnalysisUtilities.getVaribleValue($refName, $type) << "</variable>" << endl;
+        #if(!$AnnotationsUtility.contains($fieldDec.getAnnotations(), "doNotExport"))
+	        #foreach($variableDec in $fieldDec.getVariableDeclarators())
+		        #set($name = $variableDec.getVariableName())
+		        #set($refName = "_ref_" + $name)
+		        #set($type = $fieldDec.getType())
+			    	out << tab << '\t' << "<variable name=\"$name\" type=\"$TypesUtilities.getInstance().getTypeName($type)\">" <<  
+			    		$TypesAnalysisUtilities.getVaribleValue($refName, $type) << "</variable>" << endl;
+    		#end
 		#end
 	#end
 	out << tab << "</statevariables>" << endl;
