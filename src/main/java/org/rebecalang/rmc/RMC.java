@@ -248,7 +248,7 @@ public class RMC {
 	                .withLongOpt("exporttransitionsystem").create("x");
 			options.addOption(option);
 
-			options.addOption(new Option(null, "safemode", false, "Checks for array index out of bound during the model checking."));
+			options.addOption(new Option(null, "nosafemode", false, "Disable checking for array index out of bound and access to NULL objects during the model checking."));
 			options.addOption(new Option(null, "simplified_statespace", false, "Eliminates the content of states in the XML file of the state space."));
 			
 			options.addOption(new Option(null, "debug", false, "Enables debug mode in result C++ files."));
@@ -346,7 +346,7 @@ public class RMC {
 
 			Properties properties = new Properties();
 			
-			if(commandLine.hasOption("safemode"))
+			if(!commandLine.hasOption("nosafemode"))
 				analysisFeatures.add(AnalysisFeature.SAFE_MODE);
 			if(commandLine.hasOption("simplified_statespace"))
 				analysisFeatures.add(AnalysisFeature.SIMPLIFIED_STATESPACE);

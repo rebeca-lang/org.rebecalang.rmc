@@ -205,10 +205,15 @@ void AbstractTimedRebecaAnalyzer::exportState(OpenBorderNode &current, ostream& 
 	outStream << "<state id=\"" << current.state->stateID << "_" << 
 		(int)current.stateActiveBundleNumber << "\" ";
 	#putAtomicPropositions($propertyDefinitions)
-	outStream << ">" << endl;
-	#ifndef SIMPLIFIED_STATESPACE
-	for (int cnt = 0; cnt < REBEC_COUNT; cnt++)
-		rebecs[cnt]->exportStateInXML(outStream, "\t");
+	#ifdef SIMPLIFIED_STATESPACE
+		#ifdef TTS
+			outStream << " now=\"" << rebecs[0]->getNow() << "\"";
+		#endif 
+		outStream << ">" << endl;
+	\#else
+		outStream << ">" << endl;
+		for (int cnt = 0; cnt < REBEC_COUNT; cnt++)
+			rebecs[cnt]->exportStateInXML(outStream, "\t");
 	#endif
 	outStream << "</state>" << endl;
 }
