@@ -147,4 +147,18 @@ public class TypesAnalysisUtilities {
 			return TypesUtilities.getTypeName(type)+ "Actor*";
 		return TypesUtilities.getTypeName(type);
 	}
+
+	public static String getCPPTypeName(Type type) {
+		boolean isArray = false;
+		if (type instanceof ArrayType) {
+			type = ((ArrayType)type).getPrimitiveType();
+			isArray = true;
+		}
+		String retValue = "";
+		if (TypesUtilities.getInstance().canTypeUpCastTo(type, TypesUtilities.REACTIVE_CLASS_TYPE))
+			retValue = TypesUtilities.getTypeName(type) + "Actor*";
+		else
+			retValue = TypesUtilities.getTypeName(type);
+		return retValue + (isArray? "*" : "");
+	}
 }
