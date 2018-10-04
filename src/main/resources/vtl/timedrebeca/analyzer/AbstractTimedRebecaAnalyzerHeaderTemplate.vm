@@ -51,7 +51,8 @@ protected:
 	virtual void exportState(OpenBorderNode &current, ostream& outStream);
 	virtual void exportTransition(OpenBorderNode &source, OpenBorderNode &destination, 
 		string sender, string owner, string label, TIME_TYPE executionTime, TIME_TYPE shift, ostream& outStream);
-
+	virtual void exportTransition(string source, string destination, 
+		string sender, string owner, string label, TIME_TYPE executionTime, TIME_TYPE shift, ostream& outStream);
 	OpenBorderNode storeRecentlyCreatedState(byte &result, TIME_TYPE &shift,
 		TimedBFSState *parent, int parentBundleIndex, int executedRebecIndex);
 
@@ -62,7 +63,7 @@ protected:
 	int getNumberOfAlternatives(int rebecId, TIME_TYPE executionTime);
 	TIME_TYPE prepareWithNewState();
 	
-    #putDefinitionSignatures($propertyDefinitions)
+    #putDefinitionsAndAssertionsSignatures($propertyDefinitions $propertyAssertions)
 
 public:
 

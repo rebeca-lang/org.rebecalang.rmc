@@ -83,12 +83,29 @@
             		#end
             	#end
             #else
-            	#set($size = $TypesAnalysisUtilities.getInstance().getTypeSizeLabel($type))
-	            #if(!$ArrayType.getClass().isAssignableFrom($type.getClass()))
-	            	#set($pointerName = "&" + $pointerName)
+	            #if($ArrayType.getClass().isAssignableFrom($type.getClass()))
+	            	#set($dimensions = $type.getDimensions())
+	            	#set($index = "")
+					#foreach($dimension in $type.getDimensions())
+						#if( $foreach.hasNext )
+							for (int cnt$velocityCount = 0; cnt$velocityCount < $dimension; cnt$velocityCount++) {
+							#set($index = $index + "[cnt$velocityCount]")
+						#else
+							#set($size = $TypesAnalysisUtilities.getInstance().getTypeSizeLabel($type.getPrimitiveType()) + " * $dimension")
+						#end
+					#end
+					#set($varName = "$pointerName$index" + ".data()")
+					memcpy($varName, &$arrayName [$indexName], $size);					
+					$indexName += $size;
+					#foreach($dimension in $type.getDimensions())
+						#if( $foreach.hasNext )
+							}
+						#end
+					#end
+	            #else
+                	memcpy(&$pointerName, &$arrayName [$indexName], $TypesAnalysisUtilities.getInstance().getTypeSizeLabel($type));
+	                $indexName += $TypesAnalysisUtilities.getInstance().getTypeSizeLabel($type);
 	            #end
-                memcpy($pointerName, &$arrayName [$indexName], $size);
-                $indexName += $size;
             #end
         #end
         #if ($booleanCounter > 0)
@@ -142,12 +159,29 @@
             		#end
             	#end
             #else
-            	#set($size = $TypesAnalysisUtilities.getInstance().getTypeSizeLabel($type))
-	            #if(!$ArrayType.getClass().isAssignableFrom($type.getClass()))
-	            	#set($pointerName = "&" + $pointerName)
+	            #if($ArrayType.getClass().isAssignableFrom($type.getClass()))
+	            	#set($dimensions = $type.getDimensions())
+	            	#set($index = "")
+					#foreach($dimension in $type.getDimensions())
+						#if( $foreach.hasNext )
+							for (int cnt$velocityCount = 0; cnt$velocityCount < $dimension; cnt$velocityCount++) {
+							#set($index = $index + "[cnt$velocityCount]")
+						#else
+							#set($size = $TypesAnalysisUtilities.getInstance().getTypeSizeLabel($type.getPrimitiveType()) + " * $dimension")
+						#end
+					#end
+					#set($varName = "$pointerName$index" + ".data()")
+					memcpy(&$arrayName [$indexName], $varName, $size);					
+					$indexName += $size;
+					#foreach($dimension in $type.getDimensions())
+						#if( $foreach.hasNext )
+							}
+						#end
+					#end
+	            #else
+                	memcpy(&$arrayName [$indexName], &$pointerName, $TypesAnalysisUtilities.getInstance().getTypeSizeLabel($type));
+	                $indexName += $TypesAnalysisUtilities.getInstance().getTypeSizeLabel($type);
 	            #end
-                memcpy(&$arrayName [$indexName], $pointerName, $size);
-                $indexName += $size;
             #end
         #end
         #if ($booleanCounter % 8 != 0)

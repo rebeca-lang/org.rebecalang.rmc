@@ -1,9 +1,12 @@
 #*In the name of Allah*#
 
-#macro (putDefinitionSignatures $propertyDefinitions)
+#macro (putDefinitionsAndAssertionsSignatures $propertyDefinitions $propertyAssertions)
     #foreach($definition in $propertyDefinitions)
     	$TypesUtilities.getInstance().getTypeName($definition.getExpression().getType()) _propDef_$definition.getName() ();
     #end
+	#foreach($assertion in $propertyAssertions)
+		void _propAssert_$assertion.getName() ();
+	#end
 
 	#foreach($patch in $patches)
 		#parse("$patch")
@@ -12,7 +15,7 @@
 	#end
 #end
 
-#macro (putDefinitionBodies $mainDefinition $propertyDefinitions $className)
+#macro (putDefinitionsAndAssertionsBodies $mainDefinition $propertyDefinitions $propertyAssertions $className)
 	#set($cnt = 0)
 	#foreach($instance in $mainDefinition.getMainRebecDefinition())
 		#set($type = $TypesUtilities.getInstance().getTypeName($instance.getType()))
@@ -26,6 +29,19 @@
 		}
 	#end
 	
+	#foreach($definition in $propertyDefinitions)
+		\#define _ref_$definition.getName() _propDef_$definition.getName()()
+	#end
+	#foreach($assertion in $propertyAssertions)
+		void $className::_propAssert_$assertion.getName() () {
+			if (!($translator.translate($assertion.getExpression(), "")))
+				throw AssertionFailedException("$assertion.getName()");
+		}
+	#end
+	#foreach($definition in $propertyDefinitions)
+		#undef _ref_$definition.getName()
+	#end
+
 	#foreach($instance in $mainDefinition.getMainRebecDefinition())
 		#undef _ref_${instance.getName()}
 	#end

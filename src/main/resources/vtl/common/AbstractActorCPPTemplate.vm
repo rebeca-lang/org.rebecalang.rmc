@@ -70,7 +70,7 @@ AbstractActor::AbstractActor(byte myID, char* myName, int maxQueueLength, int ma
 AbstractActor::~AbstractActor(){
 }
 
-char* AbstractActor::activeAction(){
+char* AbstractActor::activeAction() const {
 	return messageNames[messageQueue[0]];
 }
 
@@ -79,7 +79,7 @@ void AbstractActor::enqueue(byte* queue, byte message){
         queueTail++;
     }
 	if (queue[queueTail]) {
-		throw QueueOverflowException("Queue overflow");
+		throw QueueOverflowException(string("Queue overflow in ") + string(myName), this);
 	}
 	else {
 		queue[queueTail] = message;
@@ -96,19 +96,14 @@ char* AbstractActor::getName() const {
     return myName;
 }
 
-//void AbstractActor::_synchmethod_assertion(/*string message*/byte id, boolean condition) {
-//	if (!condition)
-//		throw AssertionFailedException(/*message*/ "assertion failed");
-//}
-
 void AbstractActor::_synchmethod_assertion(boolean condition) {
 	if (!condition)
-		throw AssertionFailedException("no message");
+		throw AssertionFailedException("no message", this);
 }
 
 void AbstractActor::_synchmethod_assertion(boolean condition, string message) {
 	if (!condition)
-		throw AssertionFailedException(message);
+		throw AssertionFailedException(message, this);
 }
 
 long AbstractActor::execute() {

@@ -251,7 +251,7 @@ long ${reactiveClassName}Actor::execute() {
 
 #foreach ($methodDeclaration in $reactiveClassDeclaration.getSynchMethods())
 
-    $TypesUtilities.getInstance().getTypeName($methodDeclaration.getReturnType()) ${reactiveClassName}Actor::_synchmethod_$methodDeclaration.getName() (
+    $TypesAnalysisUtilities.getInstance().getCPPTypeName($methodDeclaration.getReturnType()) ${reactiveClassName}Actor::_synchmethod_$methodDeclaration.getName() (
     	#putParameters($methodDeclaration.getFormalParameters() false)
     ) {
     	$methodBodyConvertor.convertSynchMethodBody($reactiveClassDeclaration, $methodDeclaration)

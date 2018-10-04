@@ -145,6 +145,14 @@ long TimedModelChecker::executeRebec(int rebecId) {
         	rebecs[r2]->setNow(nextRebecTime);
     }
     OpenBorderNode newState = storeRecentlyCreatedState(result, shift, current.state, current.stateActiveBundleNumber, rebecId);
+    try {
+	#foreach($assertion in $propertyAssertions)
+		_propAssert_$assertion.getName() ();
+	#end
+    } catch (AssertionFailedException &e) {
+    	e.setCausedBy(rebecs[rebecId]);
+    	throw;
+	}
 
     if (nextRebecTime == MAX_TIME) {
     	current = newState;

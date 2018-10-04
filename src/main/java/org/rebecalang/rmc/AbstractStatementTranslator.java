@@ -35,4 +35,12 @@ public abstract class AbstractStatementTranslator {
 		return (innerStatement instanceof Expression) ? ";" : "";
 	}
 
+	public boolean removeAnalysisFeature(AnalysisFeature feature) {
+		return aFeatures.remove(feature);
+	}
+
+	public void addAnalysisFeature(AnalysisFeature feature) {
+		aFeatures.add(feature);
+		
+	}
 }

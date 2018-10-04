@@ -201,6 +201,8 @@ public class TimedRebecaFileGenerator extends CoreRebecaFileGenerator {
 		VelocityContext context = new VelocityContext();
 		context.put("aFeatures", analysisFeaturesNames);
 		context.put("cFeatures", compilerFeaturesNames);
+		if (propertyModel != null)
+			context.put("propertyAssertions", propertyModel.getAssertionDefinitions());
 
 		List<String> patches = new LinkedList<String>();
 		if (aFeatures.contains(AnalysisFeature.TTS))
@@ -220,7 +222,7 @@ public class TimedRebecaFileGenerator extends CoreRebecaFileGenerator {
 				+ File.separatorChar + FilesNames.TIMED_MODEL_CHECKER_OUTPUT_CPP);
 		template.merge(context, fileWriter);
 		fileWriter.close();
-
+		
 	}
 
 	protected void createAbstractCoreRebecaAnalyzer() throws IOException {
@@ -257,10 +259,14 @@ public class TimedRebecaFileGenerator extends CoreRebecaFileGenerator {
 		context.put("TypesUtilities", TypesUtilities.getInstance());
 		context.put("translator", translator);
 		context.put("sizes", sizes);
-		if (propertyModel != null)
+		if (propertyModel != null) {
 			context.put("propertyDefinitions", propertyModel.getDefinitions());
+			context.put("propertyAssertions", propertyModel.getAssertionDefinitions());
+		}
 		
-
+		boolean safeModeIsEnabled = analysisFeaturesNames.remove(AnalysisFeature.SAFE_MODE.name());
+		if(safeModeIsEnabled)
+			translator.TurnOffSafeMode();
 		Template template = velocityEngine
 				.getTemplate(FilesNames.ABSTRACT_TIMED_REBECA_ANALYZER_HEADER_TEMPLATE);
 		FileWriter fileWriter = new FileWriter(destinationLocation.getPath()
@@ -272,6 +278,9 @@ public class TimedRebecaFileGenerator extends CoreRebecaFileGenerator {
 				+ File.separatorChar + FilesNames.ABSTRACT_TIMED_REBECA_ANALYZER_OUTPUT_CPP);
 		template.merge(context, fileWriter);
 		fileWriter.close();
+		
+		if(safeModeIsEnabled)
+			translator.TurnOnSafeMode();
 	}
 
 	protected void createTraceGenerator() throws IOException {

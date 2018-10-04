@@ -44,6 +44,7 @@ import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.UnaryExpress
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.VariableDeclarator;
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.VariableInitializer;
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.WhileStatement;
+import org.rebecalang.compiler.propertycompiler.generalrebeca.objectmodel.AssertionDefinition;
 import org.rebecalang.compiler.propertycompiler.generalrebeca.objectmodel.Definition;
 import org.rebecalang.compiler.propertycompiler.corerebeca.objectmodel.LTLDefinition;
 import org.rebecalang.compiler.propertycompiler.generalrebeca.objectmodel.PropertyModel;
@@ -347,10 +348,14 @@ public class CoreRebecaFileGenerator extends AbstractFileGenerator {
 	protected void createAbstractCoreRebecaAnalyzer() throws IOException {
 
 		List<Definition> definitions;
-		if (propertyModel == null)
+		List<AssertionDefinition> assertions;
+		if (propertyModel == null) {
 			definitions = new LinkedList<Definition>();
-		else
+			assertions = new LinkedList<AssertionDefinition>();
+		} else {
 			definitions = propertyModel.getDefinitions();
+			assertions = propertyModel.getAssertionDefinitions();
+		}
 		VelocityContext context = new VelocityContext();
 		context.put("aFeatures", analysisFeaturesNames);
 		context.put("cFeatures", compilerFeaturesNames);
@@ -384,9 +389,12 @@ public class CoreRebecaFileGenerator extends AbstractFileGenerator {
 		context.put("translator", translator);
 		context.put("sizes", sizes);
 		context.put("propertyDefinitions", definitions);
+		context.put("propertyAssertions", assertions);
 
 
-		boolean isSafeMode = aFeatures.remove(AnalysisFeature.SAFE_MODE);
+		boolean safeModeIsEnabled = analysisFeaturesNames.remove(AnalysisFeature.SAFE_MODE.name());
+		if(safeModeIsEnabled)
+			translator.TurnOffSafeMode();
 		Template template = velocityEngine
 				.getTemplate(FilesNames.ABSTRACT_CORE_REBECA_ANALYZER_HEADER_TEMPLATE);
 		FileWriter fileWriter = new FileWriter(destinationLocation.getPath()
@@ -399,17 +407,22 @@ public class CoreRebecaFileGenerator extends AbstractFileGenerator {
 		template.merge(context, fileWriter);
 		fileWriter.close();
 		
-		if(isSafeMode)
-			aFeatures.add(AnalysisFeature.SAFE_MODE);
+		if(safeModeIsEnabled)
+			translator.TurnOnSafeMode();
 	}	
 
 	protected void createCoreRebecaModelChecker(List<Pair<String, Graph>> propertyGraphs) throws IOException {
 
 		List<Definition> definitions;
-		if (propertyModel == null)
+		List<AssertionDefinition> assertions;
+		if (propertyModel == null) {
 			definitions = new LinkedList<Definition>();
-		else
+			assertions = new LinkedList<AssertionDefinition>();
+		} else {
 			definitions = propertyModel.getDefinitions();
+			assertions = propertyModel.getAssertionDefinitions();
+		}
+
 		createAbstractModelChecker();
 		
 		VelocityContext context = new VelocityContext();
@@ -417,6 +430,7 @@ public class CoreRebecaFileGenerator extends AbstractFileGenerator {
 		context.put("cFeatures", compilerFeaturesNames);
 		context.put("propertyGraph", propertyGraphs);
 		context.put("propertyDefinitions", definitions);
+		context.put("propertyAssertions", assertions);
 		
 		List<String> patches = new LinkedList<String>();
 		patches.add(FilesNames.DFS_PATCH_TEMPLATE);

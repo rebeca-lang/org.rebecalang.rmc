@@ -1,5 +1,6 @@
 package org.rebecalang.rmc;
 
+import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Set;
 
@@ -16,13 +17,17 @@ public class StatementTranslatorContainer {
 	private static Hashtable<Class<? extends Statement>, AbstractStatementTranslator> translatorsRepository = 
 			new Hashtable<Class<? extends Statement>, AbstractStatementTranslator>();
 	static {
-		translatorsRepository.put(Statement.class, new EmptyStatementTranslator(null, null));
+		translatorsRepository.put(Statement.class, getEmptyTranslator());
+	}
+
+	private static EmptyStatementTranslator getEmptyTranslator() {
+		return new EmptyStatementTranslator(new HashSet<CompilerFeature>(), new HashSet<AnalysisFeature>());
 	}
 	
 	public static void clearTranslator() {
 		translatorsRepository = 
 				new Hashtable<Class<? extends Statement>, AbstractStatementTranslator>();
-		translatorsRepository.put(Statement.class, new EmptyStatementTranslator(null, null));
+		translatorsRepository.put(Statement.class, getEmptyTranslator());
 	}
 
 	public static void initialize() {
@@ -78,7 +83,16 @@ public class StatementTranslatorContainer {
 				throws StatementTranslationException {
 			return "";
 		}
-		
+	}
+	
+	public void TurnOnSafeMode() {
+		for(AbstractStatementTranslator translator : translatorsRepository.values())
+			translator.addAnalysisFeature(AnalysisFeature.SAFE_MODE);
+	}
+
+	public void TurnOffSafeMode() {
+		for(AbstractStatementTranslator translator : translatorsRepository.values())
+			translator.removeAnalysisFeature(AnalysisFeature.SAFE_MODE);
 	}
 
 }

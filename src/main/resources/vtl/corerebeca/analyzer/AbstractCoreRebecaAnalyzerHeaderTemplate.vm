@@ -31,13 +31,15 @@ protected:
 	virtual void exportState(State* current, ostream& outStream);
 	virtual void exportTransition(State* source, State* destination, 
 		string sender, string owner, string label, ostream& outStream);
-
+	virtual void exportTransition(string source, string destination, 
+		string sender, string owner, string label, ostream& outStream);
+		
 	State* storeRecentlyCreatedState(byte &result, short int claim, short int fairnessCounter);
 
     virtual void marshalRebecs(long* node);
     virtual void unmarshalRebecs(long* node);
 
-    #putDefinitionSignatures($propertyDefinitions)
+    #putDefinitionsAndAssertionsSignatures($propertyDefinitions $propertyAssertions)
     
 public:
 

@@ -2,6 +2,7 @@ package org.rebecalang.rmc.utils;
 
 import java.util.LinkedList;
 import java.util.List;
+import java.util.ListIterator;
 
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.ArrayType;
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.FieldDeclaration;
@@ -149,16 +150,19 @@ public class TypesAnalysisUtilities {
 	}
 
 	public static String getCPPTypeName(Type type) {
-		boolean isArray = false;
-		if (type instanceof ArrayType) {
-			type = ((ArrayType)type).getPrimitiveType();
-			isArray = true;
-		}
-		String retValue = "";
+		String typeName = "";
+		Type baseType = (type instanceof ArrayType) ? ((ArrayType)type).getPrimitiveType() : type;
 		if (TypesUtilities.getInstance().canTypeUpCastTo(type, TypesUtilities.REACTIVE_CLASS_TYPE))
-			retValue = TypesUtilities.getTypeName(type) + "Actor*";
+			typeName = TypesUtilities.getTypeName(baseType) + "Actor*";
 		else
-			retValue = TypesUtilities.getTypeName(type);
-		return retValue + (isArray? "*" : "");
+			typeName = TypesUtilities.getTypeName(baseType);
+		if (type instanceof ArrayType) {
+			List<Integer> dimentions = ((ArrayType)type).getDimensions();
+			ListIterator<Integer> dimentionsIterator = dimentions.listIterator(dimentions.size());
+			while (dimentionsIterator.hasPrevious()) {
+				typeName = "std::array<" + typeName + ", " + dimentionsIterator.previous() + ">";
+			}
+		}
+		return typeName;
 	}
 }

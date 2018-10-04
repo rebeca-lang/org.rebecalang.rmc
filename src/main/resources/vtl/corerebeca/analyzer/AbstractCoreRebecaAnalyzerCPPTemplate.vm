@@ -1,6 +1,6 @@
 \#include "AbstractCoreRebecaAnalyzer.h"
 
-#putDefinitionBodies($mainDefinition, $propertyDefinitions "AbstractCoreRebecaAnalyzer")
+#putDefinitionsAndAssertionsBodies($mainDefinition $propertyDefinitions $propertyAssertions "AbstractCoreRebecaAnalyzer")
 
 AbstractCoreRebecaAnalyzer::AbstractCoreRebecaAnalyzer(ostream &outStream, int hashmapSize) : analysisOutputStream(outStream){
 	this->hashmapSize = hashmapSize;
@@ -173,7 +173,12 @@ void AbstractCoreRebecaAnalyzer::exportState(State* current, ostream& outStream)
 
 void AbstractCoreRebecaAnalyzer::exportTransition(State* source, State* destination, 
 		string sender, string owner, string label, ostream& outStream) {
-    outStream << "<transition source=\"" << source->stateID << "\" destination=\"" << 
-		destination->stateID << "\"> <messageserver sender=\"" << sender << 
+	exportTransition(to_string(source->stateID), to_string(destination->stateID), sender, owner, label, outStream);  
+}
+
+void AbstractCoreRebecaAnalyzer::exportTransition(string source, string destination, 
+		string sender, string owner, string label, ostream& outStream) {
+    outStream << "<transition source=\"" << source << "\" destination=\"" << 
+		destination << "\"> <messageserver sender=\"" << sender << 
 		"\" owner=\"" << owner << "\" title=\"" << label << "\"/></transition>" << endl;
 }

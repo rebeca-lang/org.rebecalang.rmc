@@ -3,20 +3,17 @@ package org.rebecalang.rmc.corerebeca.translator;
 import java.util.List;
 import java.util.Set;
 
-import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.ArrayType;
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.ArrayVariableInitializer;
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.FieldDeclaration;
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.FormalParameterDeclaration;
-import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.OrdinaryPrimitiveType;
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.OrdinaryVariableInitializer;
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.Statement;
-import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.Type;
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.VariableDeclarator;
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.VariableInitializer;
 import org.rebecalang.compiler.utils.CompilerFeature;
+import org.rebecalang.rmc.AbstractStatementTranslator;
 import org.rebecalang.rmc.AnalysisFeature;
 import org.rebecalang.rmc.StatementTranslationException;
-import org.rebecalang.rmc.AbstractStatementTranslator;
 import org.rebecalang.rmc.StatementTranslatorContainer;
 import org.rebecalang.rmc.utils.TypesAnalysisUtilities;
 
@@ -50,18 +47,8 @@ public class FieldDeclarationStatementTranslator extends AbstractStatementTransl
 	}
 
 	public String resolveFormalParameterDeclarationStatement(FormalParameterDeclaration formalParameterDeclaration) {
-		String retValue = "";
-		String suffix = "";
-		Type type = formalParameterDeclaration.getType();
-		if (type instanceof OrdinaryPrimitiveType) {
-			retValue += TypesAnalysisUtilities.getTypeName(type) + " ";
-		} else {
-			retValue += TypesAnalysisUtilities.getTypeName(((ArrayType)type).getPrimitiveType()) + " ";
-			for (Integer dimension : ((ArrayType)type).getDimensions())
-				suffix += "[" + dimension + "]";
-		}
-		retValue += "_ref_" + formalParameterDeclaration.getName() + suffix;
-		return retValue;
+		return TypesAnalysisUtilities.getCPPTypeName(formalParameterDeclaration.getType()) +
+			   " _ref_" + formalParameterDeclaration.getName();
 	}
 
 	public String resolveVariableInitializer(
@@ -71,11 +58,11 @@ public class FieldDeclarationStatementTranslator extends AbstractStatementTransl
 		if (variableInitializer instanceof OrdinaryVariableInitializer) {
 			retValue = StatementTranslatorContainer.translate(((OrdinaryVariableInitializer) variableInitializer).getValue(), "");
 		} else if (variableInitializer instanceof ArrayVariableInitializer) {
-			retValue = "{";
+			retValue = "{{";
 			List<VariableInitializer> values = ((ArrayVariableInitializer) variableInitializer).getValues();
 			for (VariableInitializer vi : values)
 				retValue += resolveVariableInitializer(vi) + ",";
-			retValue += "}";
+			retValue += "}}";
 		} else {
 			throw new StatementTranslationException("Unknown translation rule for initializer type " 
 					+ variableInitializer.getClass(), variableInitializer.getLineNumber(), variableInitializer.getCharacter());

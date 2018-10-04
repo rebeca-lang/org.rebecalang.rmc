@@ -24,7 +24,7 @@ long CoreRebecaModelChecker::getConsumedMemory() {
 }
 
 void CoreRebecaModelChecker::exportModelCheckingResult(string userSelectedPropertyName, string userSelectedPropertyType,
-	int result, string message) {
+	int result, string message, const AbstractActor* causedBy) {
 
 	AbstractModelChecker::numberOfTransitions = AbstractCoreRebecaAnalyzer::numberOfTransitions;
 	AbstractModelChecker::numberOfStates = AbstractCoreRebecaAnalyzer::numberOfStates;
@@ -33,8 +33,8 @@ void CoreRebecaModelChecker::exportModelCheckingResult(string userSelectedProper
 	exportModelCheckingDetails(userSelectedPropertyName, userSelectedPropertyType, result, message);
 	exportModelCheckingReportExtraDetails();
     out  <<  "<counter-example-trace>"  <<  std::endl;
-	if (result != HEAP_OVERFLOW && result != SATISFIED && result != UNKNOWN_PROPERTY)
-		printCounterExample();
+	if (result != SATISFIED && result != HEAP_OVERFLOW && result != STACK_OVERFLOW && result != UNKNOWN_PROPERTY)
+		printCounterExample(result, causedBy);
     out  <<  "</counter-example-trace>"  <<  std::endl;
 	
 	
@@ -56,29 +56,29 @@ void CoreRebecaModelChecker::doModelChecking(string userSelectedPropertyName, st
 		doDFSModelChecking(userSelectedPropertyName, userSelectedPropertyType);
 		
 	    exportModelCheckingResult(userSelectedPropertyName, userSelectedPropertyType,
-	    	SATISFIED, "");
+	    	SATISFIED, "", null);
 	    	
     } catch (AssertionFailedException &e) {
     	exportModelCheckingResult(userSelectedPropertyName, userSelectedPropertyType,
-	    	ASSERTION_FAILED, e.getMessage());
+	    	ASSERTION_FAILED, e.getMessage(), e.getCausedBy());
     } catch (DeadlockException &e) {
     	exportModelCheckingResult(userSelectedPropertyName, userSelectedPropertyType,
-	    	DEADLOCK, "");
+	    	DEADLOCK, "", e.getCausedBy());
     } catch (QueueOverflowException &e) {
     	exportModelCheckingResult(userSelectedPropertyName, userSelectedPropertyType,
-	    	QUEUE_OVERFLOW, "");
+	    	QUEUE_OVERFLOW, e.getMessage(), e.getCausedBy());
     } catch (StackOverflowException &e) {
     	exportModelCheckingResult(userSelectedPropertyName, userSelectedPropertyType,
-	    	STACK_OVERFLOW, "");
+	    	STACK_OVERFLOW, "", null);
     } catch (CounterExampleException &e) {
     	exportModelCheckingResult(userSelectedPropertyName, userSelectedPropertyType,
-	    	COUNTER_EXAMPLE, "");
+	    	COUNTER_EXAMPLE, "", null);
     } catch (UnknownPropertyException &e) {
     	exportModelCheckingResult(userSelectedPropertyName, userSelectedPropertyType,
-	    	UNKNOWN_PROPERTY, e.getMessage());
+	    	UNKNOWN_PROPERTY, e.getMessage(), null);
     } catch (...) {
     	exportModelCheckingResult(userSelectedPropertyName, userSelectedPropertyType,
-	    	HEAP_OVERFLOW, "");
+	    	HEAP_OVERFLOW, "", null);
     }
 
     #ifdef EXPORT_STATE_SPACE
@@ -89,7 +89,7 @@ void CoreRebecaModelChecker::doModelChecking(string userSelectedPropertyName, st
 }
 
 void CoreRebecaModelChecker::segmentationFault() {
-	exportModelCheckingResult("", "", SEGMENTATION_FAULT, NULL);
+	exportModelCheckingResult("", "", SEGMENTATION_FAULT, NULL, null);
 	#ifdef EXPORT_STATE_SPACE
 	    statespace << "</transitionsystem>" << endl;
 	    statespace.flush();

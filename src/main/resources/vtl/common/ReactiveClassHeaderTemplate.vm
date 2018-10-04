@@ -66,7 +66,7 @@ public:
 	#applyPatch($patches 'AdditionalSignatures' '')
 protected:
     #foreach ($method in $reactiveClassDeclaration.getSynchMethods())
-    	$TypesUtilities.getInstance().getTypeName($method.getReturnType()) _synchmethod_${method.getName()}(
+    	$TypesAnalysisUtilities.getInstance().getCPPTypeName($method.getReturnType()) _synchmethod_${method.getName()}(
             #putParameters($method.getFormalParameters() false)
         );
     #end    

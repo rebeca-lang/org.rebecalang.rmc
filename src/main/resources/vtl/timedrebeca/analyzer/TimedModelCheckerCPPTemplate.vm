@@ -41,7 +41,17 @@ long TimedModelChecker::getConsumedMemory() {
     return totalMem;
 }
 
-void TimedModelChecker::printCounterExample() {
+void TimedModelChecker::printCounterExample(int result, AbstractActor* causedBy) {
+
+	string lastStateRebecName, lastStateAction, lastStateSender;
+	TIME_TYPE lastStateTime;
+	if (causedBy != null) {
+	    lastStateRebecName = causedBy->getName();
+	    lastStateAction = causedBy->activeAction();
+	    lastStateSender = rebecs[causedBy->senderQueue[0]]->getName();
+	    lastStateTime = rebecs[causedBy->senderQueue[0]]->getNow();
+	}
+	
 	list<TimedBFSState*> counterExampleStates;
 	TimedBFSState* cursor = current.state;
 	while(cursor) {
@@ -70,10 +80,25 @@ void TimedModelChecker::printCounterExample() {
 		
 		parent = *it;
 	}
+	if (causedBy != null) {
+	    string terminationStateName = "end";
+		switch(result) {
+			case ASSERTION_FAILED: terminationStateName = "assertion failed"; break; 
+			case DEADLOCK: terminationStateName = "deadlock"; break; 
+			case QUEUE_OVERFLOW: terminationStateName = "queue overflow"; break; 
+			case DEADLINE_MISSED: terminationStateName = "deadline missed"; break; 
+		}
+		list<TimedBFSState*>::iterator last = counterExampleStates.end();
+		last--;
+		string sourceName = to_string((*last)->stateID) + "_0" ;
+		exportTransition(sourceName, terminationStateName, lastStateSender, lastStateRebecName, lastStateAction, lastStateTime, 0, out);
+		out << "<state id=\"" << terminationStateName << "\" atomicpropositions=\"" << terminationStateName << "\"\>" << endl;
+	}
+	
 }
 
 void TimedModelChecker::exportModelCheckingResult(string userSelectedPropertyName, string userSelectedPropertyType,
-	int result, string message) {
+	int result, string message, AbstractActor* causedBy) {
 
     AbstractModelChecker::numberOfStates = AbstractTimedRebecaAnalyzer::numberOfStates;
     AbstractModelChecker::numberOfTransitions = AbstractTimedRebecaAnalyzer::numberOfTransitions;
@@ -84,7 +109,7 @@ void TimedModelChecker::exportModelCheckingResult(string userSelectedPropertyNam
 	exportModelCheckingReportExtraDetails();
     out  <<  "<counter-example-trace>"  <<  std::endl;
 	if (result != HEAP_OVERFLOW && result != SATISFIED)
-		printCounterExample();
+		printCounterExample(result, causedBy);
     out  <<  "</counter-example-trace>"  <<  std::endl;
     out  <<  "</model-checking-report>"  <<  std::endl;
 }
@@ -103,29 +128,29 @@ void TimedModelChecker::doModelChecking(string userSelectedPropertyName, string 
 
 		doTimedModelChecking(userSelectedPropertyName, userSelectedPropertyType);
 	    exportModelCheckingResult(userSelectedPropertyName, userSelectedPropertyType,
-	    	SATISFIED, "");
+	    	SATISFIED, "", null);
 	    	
     } catch (AssertionFailedException &e) {
     	exportModelCheckingResult(userSelectedPropertyName, userSelectedPropertyType,
-	    	ASSERTION_FAILED, e.getMessage());
+	    	ASSERTION_FAILED, e.getMessage(), e.getCausedBy());
     } catch (DeadlockException &e) {
     	exportModelCheckingResult(userSelectedPropertyName, userSelectedPropertyType,
-	    	DEADLOCK, "");
+	    	DEADLOCK, "", e.getCausedBy());
     } catch (QueueOverflowException &e) {
     	exportModelCheckingResult(userSelectedPropertyName, userSelectedPropertyType,
-	    	QUEUE_OVERFLOW, "");
+	    	QUEUE_OVERFLOW, "", e.getCausedBy());
     } catch (CounterExampleException &e) {
     	exportModelCheckingResult(userSelectedPropertyName, userSelectedPropertyType,
-	    	COUNTER_EXAMPLE, "");
+	    	COUNTER_EXAMPLE, "", null);
     } catch (UnknownPropertyException &e) {
     	exportModelCheckingResult(userSelectedPropertyName, userSelectedPropertyType,
-	    	UNKNOWN_PROPERTY, e.getMessage());
+	    	UNKNOWN_PROPERTY, e.getMessage(), null);
     } catch (DeadlineMissedException &e) {
     	exportModelCheckingResult(userSelectedPropertyName, userSelectedPropertyType,
-	    	DEADLINE_MISSED, "");
+	    	DEADLINE_MISSED, "", e.getCausedBy());
     } catch (...) {
     	exportModelCheckingResult(userSelectedPropertyName, userSelectedPropertyType,
-	    	HEAP_OVERFLOW, "");
+	    	HEAP_OVERFLOW, "", null);
     }
 
     #ifdef EXPORT_STATE_SPACE
@@ -136,7 +161,7 @@ void TimedModelChecker::doModelChecking(string userSelectedPropertyName, string 
 }
 
 void TimedModelChecker::segmentationFault() {
-	exportModelCheckingResult("", "", SEGMENTATION_FAULT, NULL);
+	exportModelCheckingResult("", "", SEGMENTATION_FAULT, NULL, null);
 	#ifdef EXPORT_STATE_SPACE
 	    statespace << "</transitionsystem>" << endl;
 	    statespace.flush();

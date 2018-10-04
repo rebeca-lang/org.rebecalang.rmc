@@ -374,7 +374,7 @@ void CoreRebecaModelChecker::doDFSModelChecking(string userSelectedPropertyName,
     #end
  	nonDetTrans = 0;	// when backtracking, it may be -1
  	if (deadlock /*&& fairnessCounter > REBEC_COUNT*/){
-    	throw DeadlockException("Deadlock occurs.");
+    	throw DeadlockException("Deadlock occured.", rebecs[r]);
  	}
  	if (depth <= 0) {
  		// Search complete
@@ -397,6 +397,14 @@ void CoreRebecaModelChecker::doDFSModelChecking(string userSelectedPropertyName,
 	
  		State *newState;
  		newState = storeRecentlyCreatedState (result, *it, fairnessCounter);
+	    try {
+		#foreach($assertion in $propertyAssertions)
+			_propAssert_$assertion.getName() ();
+		#end
+	    } catch (AssertionFailedException &e) {
+	    	e.setCausedBy(rebecs[r]);
+	    	throw;
+		}
 
 
  		if (result & NEW_STATE) {	// bitwise AND
@@ -486,7 +494,7 @@ void CoreRebecaModelChecker::doDFSModelChecking(string userSelectedPropertyName,
  	goto Back2System;
 }
 
-void CoreRebecaModelChecker::printCounterExample() {
+void CoreRebecaModelChecker::printCounterExample(int result, const AbstractActor* causedBy) {
     int loopID = -1;
     int counter = 0;
 
@@ -510,6 +518,20 @@ void CoreRebecaModelChecker::printCounterExample() {
 		exportState(stack[cnt].state, out);
 		rebecId = stack[cnt].rebec;
         parent = cnt;
+	}
+	
+	if (causedBy != null) {
+	    string rebecName = causedBy->getName();
+	    string action = causedBy->activeAction();
+	    string sender = rebecs[causedBy->senderQueue[0]]->getName();
+	    string terminationStateName = "end";
+		switch(result) {
+			case ASSERTION_FAILED: terminationStateName = "assertion failed"; break; 
+			case DEADLOCK: terminationStateName = "deadlock"; break; 
+			case QUEUE_OVERFLOW: terminationStateName = "queue overflow"; break; 
+		}
+		exportTransition(to_string(stack[parent].state->stateID), terminationStateName, sender, rebecName, action, out);
+		out << "<state id=\"" << terminationStateName << "\" atomicpropositions=\"" << terminationStateName << "\"\>" << endl;
 	}
 }
 

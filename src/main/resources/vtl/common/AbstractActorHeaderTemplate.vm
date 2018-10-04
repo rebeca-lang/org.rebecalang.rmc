@@ -7,6 +7,7 @@
 \#include "Config.h"
 \#include <iostream>
 \#include <vector>
+\#include <array>
 using namespace std;
 
 string to_string(int number);
@@ -47,7 +48,7 @@ public:
     virtual void unmarshalActorFromArray(byte* array) = 0;
 
     char* getName() const;
-    char* activeAction();					// the action at queue head
+    char* activeAction() const;					// the action at queue head
 
     byte myID;
     char* myName;

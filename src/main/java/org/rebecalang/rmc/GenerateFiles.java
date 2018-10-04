@@ -54,8 +54,8 @@ public class GenerateFiles {
 				fileGenerator = new ProbabilisticTimedRebecaFileGenerator();
 			} else if (compilerFeatures.contains(CompilerFeature.TIMED_REBECA)) {
 				if (propertyFile != null) {
-					org.rebecalang.compiler.propertycompiler.timedrebeca.PropertyCompiler propertyCompiler = 
-							new org.rebecalang.compiler.propertycompiler.timedrebeca.PropertyCompiler();
+					org.rebecalang.compiler.propertycompiler.timedrebeca.TimedRebecaPropertyCompiler propertyCompiler = 
+							new org.rebecalang.compiler.propertycompiler.timedrebeca.TimedRebecaPropertyCompiler();
 					propertyModel = propertyCompiler.compilePropertyModel(
 							rebecaModel, compilationResult.getSecond(), propertyFile, compilerFeatures);
 					container.addAll(propertyCompiler.getExceptionContainer());
@@ -68,8 +68,8 @@ public class GenerateFiles {
 				return;
 			} else {
 				if (propertyFile != null) {
-					org.rebecalang.compiler.propertycompiler.corerebeca.PropertyCompiler propertyCompiler = 
-							new org.rebecalang.compiler.propertycompiler.corerebeca.PropertyCompiler();
+					org.rebecalang.compiler.propertycompiler.corerebeca.CoreRebecaPropertyCompiler propertyCompiler = 
+							new org.rebecalang.compiler.propertycompiler.corerebeca.CoreRebecaPropertyCompiler();
 					propertyModel = propertyCompiler.compilePropertyModel(
 							rebecaModel, compilationResult.getSecond(), propertyFile, compilerFeatures);
 					container.addAll(propertyCompiler.getExceptionContainer());

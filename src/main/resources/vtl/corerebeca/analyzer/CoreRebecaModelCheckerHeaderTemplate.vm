@@ -16,7 +16,7 @@ protected:
 	using AbstractCoreRebecaAnalyzer::exportTransition;
 	
     virtual long getConsumedMemory();
-    virtual void printCounterExample();
+    virtual void printCounterExample(int result, const AbstractActor* causedBy);
 
     virtual void printModelCheckingOptions();
 
@@ -31,7 +31,7 @@ public:
 		, int hashmapSize);
 	virtual void doModelChecking(string userSelectedPropertyName, string userSelectedPropertyType);
 	virtual void exportModelCheckingResult(string userSelectedPropertyName, 
-		string userSelectedPropertyType, int result, string message);
+		string userSelectedPropertyType, int result, string message, const AbstractActor* causedBy);
 
 	#applyPatch($patches 'AdditionalSignatures' false)
 		

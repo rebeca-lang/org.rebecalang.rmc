@@ -1,6 +1,6 @@
 \#include "AbstractTimedRebecaAnalyzer.h"
 
-#putDefinitionBodies($mainDefinition, $propertyDefinitions "AbstractTimedRebecaAnalyzer")
+#putDefinitionsAndAssertionsBodies($mainDefinition $propertyDefinitions $propertyAssertions "AbstractTimedRebecaAnalyzer")
 
 bool operator > (const OpenBorderNode& node1, const OpenBorderNode& node2) {
     return node1.currentTime > node2.currentTime;
@@ -218,12 +218,18 @@ void AbstractTimedRebecaAnalyzer::exportState(OpenBorderNode &current, ostream& 
 	outStream << "</state>" << endl;
 }
 
-void AbstractTimedRebecaAnalyzer::exportTransition(OpenBorderNode &source, OpenBorderNode &destination, 
+void AbstractTimedRebecaAnalyzer::exportTransition(string source, string destination, 
 		string sender, string owner, string label, TIME_TYPE executionTime, TIME_TYPE shift, ostream& outStream) {
-    outStream << "<transition source=\"" << source.state->stateID << "_" << 
-		(int)source.stateActiveBundleNumber << "\" destination=\"" << 
-		destination.state->stateID << "_" << (int)destination.stateActiveBundleNumber <<
-    	"\" executionTime=\"" << (int)executionTime << "\" shift=\"" << (int) shift << 
+    outStream << "<transition source=\"" << source << "\" destination=\"" << 
+		destination << "\" executionTime=\"" << (int)executionTime << "\" shift=\"" << (int) shift << 
     	"\"> <messageserver sender=\"" << sender << "\" owner=\"" << 
     	owner << "\" title=\"" << label << "\"/></transition>" << endl;
 }
+
+
+void AbstractTimedRebecaAnalyzer::exportTransition(OpenBorderNode &source, OpenBorderNode &destination, 
+		string sender, string owner, string label, TIME_TYPE executionTime, TIME_TYPE shift, ostream& outStream) {
+		exportTransition(to_string(source.state->stateID) + "_" + to_string((long)source.stateActiveBundleNumber), 
+		to_string(destination.state->stateID) + "_" + to_string((long)destination.stateActiveBundleNumber), 
+		sender, owner, label, executionTime, shift, outStream);
+		}
