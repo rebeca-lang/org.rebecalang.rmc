@@ -531,7 +531,7 @@ void CoreRebecaModelChecker::printCounterExample(int result, const AbstractActor
 			case QUEUE_OVERFLOW: terminationStateName = "queue overflow"; break; 
 		}
 		exportTransition(to_string(stack[parent].state->stateID), terminationStateName, sender, rebecName, action, out);
-		out << "<state id=\"" << terminationStateName << "\" atomicpropositions=\"" << terminationStateName << "\"/>" << endl;
+		out << "<state id=\"" << terminationStateName << "\" atomicpropositions=\"" << terminationStateName << "\"></state>" << endl;
 	}
 }
 

@@ -92,7 +92,7 @@ void TimedModelChecker::printCounterExample(int result, AbstractActor* causedBy)
 		last--;
 		string sourceName = to_string((*last)->stateID) + "_0" ;
 		exportTransition(sourceName, terminationStateName, lastStateSender, lastStateRebecName, lastStateAction, lastStateTime, 0, out);
-		out << "<state id=\"" << terminationStateName << "\" atomicpropositions=\"" << terminationStateName << "\"/>" << endl;
+		out << "<state id=\"" << terminationStateName << "\" atomicpropositions=\"" << terminationStateName << "\"></state>" << endl;
 	}
 	
 }
