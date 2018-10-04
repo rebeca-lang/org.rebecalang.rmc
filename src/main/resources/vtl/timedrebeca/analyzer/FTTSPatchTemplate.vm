@@ -91,7 +91,7 @@ void TimedModelChecker::doTimedModelChecking(string userSelectedPropertyName, st
 	            do {
 					changeOrder(r, alternativesCounter);
 				    if (rebecs[r]->deadline[0] < currentTime) {
-				        throw DeadlineMissedException("Deadline missed.");
+				        throw DeadlineMissedException("Deadline missed.", rebecs[r]);
 				    }
 	            	nonDetTrans = executeRebec(r);
 					unmarshalRebecs(current.state->rebsIndex, current.state->shiftTimes[current.stateActiveBundleNumber].shift);

@@ -149,7 +149,7 @@ void TimedModelChecker::doTimedModelChecking(string userSelectedPropertyName, st
 					changeOrder(r, alternativesCounter);
 					if (rebecs[r]->__pc == -1) {
 					    if (rebecs[r]->deadline[0] < currentTime) {
-					        throw DeadlineMissedException("Deadline missed");
+					        throw DeadlineMissedException("Deadline missed", rebecs[r]);
 					    }
 					}
 					nonDetTrans = executeRebec(r);
