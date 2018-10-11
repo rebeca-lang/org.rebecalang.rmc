@@ -11,7 +11,6 @@ import java.util.Set;
 
 import org.apache.velocity.Template;
 import org.apache.velocity.VelocityContext;
-import org.apache.velocity.app.Velocity;
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.BinaryExpression;
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.Expression;
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.Literal;
@@ -137,6 +136,7 @@ public class TimedRebecaFileGenerator extends CoreRebecaFileGenerator {
 		List<TCTLDefinition> tctlDefinitions =
 		((org.rebecalang.compiler.propertycompiler.timedrebeca.objectmodel.PropertyModel) propertyModel).getTCTLDefinitions();
 		for (TCTLDefinition tctlDefinition : tctlDefinitions) {
+			fileWriter.write(tctlDefinition.getName() + ":" + AbstractStatementTranslator.NEW_LINE);
 			createDecomposedProperty(tctlDefinition.getExpression(), fileWriter);
 		}
 		fileWriter.close();
