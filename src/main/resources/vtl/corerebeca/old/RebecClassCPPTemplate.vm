@@ -234,7 +234,7 @@ void $reactiveClassName::exportStateVariablesInXML(ostream &out, string tab) {
 	        #set($name = $variableDec.getVariableName())
 	        #set($refName = "_ref_" + $name)
 	        #set($type = $fieldDec.getType())
-	    	out << tab << '\t' << "<variable name=\"$name\" type=\"$TypesUtilities.getTypeName($type)\">" <<  
+	    	out << tab << '\t' << "<variable name=\"$name\" type=\"$TypesUtilities.getInstance().getTypeName($type)\">" <<  
 	    		$TypesAnalysisUtilities.getVaribleValue($refName, $type) << "</variable>" << endl;
 		#end
 	#end

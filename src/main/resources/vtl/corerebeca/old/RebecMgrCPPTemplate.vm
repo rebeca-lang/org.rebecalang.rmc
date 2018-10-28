@@ -63,7 +63,7 @@ void initialize(long* rebs) {
 
     #set($counter = 0);
     #foreach($instance in $mainDefinition.getMainRebecDefinition())
-    	#set($type = $TypesUtilities.getTypeName($instance.getType()))
+    	#set($type = $TypesUtilities.getInstance().getTypeName($instance.getType()))
     	$type* _ref_${instance.getName()} = new  ${type}(maxRebecID++, "${instance.getName()}", INITIAL_SENDER);
         rebecs[$counter] = _ref_${instance.getName()};
         #set($counter = $counter + 1)
@@ -80,9 +80,9 @@ void initialize(long* rebs) {
 		#if ($features.contains("CORE_2_0"))
 			#set($initialMsgName = "_msg_initial")
 		#else
-			#set($initialMsgName = "constructor" + $TypesUtilities.getTypeName($instance.getType()))
+			#set($initialMsgName = "constructor" + $TypesUtilities.getInstance().getTypeName($instance.getType()))
 		#end
-		(($TypesUtilities.getTypeName($instance.getType())*)_ref_${instance.getName()})->$initialMsgName(INITIAL_SENDER
+		(($TypesUtilities.getInstance().getTypeName($instance.getType())*)_ref_${instance.getName()})->$initialMsgName(INITIAL_SENDER
 	        #foreach($argumentExpression in $instance.getArguments())
 	        , expressionTranslator.translate($argumentExpression)
 	        #end
