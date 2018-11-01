@@ -63,7 +63,7 @@ void CoreRebecaModelChecker::doModelChecking(string userSelectedPropertyName, st
 	    	ASSERTION_FAILED, e.getMessage(), e.getCausedBy());
     } catch (DeadlockException &e) {
     	exportModelCheckingResult(userSelectedPropertyName, userSelectedPropertyType,
-	    	DEADLOCK, "", e.getCausedBy());
+	    	DEADLOCK, "", null);
     } catch (QueueOverflowException &e) {
     	exportModelCheckingResult(userSelectedPropertyName, userSelectedPropertyType,
 	    	QUEUE_OVERFLOW, e.getMessage(), e.getCausedBy());

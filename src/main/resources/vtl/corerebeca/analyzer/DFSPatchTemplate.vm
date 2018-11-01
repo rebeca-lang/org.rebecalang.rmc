@@ -330,6 +330,7 @@ void CoreRebecaModelChecker::doDFSModelChecking(string userSelectedPropertyName,
 			    updatePermutation(stack[depth].perm); // new! for non-det
             #endif
             #end
+	 		goto systemTurn;	// continue with current DFS
  		} else {
             #if ($aFeatures.contains("REDUCTION"))
  			#ifdef PO
