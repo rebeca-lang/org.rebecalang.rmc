@@ -163,6 +163,7 @@ void AbstractCoreRebecaAnalyzer::instantiationPart() {
 }
 
 void AbstractCoreRebecaAnalyzer::exportState(State* current, ostream& outStream) {
+	//<< ":" << current->claim 
 	outStream << "<state id=\"" << current->stateID << "\" "; 
 	#putAtomicPropositions($propertyDefinitions)
 	outStream << ">" << endl;
