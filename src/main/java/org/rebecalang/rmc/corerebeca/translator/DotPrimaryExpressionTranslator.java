@@ -38,7 +38,7 @@ public class DotPrimaryExpressionTranslator extends AbstractStatementTranslator 
 		retValue = StatementTranslatorContainer.translate(dotPrimary.getLeft(), tab);
 		Type baseType = dotPrimary.getLeft().getType();
 		if (baseType instanceof ArrayType) {
-			baseType = ((ArrayType)baseType).getPrimitiveType();
+			baseType = ((ArrayType)baseType).getOrdinaryPrimitiveType();
 		}
 		if (TypesUtilities.getInstance().canTypeCastTo(
 				baseType, TypesUtilities.REACTIVE_CLASS_TYPE)) {

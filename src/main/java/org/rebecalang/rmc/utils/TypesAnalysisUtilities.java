@@ -27,7 +27,7 @@ public class TypesAnalysisUtilities {
 		if (type instanceof ArrayType) {
 			for (Integer dimention : ((ArrayType) type).getDimensions())
 				size *= dimention;
-			type = ((ArrayType) type).getPrimitiveType();
+			type = ((ArrayType) type).getOrdinaryPrimitiveType();
 		}
 		if (type == TypesUtilities.BOOLEAN_TYPE)
 			size *= 1;
@@ -54,7 +54,7 @@ public class TypesAnalysisUtilities {
 		if (type instanceof ArrayType) {
 			for (Integer dimention : ((ArrayType) type).getDimensions())
 				size *= dimention;
-			type = ((ArrayType) type).getPrimitiveType();
+			type = ((ArrayType) type).getOrdinaryPrimitiveType();
 		}
 		String label = "(" + size + " * ";
 		if (type == TypesUtilities.BOOLEAN_TYPE)
@@ -111,10 +111,10 @@ public class TypesAnalysisUtilities {
 			int dimention = aType.getDimensions().get(0);
 			Type newType = null;
 			if (aType.getDimensions().size() == 1) {
-				newType = aType.getPrimitiveType();
+				newType = aType.getOrdinaryPrimitiveType();
 			} else {
 				newType = new ArrayType();
-				((ArrayType)newType).setPrimitiveType(aType.getPrimitiveType());
+				((ArrayType)newType).setOrdinaryPrimitiveType(aType.getOrdinaryPrimitiveType());
 				for (int cnt = 1; cnt < aType.getDimensions().size(); cnt++)
 					((ArrayType)newType).getDimensions().add(aType.getDimensions().get(cnt));
 			}
@@ -139,7 +139,7 @@ public class TypesAnalysisUtilities {
 	
 	public static Type getBaseType(Type inputType) {
 		if (inputType instanceof ArrayType)
-			return ((ArrayType) inputType).getPrimitiveType();
+			return ((ArrayType) inputType).getOrdinaryPrimitiveType();
 		return inputType;
 	}
 
@@ -151,7 +151,7 @@ public class TypesAnalysisUtilities {
 
 	public static String getCPPTypeName(Type type) {
 		String typeName = "";
-		Type baseType = (type instanceof ArrayType) ? ((ArrayType)type).getPrimitiveType() : type;
+		Type baseType = (type instanceof ArrayType) ? ((ArrayType)type).getOrdinaryPrimitiveType() : type;
 		if (TypesUtilities.getInstance().canTypeUpCastTo(type, TypesUtilities.REACTIVE_CLASS_TYPE))
 			typeName = TypesUtilities.getTypeName(baseType) + "Actor*";
 		else
