@@ -4,6 +4,7 @@ import junit.framework.TestCase;
 
 import org.rebecalang.rmc.RMC;
 
+import ru.ifmo.ltl.LtlParseException;
 
 public class CoreRebecaTestCase extends TestCase {
 	
@@ -33,7 +34,7 @@ public class CoreRebecaTestCase extends TestCase {
 		}
 	}
 	
-	public static void main(String[] args){
+	public static void main(String[] args) throws LtlParseException {
 
 //        PredicateFactory predicates = new PredicateFactory();
 //        

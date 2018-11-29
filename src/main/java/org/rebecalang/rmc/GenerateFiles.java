@@ -51,7 +51,7 @@ public class GenerateFiles {
 			RebecaModel rebecaModel = compilationResult.getFirst();
 			AbstractFileGenerator fileGenerator = null;
 			if (compilerFeatures.contains(CompilerFeature.PROBABILISTIC_REBECA) && compilerFeatures.contains(CompilerFeature.TIMED_REBECA)) {
-			fileGenerator = new ProbabilisticTimedRebecaFileGenerator();
+				fileGenerator = new ProbabilisticTimedRebecaFileGenerator();
 			} else if (compilerFeatures.contains(CompilerFeature.TIMED_REBECA)) {
 				if (propertyFile != null) {
 					org.rebecalang.compiler.propertycompiler.timedrebeca.TimedRebecaPropertyCompiler propertyCompiler = 
