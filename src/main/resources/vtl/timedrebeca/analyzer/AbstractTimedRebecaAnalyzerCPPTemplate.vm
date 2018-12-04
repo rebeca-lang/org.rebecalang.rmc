@@ -158,10 +158,12 @@ void AbstractTimedRebecaAnalyzer::instantiationPart() {
     	#set($type = $TypesUtilities.getInstance().getTypeName($instance.getType()))
     	#set($maxQueueLength = $sizes.get($type).first)
     	#set($maxParamLength = $sizes.get($type).second)
+    	#set($typeBasedStateSize = "$${type}StateSize")
     	${type}Actor* _ref_${instance.getName()} = new ${type}Actor(maxRebecID++, "${instance.getName()}", $maxQueueLength, $maxParamLength, *referenceToRebecs 
     											#ifdef DEBUG_LEVEL_2 
     											, analysisOutputStream 
     											#endif
+    											, #evaluate($typeBasedStateSize)
     											, hashmapSize
     											);
         rebecs.push_back(_ref_${instance.getName()});

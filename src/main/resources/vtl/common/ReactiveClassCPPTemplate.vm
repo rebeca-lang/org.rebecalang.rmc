@@ -5,6 +5,12 @@
 \#include <stdio.h>
 \#include <string.h>
 
+#foreach($tempReactiveClassDeclaration in $reactiveClassDeclarations)
+#if ($tempReactiveClassDeclaration.getName() != $reactiveClassName)
+\#include "${tempReactiveClassDeclaration.getName()}Actor.h"
+#end
+#end
+
 // location counters (values stored in messageQueue[0])
 /* There can be more than one location counter for each msgsrv when we
    want to have non-atomic message servers.
@@ -123,7 +129,20 @@ void ${reactiveClassName}Actor::exportAMessageInXML(ostream &out, string tab, in
 char* ${reactiveClassName}Actor::getClassName() {
     return (char*)"${reactiveClassName}";
 }
+void ${reactiveClassName}Actor::marshalVariablesToArray(byte * array){
+	int marshalIndex = 0;
+    #putListToArray ("array" "marshalIndex" $TypesAnalysisUtilities.convertToFormalParameterDeclaration($reactiveClassDeclaration.getStatevars()) "_ref_")
+    
+	#if ($parentName)
+		${parentName}::marshalVariablesToArray( & array[marshalIndex]);
 
+	#end
+	
+	 #ifdef NO_ATOMIC_EXECUTION
+    	memcpy(&array [marshalIndex], &__pc, 4);
+    	//array[marshalIndex++] = __pc;
+    #endif
+}
 void ${reactiveClassName}Actor::marshalActorToArray(byte* array) {
     int i,j, marshalIndex = 0;
 
@@ -156,12 +175,9 @@ void ${reactiveClassName}Actor::marshalActorToArray(byte* array) {
         }
     }
 
-    #putListToArray ("array" "marshalIndex" $TypesAnalysisUtilities.convertToFormalParameterDeclaration($reactiveClassDeclaration.getStatevars()) "_ref_")
+		marshalVariablesToArray( & array[marshalIndex]);
 
-    #ifdef NO_ATOMIC_EXECUTION
-    	memcpy(&array [marshalIndex], &__pc, 4);
-    	//array[marshalIndex++] = __pc;
-    #endif
+   
 
 }
 
@@ -221,10 +237,9 @@ void ${reactiveClassName}Actor::printStateContent(long stateNo) {
 		   -1 : no enabled action (empty queue)
 		   -2 : Local hash table is full - immediate termination of search
  */
-long ${reactiveClassName}Actor::execute() {
-	#foreach ($baseClass in $baseClasses)
-		$baseClass::execute();
-	#end
+long ${reactiveClassName}Actor::methodSelectorAndExecutor() {
+
+	
     switch (messageQueue[0]) {
 
         #foreach ($methodDeclaration in $reactiveClassDeclaration.getMsgsrvs())
@@ -238,8 +253,13 @@ long ${reactiveClassName}Actor::execute() {
                 }
         #end
     }
-    return -1;   // if queue empty, we have no transitions
+    #if($parentName)
+    return ${parentName}::execute();   // if queue empty, we have no transitions
+	#else 
+	return -1;
+	#end
 }
+
 
 #foreach ($methodDeclaration in $reactiveClassDeclaration.getConstructors())
     long ${reactiveClassName}Actor::constructor$reactiveClassName (byte creatorId 

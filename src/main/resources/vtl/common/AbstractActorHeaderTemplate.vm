@@ -37,7 +37,8 @@ public:
     virtual ~AbstractActor();
 
     virtual long execute ();
-	
+	virtual void preMessageExecutionInitialization();
+	virtual long methodSelectorAndExecutor() = 0;
 	virtual void exportStateInXML(ostream &out, string tab);
 	virtual void exportQueueContentInXML(ostream &out, string tab);
 	virtual void exportStateVariablesInXML(ostream &out, string tab) = 0;

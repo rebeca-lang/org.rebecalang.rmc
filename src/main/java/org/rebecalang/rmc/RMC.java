@@ -305,6 +305,9 @@ public class RMC {
 					coreVersion = CompilerFeature.CORE_2_0;
 				else if (version.equals("2.1"))
 					coreVersion = CompilerFeature.CORE_2_1;
+				else if (version.equals("2.3"))
+					coreVersion = CompilerFeature.CORE_2_3;
+				
 				else {
 					throw new ParseException("Unrecognized Rebeca version: " + version);
 				}

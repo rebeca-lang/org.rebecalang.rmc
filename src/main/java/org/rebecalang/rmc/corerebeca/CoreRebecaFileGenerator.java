@@ -83,14 +83,14 @@ import org.rebecalang.rmc.utils.TypeAnalysisException;
 import org.rebecalang.rmc.utils.TypesAnalysisUtilities;
 
 public class CoreRebecaFileGenerator extends AbstractFileGenerator {
-	
+
 	protected StatementTranslatorContainer translator = new StatementTranslatorContainer();
 	protected MethodBodyConvertor methodBodyConvertor;
 	protected Set<String> helperHeaders;
 	protected String fileNameOfStateSpaceInXML;
-	
+
 	private final static Logger logger = Logger.getLogger(CoreRebecaFileGenerator.class);
-	
+
 	public void prepare(RebecaModel rebecaModel, PropertyModel propertyModel,
 			Set<CompilerFeature> cFeatures,
 			Set<AnalysisFeature> aFeatures,
@@ -126,7 +126,7 @@ public class CoreRebecaFileGenerator extends AbstractFileGenerator {
 					fpd.setType(initialFPD.getType());
 					constructorDeclaration.getFormalParameters().add(fpd);
 				}
-				
+
 				TermPrimary initialMessageSend = new TermPrimary();
 				initialMessageSend.setName("initial");
 				initialMessageSend.setType(TypesUtilities.MSGSRV_TYPE);
@@ -139,25 +139,25 @@ public class CoreRebecaFileGenerator extends AbstractFileGenerator {
 					psp.getArguments().add(param);		
 				}
 				initialMessageSend.setParentSuffixPrimary(psp);
-				
+
 				TermPrimary self = new TermPrimary();
 				self.setType(TypesUtilities.getInstance().getType(rcd.getName()));
 				self.setName("self");
-				
+
 				DotPrimary sendStatement = new DotPrimary();
 				sendStatement.setLeft(self);
 				sendStatement.setRight(initialMessageSend);
-				
+
 				BlockStatement constructorStatements = new BlockStatement();
 				constructorStatements.getStatements().add(sendStatement);
-				
+
 				constructorDeclaration.setBlock(constructorStatements);
-				
+
 				rcd.getConstructors().add(constructorDeclaration);
 
 			}
 		}
-		
+
 		StatementTranslatorContainer.clearTranslator();
 		StatementTranslatorContainer.registerTranslator(InstanceofExpression.class, new InstanceofExpressionTranslator(cFeatures, aFeatures));
 		StatementTranslatorContainer.registerTranslator(BinaryExpression.class, new BinaryExpressionTranslator(cFeatures, aFeatures));
@@ -182,7 +182,7 @@ public class CoreRebecaFileGenerator extends AbstractFileGenerator {
 
 	public void generateFiles() {
 		try {
-			
+
 			createMain(FilesNames.MAIN_PATCH_TEMPLATE);
 
 			createTypeAndConfig(FilesNames.CONFIG_PATCH_TEMPLATE);
@@ -195,12 +195,12 @@ public class CoreRebecaFileGenerator extends AbstractFileGenerator {
 			patches.add(FilesNames.STORABLE_REACTIVE_CLASS_PATCH_TEMPLATE);
 			createActors(patches);
 
-//			createBFSHashmapTemplate();
-//			createCoreRebecaBFSHashmap();
-			
+			//			createBFSHashmapTemplate();
+			//			createCoreRebecaBFSHashmap();
+
 			createCoreRebecaDFSHashmap();
-			
-			
+
+
 			List<Pair<String, Graph>> graphs = new LinkedList<Pair<String, Graph>>();
 			LTLPropertyHandler propertyHandler = new LTLPropertyHandler();
 			if (propertyModel != null) {
@@ -208,39 +208,39 @@ public class CoreRebecaFileGenerator extends AbstractFileGenerator {
 					UnaryExpression theNegationOfFormula = new UnaryExpression();
 					theNegationOfFormula.setOperator("!");
 					theNegationOfFormula.setExpression(ltlDefinition.getExpression());
-					
+
 					graphs.add(new Pair<String, Graph>(ltlDefinition.getName(), 
 							propertyHandler.ltl2BA(theNegationOfFormula)));
 					logger.debug("\n" + graphs.get(graphs.size() - 1).getFirst() + ": " +
 							LTLPropertyHandler.exportGraph(graphs.get(graphs.size() - 1).getSecond()));
-					
+
 				}
 			}
 
 			createAbstractCoreRebecaAnalyzer();
 			createCoreRebecaModelChecker(graphs);
 
-//
-//			createAcAut(null);
-//
-//			createPropDefinitions();
-//			
-//			createRBFSMC();
-//
-//			createCTLStaticFiles();
+			//
+			//			createAcAut(null);
+			//
+			//			createPropDefinitions();
+			//			
+			//			createRBFSMC();
+			//
+			//			createCTLStaticFiles();
 		} catch (IOException e) {
 			container.addException(e);
 		}
 	}
 
-	
+
 	protected void createAbstractActor(List<String> patches) throws IOException {
 
 		VelocityContext context = new VelocityContext();
 		context.put("aFeatures", analysisFeaturesNames);
 		context.put("cFeatures", compilerFeaturesNames);
 		context.put("patches", patches);
-		
+
 		// Finding max number of known rebecs.
 		int maxKnownRebec = 0;
 		// Finding max number of reactive class methods.
@@ -252,7 +252,7 @@ public class CoreRebecaFileGenerator extends AbstractFileGenerator {
 			int numberOfKnownRebecs = 0;
 			for (FieldDeclaration knownRebec : knownRebecs)
 				numberOfKnownRebecs += TypesUtilities
-						.getNumberOfVariablesInFieldDeclaration(knownRebec);
+				.getNumberOfVariablesInFieldDeclaration(knownRebec);
 			maxKnownRebec = Math.max(numberOfKnownRebecs, maxKnownRebec);
 
 			List<MsgsrvDeclaration> msgsrvDeclaration = reactiveClassDeclaration
@@ -369,7 +369,7 @@ public class CoreRebecaFileGenerator extends AbstractFileGenerator {
 			reactiveClassTypeOrder.put(name,
 					order++);
 			sizes.put(name, new Pair<Integer, Integer>
-				(reactiveClassDeclaration.getQueueSize(), getMaximumParametersSize(reactiveClassDeclaration)));
+			(reactiveClassDeclaration.getQueueSize(), getMaximumParametersSize(reactiveClassDeclaration)));
 		}
 		Hashtable<String, Integer> rebecInstanceOrder = new Hashtable<String, Integer>();
 		order = 0;
@@ -390,7 +390,11 @@ public class CoreRebecaFileGenerator extends AbstractFileGenerator {
 		context.put("sizes", sizes);
 		context.put("propertyDefinitions", definitions);
 		context.put("propertyAssertions", assertions);
-
+		for(ReactiveClassDeclaration rd: rebecaModel.getRebecaCode()
+				.getReactiveClassDeclaration()){
+					context.put(rd.getName()+"StateSize", getStateSize(rd));
+					
+				}
 
 		boolean safeModeIsEnabled = analysisFeaturesNames.remove(AnalysisFeature.SAFE_MODE.name());
 		if(safeModeIsEnabled)
@@ -406,7 +410,7 @@ public class CoreRebecaFileGenerator extends AbstractFileGenerator {
 				+ File.separatorChar + FilesNames.ABSTRACT_CORE_REBECA_ANALYZER_OUTPUT_CPP);
 		template.merge(context, fileWriter);
 		fileWriter.close();
-		
+
 		if(safeModeIsEnabled)
 			translator.TurnOnSafeMode();
 	}	
@@ -424,18 +428,18 @@ public class CoreRebecaFileGenerator extends AbstractFileGenerator {
 		}
 
 		createAbstractModelChecker();
-		
+
 		VelocityContext context = new VelocityContext();
 		context.put("aFeatures", analysisFeaturesNames);
 		context.put("cFeatures", compilerFeaturesNames);
 		context.put("propertyGraph", propertyGraphs);
 		context.put("propertyDefinitions", definitions);
 		context.put("propertyAssertions", assertions);
-		
+
 		List<String> patches = new LinkedList<String>();
 		patches.add(FilesNames.DFS_PATCH_TEMPLATE);
 		context.put("patches", patches);
-		
+
 		Template template = velocityEngine
 				.getTemplate(FilesNames.CORE_REBECA_MODEL_CHECKER_HEADER_TEMPLATE);
 		FileWriter fileWriter = new FileWriter(destinationLocation.getPath()
@@ -451,7 +455,7 @@ public class CoreRebecaFileGenerator extends AbstractFileGenerator {
 	}
 
 
-	
+
 	protected int retrieveSizeOfListOfVariables(List<FieldDeclaration> fields)
 			throws TypeAnalysisException {
 		int size = 0;
@@ -473,7 +477,7 @@ public class CoreRebecaFileGenerator extends AbstractFileGenerator {
 
 	protected int retrieveSizeOfListOfParameters(
 			List<FormalParameterDeclaration> formalParameters)
-			throws TypeAnalysisException {
+					throws TypeAnalysisException {
 		List<FieldDeclaration> fields = TypesAnalysisUtilities
 				.convertToFieldDeclaration(formalParameters);
 		return retrieveSizeOfListOfVariables(fields);
@@ -482,16 +486,33 @@ public class CoreRebecaFileGenerator extends AbstractFileGenerator {
 	protected int getStateSize(ReactiveClassDeclaration reactiveClassDeclaration) {
 		int stateSize = 0;
 		try {
-			stateSize += retrieveSizeOfListOfVariables(reactiveClassDeclaration
-					.getStatevars());
+//			stateSize += retrieveSizeOfListOfVariables(reactiveClassDeclaration
+//					.getStatevars());
+		ReactiveClassDeclaration rcTemp = reactiveClassDeclaration;
+			while (true) {
+				ReactiveClassDeclaration parent;
+				try {
+					stateSize += retrieveSizeOfListOfVariables(rcTemp.getStatevars());
+					if (rcTemp.getExtends() == null)
+						break;
+					parent = (ReactiveClassDeclaration)TypesUtilities.getInstance().getMetaData(rcTemp.getExtends());
+					rcTemp = parent;
+				} catch (CodeCompilationException e) {
+					// TODO Auto-generated catch block
+				
+					e.printStackTrace();
+				}
+			}
+			
 			stateSize += reactiveClassDeclaration.getQueueSize()
 					* (2 + getMaximumParametersSize(reactiveClassDeclaration));
+
 		} catch (TypeAnalysisException e) {
 			e.printStackTrace();
 		}
 		return stateSize;
 	}
-	
+
 	protected int getMaximumParametersSize(ReactiveClassDeclaration reactiveClassDeclaration) {
 		int maxParamSize = 0;
 		for (MethodDeclaration methodDeclaration : reactiveClassDeclaration
@@ -512,7 +533,7 @@ public class CoreRebecaFileGenerator extends AbstractFileGenerator {
 
 		context.put("aFeatures", analysisFeaturesNames);
 		context.put("cFeatures", compilerFeaturesNames);
-		
+
 		//Creating .h and .cpp files of AbstractModelChecker
 		Template template = velocityEngine
 				.getTemplate(FilesNames.ABSTRACT_MODEL_CHECKER_HEADER_TEMPLATE);
@@ -528,7 +549,7 @@ public class CoreRebecaFileGenerator extends AbstractFileGenerator {
 
 
 	}
-	
+
 	/**
 	 * This function creates AcAut header and cpp files.
 	 * 
@@ -537,8 +558,8 @@ public class CoreRebecaFileGenerator extends AbstractFileGenerator {
 	 */
 	public void createAnActor(ReactiveClassDeclaration reactiveClassDeclaration, 
 			List<String> baseClasses, List<String> constructorCallClasses, List<String> patches) throws IOException
-			{
-		
+	{
+
 		String fileName = reactiveClassDeclaration.getName();
 
 		VelocityContext context = new VelocityContext();
@@ -556,17 +577,25 @@ public class CoreRebecaFileGenerator extends AbstractFileGenerator {
 		context.put("methodBodyConvertor", methodBodyConvertor);
 		context.put("translator", translator);
 		context.put("reactiveClassName", reactiveClassDeclaration.getName());
+		if (reactiveClassDeclaration.getExtends() != null) {
+			baseClasses.clear();
+			String parentName = TypesUtilities.getTypeName(reactiveClassDeclaration.getExtends()) + "Actor";
+			baseClasses.add(parentName);
+			context.put("parentName",parentName);
+		}
 		context.put("baseClasses", baseClasses);
 		context.put("constructorCallClasses", constructorCallClasses);
 		context.put("patches", patches);
-		context.put("stateSize", getStateSize(reactiveClassDeclaration));
+		int stateSize = getStateSize(reactiveClassDeclaration);
+		context.put("stateSize", stateSize);
+//		context.put("stateSize", getStateSize(reactiveClassDeclaration));
 		context.put("AnnotationsUtility", AnnotationsUtility.getInstance());
 		// Create Header File
 		Template template = velocityEngine
 				.getTemplate(FilesNames.REACTIVE_CLASS_HEADER_TEMPLATE);
 		FileWriter fileWriter = new FileWriter(
 				destinationLocation.getPath() + File.separatorChar
-						+ fileName + "Actor.h");
+				+ fileName + "Actor.h");
 		template.merge(context, fileWriter);
 		fileWriter.close();
 
@@ -576,7 +605,7 @@ public class CoreRebecaFileGenerator extends AbstractFileGenerator {
 				+ File.separatorChar + fileName + "Actor.cpp");
 		template.merge(context, fileWriter);
 		fileWriter.close();
-		
+
 	}
 
 	/**
@@ -638,7 +667,7 @@ public class CoreRebecaFileGenerator extends AbstractFileGenerator {
 
 		context.put("aFeatures", analysisFeaturesNames);
 		context.put("cFeatures", compilerFeaturesNames);
-		
+
 		context.put("rebecCount", rebecaModel.getRebecaCode()
 				.getMainDeclaration().getMainRebecDefinition().size());
 		List<FieldDeclaration> environmentVariables = rebecaModel.getRebecaCode().getEnvironmentVariables();
@@ -652,7 +681,7 @@ public class CoreRebecaFileGenerator extends AbstractFileGenerator {
 		context.put("envVariables", rebecaModel.getRebecaCode()
 				.getEnvironmentVariables());
 		context.put("translator", translator);
-		
+
 		context.put("configPatch", configPatch);
 
 		// Create Header File
@@ -696,7 +725,7 @@ public class CoreRebecaFileGenerator extends AbstractFileGenerator {
 		context.put("TypesUtilities", TypesUtilities.getInstance());
 
 		context.put("mainPatch", mainPatch);
-		
+
 		// Create Header File
 		Template template = velocityEngine.getTemplate(FilesNames.MAIN_CPP_TEMPLATE);
 		FileWriter fileWriter = new FileWriter(destinationLocation.getPath()
@@ -720,18 +749,18 @@ public class CoreRebecaFileGenerator extends AbstractFileGenerator {
 
 	}
 
-//	@SuppressWarnings("static-access")
-//	public static OptionGroup getOptions() {
-//		OptionGroup group = new OptionGroup();
-//		group.addOption(
-//				OptionBuilder.withArgName("file")
-//                .hasArg()
-//                .withDescription("Rebeca model property file.")
-//                .withLongOpt("property").create('p')
-//				);
-//		return group;
-//	}
-	
-	
+	//	@SuppressWarnings("static-access")
+	//	public static OptionGroup getOptions() {
+	//		OptionGroup group = new OptionGroup();
+	//		group.addOption(
+	//				OptionBuilder.withArgName("file")
+	//                .hasArg()
+	//                .withDescription("Rebeca model property file.")
+	//                .withLongOpt("property").create('p')
+	//				);
+	//		return group;
+	//	}
+
+
 
 }

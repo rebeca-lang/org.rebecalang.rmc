@@ -263,6 +263,11 @@ public class TimedRebecaFileGenerator extends CoreRebecaFileGenerator {
 			context.put("propertyDefinitions", propertyModel.getDefinitions());
 			context.put("propertyAssertions", propertyModel.getAssertionDefinitions());
 		}
+		for(ReactiveClassDeclaration rd: rebecaModel.getRebecaCode()
+				.getReactiveClassDeclaration()){
+					context.put(rd.getName()+"StateSize", getStateSize(rd));
+					
+				}
 		
 		boolean safeModeIsEnabled = analysisFeaturesNames.remove(AnalysisFeature.SAFE_MODE.name());
 		if(safeModeIsEnabled)

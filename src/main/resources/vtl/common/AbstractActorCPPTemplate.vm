@@ -107,8 +107,15 @@ void AbstractActor::_synchmethod_assertion(boolean condition, string message) {
 }
 
 long AbstractActor::execute() {
-	return -1;
+ 	
+ 	preMessageExecutionInitialization();
+	return methodSelectorAndExecutor();
+	
+	}
+void AbstractActor::preMessageExecutionInitialization() {
+
 }
+
 
 #applyPatch($patches 'AdditionalBodies' '')
 

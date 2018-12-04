@@ -7,9 +7,9 @@
 
 #macro (coreRebecaReactiveClassAdditionalInitializationParameters $hasType)
 	#if($hasType)
-		, int hashmapSize
+		,int stateSize, int hashmapSize
 	#else
-		, $stateSize, hashmapSize
+		, stateSize, hashmapSize
 	#end
 #end
 

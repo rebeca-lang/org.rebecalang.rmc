@@ -36,8 +36,7 @@ public:
     TIME_TYPE* deadline;
     TIME_TYPE _ref_now;
     
-    virtual long execute();
-    
+    void preMessageExecutionInitialization();
     TIME_TYPE _ref_currentMessageArrival, _ref_currentMessageDeadline, _ref_currentMessageWaitingTime;
 
 	virtual void exportStateInXML(ostream &out, string tab);

@@ -7,7 +7,6 @@
 
 #foreach($tempReactiveClassDeclaration in $reactiveClassDeclarations)
 #if ($tempReactiveClassDeclaration.getName() != $reactiveClassName)
-\#include "${tempReactiveClassDeclaration.getName()}Actor.h"
 class ${tempReactiveClassDeclaration.getName()}Actor;
 #end
 #end
@@ -34,7 +33,7 @@ public:
     );
 	~${reactiveClassName}Actor();
 	
-	long execute();
+	long methodSelectorAndExecutor();
 	
     char* getClassName();
     
@@ -70,6 +69,7 @@ protected:
             #putParameters($method.getFormalParameters() false)
         );
     #end    
+    	 void marshalVariablesToArray(byte * array);
 };
 
 #endif

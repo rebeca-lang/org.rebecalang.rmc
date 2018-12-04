@@ -28,7 +28,16 @@ AbstractTimedActor::AbstractTimedActor(byte myID, char* myName, int maxQueueLeng
 
 }
 
-AbstractTimedActor::~AbstractTimedActor (){
+void AbstractTimedActor::preMessageExecutionInitialization() {
+
+	_ref_currentMessageArrival = executionTime[0];
+	_ref_currentMessageDeadline = deadline[0];
+	_ref_currentMessageWaitingTime = _ref_now - _ref_currentMessageArrival;
+	
+}
+
+AbstractTimedActor::~AbstractTimedActor() {
+
 }
 
 void AbstractTimedActor::setNow(TIME_TYPE now) {
@@ -91,11 +100,6 @@ void AbstractTimedActor::applyPolicy(boolean isSendToSelf) {
 	}
 }
 
-long AbstractTimedActor::execute() {
-	_ref_currentMessageArrival = executionTime[0];
-	_ref_currentMessageDeadline = deadline[0];
-	_ref_currentMessageWaitingTime = _ref_now - _ref_currentMessageArrival;
-}
 
 void AbstractTimedActor::exportStateInXML(ostream &out, string tab) {
 	out << tab << "<rebec name=\"" << myName << "\">" << endl;
