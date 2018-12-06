@@ -20,6 +20,11 @@ using namespace std;
 \#define boolean bool
 #endif
 
+#ifndef ArrayList
+\#define ArrayList vector
+#endif
+
+
 #*
 #ifndef false
 \#define false 0

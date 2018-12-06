@@ -106,6 +106,12 @@ void AbstractActor::_synchmethod_assertion(boolean condition, string message) {
 		throw AssertionFailedException(message, this);
 }
 
+ ArrayList<AbstractActor*>& AbstractActor::_synchmethod_getAllActors() {
+ 
+ 	return rebecs;
+ }
+
+
 long AbstractActor::execute() {
  	
  	preMessageExecutionInitialization();

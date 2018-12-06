@@ -7,6 +7,7 @@ import java.util.ListIterator;
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.ArrayType;
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.FieldDeclaration;
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.FormalParameterDeclaration;
+import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.GenericTypeInstance;
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.Type;
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.VariableDeclarator;
 import org.rebecalang.compiler.utils.TypesUtilities;
@@ -144,7 +145,10 @@ public class TypesAnalysisUtilities {
 	}
 
 	public static String getTypeName(Type type) {
-		if (TypesUtilities.getInstance().canTypeUpCastTo(type, TypesUtilities.REACTIVE_CLASS_TYPE))
+		
+		if (type == TypesUtilities.REACTIVE_CLASS_TYPE)
+			return "AbstractActor*";	
+		else if (TypesUtilities.getInstance().canTypeUpCastTo(type, TypesUtilities.REACTIVE_CLASS_TYPE))
 			return TypesUtilities.getTypeName(type)+ "Actor*";
 		return TypesUtilities.getTypeName(type);
 	}
@@ -152,8 +156,18 @@ public class TypesAnalysisUtilities {
 	public static String getCPPTypeName(Type type) {
 		String typeName = "";
 		Type baseType = (type instanceof ArrayType) ? ((ArrayType)type).getOrdinaryPrimitiveType() : type;
-		if (TypesUtilities.getInstance().canTypeUpCastTo(type, TypesUtilities.REACTIVE_CLASS_TYPE))
+		if (type == TypesUtilities.REACTIVE_CLASS_TYPE)
+			typeName = "AbstractActor*";	
+		else if (TypesUtilities.getInstance().canTypeUpCastTo(type, TypesUtilities.REACTIVE_CLASS_TYPE))
 			typeName = TypesUtilities.getTypeName(baseType) + "Actor*";
+		else if (type instanceof GenericTypeInstance) {
+			GenericTypeInstance git = (GenericTypeInstance) type;
+			typeName = git.getBase().getName() +"<";
+			for (Type t : git.getParameters())
+				typeName += getCPPTypeName(t) +", ";
+			typeName = typeName.substring(0,typeName.length()-2)+ ">";
+		}
+			
 		else
 			typeName = TypesUtilities.getTypeName(baseType);
 		if (type instanceof ArrayType) {
