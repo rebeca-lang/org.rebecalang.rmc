@@ -60,7 +60,7 @@
             #end            
             
             #if($ArrayType.getClass().isAssignableFrom($type.getClass()))
-            	#set($isBoolean = ($type.getPrimitiveType() == $TypesUtilities.BOOLEAN_TYPE))
+            	#set($isBoolean = ($type.getOrdinaryPrimitiveType() == $TypesUtilities.BOOLEAN_TYPE))
             #else
             	#set($isBoolean = ($type == $TypesUtilities.BOOLEAN_TYPE))
             #end
@@ -91,7 +91,7 @@
 							for (int cnt$velocityCount = 0; cnt$velocityCount < $dimension; cnt$velocityCount++) {
 							#set($index = $index + "[cnt$velocityCount]")
 						#else
-							#set($size = $TypesAnalysisUtilities.getInstance().getTypeSizeLabel($type.getPrimitiveType()) + " * $dimension")
+							#set($size = $TypesAnalysisUtilities.getInstance().getTypeSizeLabel($type.getOrdinaryPrimitiveType()) + " * $dimension")
 						#end
 					#end
 					#set($varName = "$pointerName$index" + ".data()")
@@ -131,13 +131,14 @@
     #if($varList)
     	#set($booleanCounter = 0)
     	#set($booleanResult = "")
+    	
         #foreach($variableDec in $varList)
             #set($name = $variableDec.getName())
             #set($pointerName = $prefix + $name)
             #set($type = $variableDec.getType())            
             
             #if($ArrayType.getClass().isAssignableFrom($type.getClass()))
-            	#set($isBoolean = ($type.getPrimitiveType() == $TypesUtilities.BOOLEAN_TYPE))
+            	#set($isBoolean = ($type.getOrdinaryPrimitiveType() == $TypesUtilities.BOOLEAN_TYPE))
             #else
             	#set($isBoolean = ($type == $TypesUtilities.BOOLEAN_TYPE))
             #end
@@ -167,7 +168,7 @@
 							for (int cnt$velocityCount = 0; cnt$velocityCount < $dimension; cnt$velocityCount++) {
 							#set($index = $index + "[cnt$velocityCount]")
 						#else
-							#set($size = $TypesAnalysisUtilities.getInstance().getTypeSizeLabel($type.getPrimitiveType()) + " * $dimension")
+							#set($size = $TypesAnalysisUtilities.getInstance().getTypeSizeLabel($type.getOrdinaryPrimitiveType()) + " * $dimension")
 						#end
 					#end
 					#set($varName = "$pointerName$index" + ".data()")

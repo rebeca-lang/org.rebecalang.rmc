@@ -270,18 +270,22 @@ long ${reactiveClassName}Actor::methodSelectorAndExecutor() {
 #end
 
 #foreach ($methodDeclaration in $reactiveClassDeclaration.getSynchMethods())
-
-    $TypesAnalysisUtilities.getInstance().getCPPTypeName($methodDeclaration.getReturnType()) ${reactiveClassName}Actor::_synchmethod_$methodDeclaration.getName() (
+ 
+	#if (!$methodDeclaration.isAbstract())      
+		$TypesAnalysisUtilities.getInstance().getCPPTypeName($methodDeclaration.getReturnType()) ${reactiveClassName}Actor::_synchmethod_$methodDeclaration.getName() (
     	#putParameters($methodDeclaration.getFormalParameters() false)
-    ) {
+   		 ) {
     	$methodBodyConvertor.convertSynchMethodBody($reactiveClassDeclaration, $methodDeclaration)
-	}
+		}
+	#end
 #end
 
 #foreach ($methodDeclaration in $reactiveClassDeclaration.getMsgsrvs())
-    void ${reactiveClassName}Actor::_msg_$methodDeclaration.getName() (byte senderId
+
+ 	#if (!$methodDeclaration.isAbstract())      
+		void ${reactiveClassName}Actor::_msg_$methodDeclaration.getName() (byte senderId
         #putParameters($methodDeclaration.getFormalParameters() true)
-    ){
+  	  ){
         queueTail = 0;
         enqueue(messageQueue, $methodDeclaration.getName().toUpperCase());
         enqueue(senderQueue, senderId);
@@ -295,14 +299,17 @@ long ${reactiveClassName}Actor::methodSelectorAndExecutor() {
             enqueue(paramQueue, paramsValues, maxParamLength);
         }
 }
+	#end
 #end
 
 #applyPatch($patches 'AdditionalBodies' '')
 
 #foreach ($methodDeclaration in $reactiveClassDeclaration.getMsgsrvs())
-    long ${reactiveClassName}Actor::msgsrv$methodDeclaration.getName() (
+	#if (!$methodDeclaration.isAbstract())      
+	    long ${reactiveClassName}Actor::msgsrv$methodDeclaration.getName() (
     	#putParameters($methodDeclaration.getFormalParameters() false)
     ) {
     	$methodBodyConvertor.convertMsgsrvBody($reactiveClassDeclaration, $methodDeclaration)
 }
+		#end
 #end

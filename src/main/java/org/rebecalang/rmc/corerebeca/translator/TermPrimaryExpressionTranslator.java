@@ -26,7 +26,13 @@ public class TermPrimaryExpressionTranslator extends AbstractStatementTranslator
 		String retValue = termPrimary.getName();
 		if (termPrimary.getParentSuffixPrimary() != null) {
 			boolean isMessageServer = termPrimary.getLabel() == CoreRebecaLabelUtility.MSGSRV;
-			retValue = (isMessageServer ? "_msg_" : "_synchmethod_") + retValue;
+			boolean isBuiltIn = termPrimary.getLabel() == CoreRebecaLabelUtility.BUILT_IN_METHOD;
+			if (isMessageServer)
+				retValue = "_msg_" + retValue;
+			else if (!isBuiltIn)
+				retValue = "_synchmethod_" + retValue;
+			else if (isBuiltIn && retValue.equals("get"))
+				retValue = "operator[]";
 			String params = "(";
 			if (isMessageServer)
 				params += "myID, ";

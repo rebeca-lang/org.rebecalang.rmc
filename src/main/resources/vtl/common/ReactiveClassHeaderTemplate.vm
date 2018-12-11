@@ -54,12 +54,20 @@ public:
 	#end
 
     #foreach ($method in $reactiveClassDeclaration.getMsgsrvs())
-        void _msg_${method.getName()}(byte senderId
+       virtual void _msg_${method.getName()}(byte senderId
             #putParameters($method.getFormalParameters() true)
-        );
-        long msgsrv${method.getName()}(
+        )
+         #if ($method.isAbstract())
+        	=0
+        #end
+        ;
+       virtual long msgsrv${method.getName()}(
             #putParameters($method.getFormalParameters() false)
-        );
+        )
+        #if ($method.isAbstract())
+        	=0
+        #end
+        ;
     #end
 
 	#applyPatch($patches 'AdditionalSignatures' '')
@@ -67,7 +75,11 @@ protected:
     #foreach ($method in $reactiveClassDeclaration.getSynchMethods())
     	$TypesAnalysisUtilities.getInstance().getCPPTypeName($method.getReturnType()) _synchmethod_${method.getName()}(
             #putParameters($method.getFormalParameters() false)
-        );
+        )
+         #if ($method.isAbstract())
+        	=0
+        #end
+        ;
     #end    
     	 void marshalVariablesToArray(byte * array);
 };
