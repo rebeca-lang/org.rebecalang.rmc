@@ -156,12 +156,12 @@ public class TypesAnalysisUtilities {
 	public static String getCPPTypeName(Type type) {
 		String typeName = "";
 		Type baseType = (type instanceof ArrayType) ? ((ArrayType)type).getOrdinaryPrimitiveType() : type;
-		if (type == TypesUtilities.REACTIVE_CLASS_TYPE)
+		if (baseType == TypesUtilities.REACTIVE_CLASS_TYPE)
 			typeName = "AbstractActor*";	
-		else if (TypesUtilities.getInstance().canTypeUpCastTo(type, TypesUtilities.REACTIVE_CLASS_TYPE))
+		else if (TypesUtilities.getInstance().canTypeUpCastTo(baseType, TypesUtilities.REACTIVE_CLASS_TYPE))
 			typeName = TypesUtilities.getTypeName(baseType) + "Actor*";
-		else if (type instanceof GenericTypeInstance) {
-			GenericTypeInstance git = (GenericTypeInstance) type;
+		else if (baseType instanceof GenericTypeInstance) {
+			GenericTypeInstance git = (GenericTypeInstance) baseType;
 			typeName = git.getBase().getName() +"<";
 			for (Type t : git.getParameters())
 				typeName += getCPPTypeName(t) +", ";
