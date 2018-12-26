@@ -15,7 +15,7 @@
 /* There can be more than one location counter for each msgsrv when we
    want to have non-atomic message servers.
    Notice that values 0 and 1 are reserved for EMPTY and INITIAL, respectively.*/
-#set ($cnt = 1)
+#set ($cnt = $parentMSGSRVCount)
 #foreach ($methodDeclaration in $reactiveClassDeclaration.getMsgsrvs())
 \#define $methodDeclaration.getName().toUpperCase() $cnt
 #set ($cnt = $cnt + 1)
@@ -201,13 +201,27 @@ void ${reactiveClassName}Actor::unmarshalActorFromArray(byte* array) {
             }
         }
     }
+    
+		unmarshalVariablesFromArray( & array[index]);
 
+
+}
+
+void ${reactiveClassName}Actor::unmarshalVariablesFromArray(byte * array){
+
+	int index = 0;
     #retrieveListFromArray ("array" "index" $TypesAnalysisUtilities.convertToFormalParameterDeclaration($reactiveClassDeclaration.getStatevars()) false "_ref_")
     
-    #ifdef NO_ATOMIC_EXECUTION
+	#if ($parentName)
+		${parentName}::unmarshalVariablesFromArray( & array[index]);
+
+	#end
+	
+	 #ifdef NO_ATOMIC_EXECUTION
     	memcpy(&__pc, &array [index], 4);
     	//__pc = array[index++];
     #endif
+   	 
 }
 
 /*#ifdef DEBUG

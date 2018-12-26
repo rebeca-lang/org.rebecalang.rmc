@@ -41,7 +41,12 @@ public:
 	virtual void exportAMessageInXML(ostream &out, string tab, int cnt);
 
     virtual void marshalActorToArray(byte* array);
+    void marshalVariablesToArray(byte * array);
+
+
     virtual void unmarshalActorFromArray(byte* array);
+    void unmarshalVariablesFromArray(byte * array);
+
 
     #foreach($fieldDec in $reactiveClassDeclaration.getStatevars())
     	$translator.translate($fieldDec, "")
@@ -81,7 +86,6 @@ protected:
         #end
         ;
     #end    
-    	 void marshalVariablesToArray(byte * array);
 };
 
 #endif

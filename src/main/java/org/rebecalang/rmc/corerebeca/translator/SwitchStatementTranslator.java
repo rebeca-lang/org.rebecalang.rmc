@@ -29,7 +29,10 @@ public class SwitchStatementTranslator extends AbstractStatementTranslator {
 		for (SwitchStatementGroup sbsg : switchStatement
 				.getSwitchStatementGroups()) {
 			Expression switchLabel = sbsg.getExpression();
+			if(switchLabel != null)
 				retValue += tab + "case (" + StatementTranslatorContainer.translate(switchLabel, "") + "):" + NEW_LINE;
+			else
+				retValue += tab + "default:" + NEW_LINE;
 			for (Statement innerStatement : sbsg.getStatements()) {
 				retValue += StatementTranslatorContainer.translate(innerStatement, tab + TAB);
 				retValue += super.adjustSemicolonForExpression(innerStatement);

@@ -14,6 +14,7 @@ import org.apache.velocity.Template;
 import org.apache.velocity.VelocityContext;
 import org.rebecalang.compiler.modelcompiler.corerebeca.CoreRebecaLabelUtility;
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.ArrayType;
+import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.BaseClassDeclaration;
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.BinaryExpression;
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.BlockStatement;
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.BreakStatement;
@@ -583,6 +584,7 @@ public class CoreRebecaFileGenerator extends AbstractFileGenerator {
 			baseClasses.add(parentName);
 			context.put("parentName",parentName);
 		}
+		context.put("parentMSGSRVCount", parentMethodCounts(reactiveClassDeclaration));
 		context.put("baseClasses", baseClasses);
 		context.put("constructorCallClasses", constructorCallClasses);
 		context.put("patches", patches);
@@ -653,6 +655,8 @@ public class CoreRebecaFileGenerator extends AbstractFileGenerator {
 		context.put("aFeatures", analysisFeaturesNames);
 		context.put("TypesUtilities", TypesUtilities.getInstance());
 
+		
+		
 		template = velocityEngine.getTemplate(FilesNames.REBECMGR_CPP_TEMPLATE);
 		fileWriter = new FileWriter(destinationLocation.getPath()
 				+ File.separatorChar + FilesNames.REBECMGR_OUTPUT_CPP);
@@ -660,7 +664,23 @@ public class CoreRebecaFileGenerator extends AbstractFileGenerator {
 		fileWriter.close();
 
 	}
+	private int parentMethodCounts(ReactiveClassDeclaration rcd) {
 
+		int cnt = 0; 
+		while(rcd.getExtends() != null) {
+			try {
+				rcd = (ReactiveClassDeclaration)TypesUtilities.getInstance().getMetaData(rcd.getExtends());
+				cnt += rcd.getMsgsrvs().size();
+			} catch (CodeCompilationException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
+			
+			
+		}
+		return cnt;
+	}
+	
 	protected void createTypeAndConfig(String configPatch) throws IOException {
 
 		VelocityContext context = new VelocityContext();
