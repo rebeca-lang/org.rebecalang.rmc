@@ -88,22 +88,6 @@ ${reactiveClassName}Actor::~${reactiveClassName}Actor (){
 }
 
 
-void ${reactiveClassName}Actor::exportStateVariablesInXML(ostream &out, string tab) {
-	out << tab << "<statevariables>" << endl;
-    #foreach($fieldDec in $reactiveClassDeclaration.getStatevars())
-        #if(!$AnnotationsUtility.contains($fieldDec.getAnnotations(), "doNotExport"))
-	        #foreach($variableDec in $fieldDec.getVariableDeclarators())
-		        #set($name = $variableDec.getVariableName())
-		        #set($refName = "_ref_" + $name)
-		        #set($type = $fieldDec.getType())
-			    	out << tab << '\t' << "<variable name=\"$name\" type=\"$TypesUtilities.getInstance().getTypeName($type)\">" <<  
-			    		$TypesAnalysisUtilities.getVaribleValue($refName, $type) << "</variable>" << endl;
-    		#end
-		#end
-	#end
-	out << tab << "</statevariables>" << endl;
-}
-
 void ${reactiveClassName}Actor::exportAMessageInXML(ostream &out, string tab, int cnt) {
         int i = 0;
         switch (messageQueue[cnt]) {
@@ -126,6 +110,33 @@ void ${reactiveClassName}Actor::exportAMessageInXML(ostream &out, string tab, in
 
 }
 
+
+void ${reactiveClassName}Actor::exportStateVariablesInXML(ostream &out, string tab) {
+	out << tab << "<statevariables>" << endl;
+	exportInsideStateVariablesTagInXML(out, tab);
+	out << tab << "</statevariables>" << endl;
+}
+
+void ${reactiveClassName}Actor::exportInsideStateVariablesTagInXML(ostream &out, string tab){
+
+	#if ($parentName)
+		${parentName}::exportInsideStateVariablesTagInXML(out, tab);
+	#end
+
+	#foreach($fieldDec in $reactiveClassDeclaration.getStatevars())
+        #if(!$AnnotationsUtility.contains($fieldDec.getAnnotations(), "doNotExport"))
+	        #foreach($variableDec in $fieldDec.getVariableDeclarators())
+		        #set($name = $variableDec.getVariableName())
+		        #set($refName = "_ref_" + $name)
+		        #set($type = $fieldDec.getType())
+			    	out << tab << '\t' << "<variable name=\"$reactiveClassName.$name\" type=\"$TypesUtilities.getInstance().getTypeName($type)\">" <<  
+			    		$TypesAnalysisUtilities.getVaribleValue($refName, $type) << "</variable>" << endl;
+    		#end
+		#end
+	#end
+}
+
+
 char* ${reactiveClassName}Actor::getClassName() {
     return (char*)"${reactiveClassName}";
 }
@@ -138,10 +149,6 @@ void ${reactiveClassName}Actor::marshalVariablesToArray(byte * array){
 
 	#end
 	
-	 #ifdef NO_ATOMIC_EXECUTION
-    	memcpy(&array [marshalIndex], &__pc, 4);
-    	//array[marshalIndex++] = __pc;
-    #endif
 }
 void ${reactiveClassName}Actor::marshalActorToArray(byte* array) {
     int i,j, marshalIndex = 0;
@@ -175,6 +182,12 @@ void ${reactiveClassName}Actor::marshalActorToArray(byte* array) {
         }
     }
 
+	 #ifdef NO_ATOMIC_EXECUTION
+    	memcpy(&array [marshalIndex], &__pc, 4);
+    	marshalIndex += 4;
+    	//array[marshalIndex++] = __pc;
+    #endif
+
 		marshalVariablesToArray( & array[marshalIndex]);
 
    
@@ -202,9 +215,13 @@ void ${reactiveClassName}Actor::unmarshalActorFromArray(byte* array) {
         }
     }
     
-		unmarshalVariablesFromArray( & array[index]);
-
-
+	#ifdef NO_ATOMIC_EXECUTION
+    	memcpy(&__pc, &array [index], 4);
+    	index += 4;
+    	//__pc = array[index++];
+    #endif
+    
+	unmarshalVariablesFromArray( & array[index]);
 }
 
 void ${reactiveClassName}Actor::unmarshalVariablesFromArray(byte * array){
@@ -217,11 +234,6 @@ void ${reactiveClassName}Actor::unmarshalVariablesFromArray(byte * array){
 
 	#end
 	
-	 #ifdef NO_ATOMIC_EXECUTION
-    	memcpy(&__pc, &array [index], 4);
-    	//__pc = array[index++];
-    #endif
-   	 
 }
 
 /*#ifdef DEBUG

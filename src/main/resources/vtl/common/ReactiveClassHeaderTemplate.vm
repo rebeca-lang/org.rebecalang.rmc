@@ -40,6 +40,8 @@ public:
 	virtual void exportStateVariablesInXML(ostream &out, string tab);
 	virtual void exportAMessageInXML(ostream &out, string tab, int cnt);
 
+	void exportInsideStateVariablesTagInXML(ostream &out, string tab);
+
     virtual void marshalActorToArray(byte* array);
     void marshalVariablesToArray(byte * array);
 

@@ -14,7 +14,6 @@ import org.apache.velocity.Template;
 import org.apache.velocity.VelocityContext;
 import org.rebecalang.compiler.modelcompiler.corerebeca.CoreRebecaLabelUtility;
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.ArrayType;
-import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.BaseClassDeclaration;
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.BinaryExpression;
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.BlockStatement;
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.BreakStatement;
@@ -666,7 +665,8 @@ public class CoreRebecaFileGenerator extends AbstractFileGenerator {
 	}
 	private int parentMethodCounts(ReactiveClassDeclaration rcd) {
 
-		int cnt = 0; 
+		//This counter is set to 0 as it has to ignore "0" as the empty message
+		int cnt = 1; 
 		while(rcd.getExtends() != null) {
 			try {
 				rcd = (ReactiveClassDeclaration)TypesUtilities.getInstance().getMetaData(rcd.getExtends());

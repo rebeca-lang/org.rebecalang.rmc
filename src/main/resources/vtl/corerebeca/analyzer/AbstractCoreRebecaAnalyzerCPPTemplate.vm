@@ -127,6 +127,7 @@ void AbstractCoreRebecaAnalyzer::instantiationPart() {
     											, analysisOutputStream 
     											#endif
     											, #evaluate($typeBasedStateSize)
+    											, hashmapSize
     											#applyPatch($patches 'AdditionalInitializationParameters' false)
     											);
         rebecs.push_back(_ref_${instance.getName()});
