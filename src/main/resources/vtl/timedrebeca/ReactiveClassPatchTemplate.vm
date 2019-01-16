@@ -15,20 +15,29 @@
 #macro (timedRebecaAdditionalSignatures $reactiveClassDeclaration)
 public:
     #foreach ($method in $reactiveClassDeclaration.getMsgsrvs())
-        void _timed_msg_${method.getName()}(byte senderId
-            #putParameters($method.getFormalParameters() true)
-        , TIME_TYPE executionTime, TIME_TYPE deadline);
+      	 #if ($method.isAbstract())
+        		virtual
+        #end
+      	  void _timed_msg_${method.getName()}(byte senderId
+        	    #putParameters($method.getFormalParameters() true)
+        	, TIME_TYPE executionTime, TIME_TYPE deadline)
+        	#if ($method.isAbstract())
+        		=0
+        	#end	
+        		;
     #end
 #end
 
 #macro (timedRebecaAdditionalBodies $reactiveClassDeclaration)
 
 	#foreach ($methodDeclaration in $reactiveClassDeclaration.getMsgsrvs())
+		#if (!$methodDeclaration.isAbstract())
 	    void ${reactiveClassDeclaration.getName()}Actor::_timed_msg_$methodDeclaration.getName() (byte senderId
 	        #putParameters($methodDeclaration.getFormalParameters() true), TIME_TYPE executionTime, TIME_TYPE deadline){
 	    _msg_$methodDeclaration.getName() (senderId
 	        #putParametersValues($methodDeclaration.getFormalParameters() true));
 	    addTimedBundles(senderId, executionTime, deadline);
-	}
+		}
+		#end
 	#end
 #end

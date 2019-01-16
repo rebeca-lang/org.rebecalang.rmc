@@ -66,15 +66,26 @@ ${reactiveClassName}Actor::${reactiveClassName}Actor(byte myID, char* myName, in
 	)
 	#end
 {
-
-    messageNames = new char *[$reactiveClassDeclaration.getMsgsrvs().size() + 1];
+    #if ($reactiveClassDeclaration.getExtends())	
+		delete [] messageNames;
+    #end	
+    messageNames = new char *[$reactiveClassDeclaration.getMsgsrvs().size() + $parentMSGSRVCount];
 	messageNames[0] = (char*)"Empty";
+	#set ($counter = 1)
+	
+	#macro (printParentMethods $reactiveClass)
+		#if ($reactiveClass.getExtends())
+			 #set ($parent = $TypesUtilities.getInstance().getMetaData($reactiveClass.getExtends()));
+   			 #printParentMethods($parent) 			
+		#end
+		#foreach ($methodDeclaration in $reactiveClass.getMsgsrvs())
+       		 messageNames[$counter] = (char*)"$methodDeclaration.getName().toUpperCase()";
+      		 #set ($counter = $counter + 1)
+  	 	#end	
+		
+	#end
+    #printParentMethods($reactiveClassDeclaration)
 
-    #set ($cnt = 1)
-    #foreach ($methodDeclaration in $reactiveClassDeclaration.getMsgsrvs())
-        messageNames[$cnt] = (char*)"$methodDeclaration.getName().toUpperCase()";
-        #set ($cnt = $cnt + 1)
-    #end
 
 	#applyPatch($patches 'AdditionalInitializations' '')
 	
