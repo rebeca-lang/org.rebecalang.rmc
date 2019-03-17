@@ -92,6 +92,8 @@ public class TypesAnalysisUtilities {
 
 	public static List<FormalParameterDeclaration> convertToFormalParameterDeclaration(List<FieldDeclaration> fieldDeclarations) {
 		List<FormalParameterDeclaration> fields = new LinkedList<FormalParameterDeclaration>();
+		if (fieldDeclarations == null)
+			return fields;
 		for (FieldDeclaration fd : fieldDeclarations) {
 			Type type = fd.getType();
 			for (VariableDeclarator vd : fd.getVariableDeclarators()) {

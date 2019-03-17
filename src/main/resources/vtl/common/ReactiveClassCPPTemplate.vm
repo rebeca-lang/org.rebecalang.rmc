@@ -5,7 +5,7 @@
 \#include <stdio.h>
 \#include <string.h>
 
-#foreach($tempReactiveClassDeclaration in $reactiveClassDeclarations)
+#foreach($tempReactiveClassDeclaration in $allClassDeclarations)
 #if ($tempReactiveClassDeclaration.getName() != $reactiveClassName)
 \#include "${tempReactiveClassDeclaration.getName()}Actor.h"
 #end

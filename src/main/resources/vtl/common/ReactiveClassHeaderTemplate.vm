@@ -5,7 +5,7 @@
 #ifndef __${reactiveClassName.toUpperCase()}_ACTOR_H__
 \#define __${reactiveClassName.toUpperCase()}_ACTOR_H__
 
-#foreach($tempReactiveClassDeclaration in $reactiveClassDeclarations)
+#foreach($tempReactiveClassDeclaration in $allClassDeclarations)
 #if ($tempReactiveClassDeclaration.getName() != $reactiveClassName)
 class ${tempReactiveClassDeclaration.getName()}Actor;
 #end
@@ -20,7 +20,7 @@ class ${reactiveClassName}Actor :
 	#if (!($foreach.first))
 	,
 	#end
-	public $baseClass
+	public virtual $baseClass
 #end
 {
 

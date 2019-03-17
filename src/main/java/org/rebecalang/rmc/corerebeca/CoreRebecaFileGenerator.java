@@ -3,6 +3,8 @@ package org.rebecalang.rmc.corerebeca;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.LinkedList;
 import java.util.List;
@@ -12,8 +14,10 @@ import java.util.Set;
 import org.apache.log4j.Logger;
 import org.apache.velocity.Template;
 import org.apache.velocity.VelocityContext;
+import org.apache.velocity.app.event.ReferenceInsertionEventHandler.referenceInsertExecutor;
 import org.rebecalang.compiler.modelcompiler.corerebeca.CoreRebecaLabelUtility;
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.ArrayType;
+import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.BaseClassDeclaration;
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.BinaryExpression;
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.BlockStatement;
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.BreakStatement;
@@ -26,6 +30,7 @@ import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.FieldDeclara
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.ForStatement;
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.FormalParameterDeclaration;
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.InstanceofExpression;
+import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.InterfaceDeclaration;
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.Literal;
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.MainRebecDefinition;
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.MethodDeclaration;
@@ -195,8 +200,6 @@ public class CoreRebecaFileGenerator extends AbstractFileGenerator {
 			patches.add(FilesNames.STORABLE_REACTIVE_CLASS_PATCH_TEMPLATE);
 			createActors(patches);
 
-			//			createBFSHashmapTemplate();
-			//			createCoreRebecaBFSHashmap();
 
 			createCoreRebecaDFSHashmap();
 
@@ -284,17 +287,23 @@ public class CoreRebecaFileGenerator extends AbstractFileGenerator {
 
 	protected void createActors(List<String> patches) throws IOException {
 
-		List<String> constructorCallClasses = new LinkedList<String>();
+		Set<String> constructorCallClasses = new HashSet<String>();
 
 		// Translate Each Reactive Class to its CPP & Header files.
 		for (ReactiveClassDeclaration reactiveClassDeclaration : rebecaModel
 				.getRebecaCode().getReactiveClassDeclaration()) {
 			// Get Reactive Class to Generate Code for It.
-			List<String> baseClasses = new LinkedList<String>();
+			Set<String> baseClasses = new HashSet<String>();
 			baseClasses.add("AbstractActor");
 
 			createAnActor(reactiveClassDeclaration, baseClasses, constructorCallClasses, patches);
 
+		}
+		for (InterfaceDeclaration intd : rebecaModel.getRebecaCode().getInterfaceDeclaration()) {
+			Set<String> baseClasses = new HashSet<String>();
+			baseClasses.add("AbstractActor");
+
+			createAnActor(intd, baseClasses, constructorCallClasses, patches);
 		}
 	}
 
@@ -392,9 +401,9 @@ public class CoreRebecaFileGenerator extends AbstractFileGenerator {
 		context.put("propertyAssertions", assertions);
 		for(ReactiveClassDeclaration rd: rebecaModel.getRebecaCode()
 				.getReactiveClassDeclaration()){
-					context.put(rd.getName()+"StateSize", getStateSize(rd));
-					
-				}
+			context.put(rd.getName()+"StateSize", getStateSize(rd));
+
+		}
 
 		boolean safeModeIsEnabled = analysisFeaturesNames.remove(AnalysisFeature.SAFE_MODE.name());
 		if(safeModeIsEnabled)
@@ -483,12 +492,13 @@ public class CoreRebecaFileGenerator extends AbstractFileGenerator {
 		return retrieveSizeOfListOfVariables(fields);
 	}
 
-	protected int getStateSize(ReactiveClassDeclaration reactiveClassDeclaration) {
+	protected int getStateSize(BaseClassDeclaration baseClassDeclaration) {
 		int stateSize = 0;
+		if (baseClassDeclaration instanceof InterfaceDeclaration)
+			return stateSize;
+		ReactiveClassDeclaration reactiveClassDeclaration = (ReactiveClassDeclaration) baseClassDeclaration;
 		try {
-//			stateSize += retrieveSizeOfListOfVariables(reactiveClassDeclaration
-//					.getStatevars());
-		ReactiveClassDeclaration rcTemp = reactiveClassDeclaration;
+			ReactiveClassDeclaration rcTemp = reactiveClassDeclaration;
 			while (true) {
 				ReactiveClassDeclaration parent;
 				try {
@@ -499,11 +509,11 @@ public class CoreRebecaFileGenerator extends AbstractFileGenerator {
 					rcTemp = parent;
 				} catch (CodeCompilationException e) {
 					// TODO Auto-generated catch block
-				
+
 					e.printStackTrace();
 				}
 			}
-			
+
 			stateSize += reactiveClassDeclaration.getQueueSize()
 					* (2 + getMaximumParametersSize(reactiveClassDeclaration));
 
@@ -556,16 +566,20 @@ public class CoreRebecaFileGenerator extends AbstractFileGenerator {
 	 * @throws IOException
 	 *             All velocity exceptions that occurs in function.
 	 */
-	public void createAnActor(ReactiveClassDeclaration reactiveClassDeclaration, 
-			List<String> baseClasses, List<String> constructorCallClasses, List<String> patches) throws IOException
+	public void createAnActor(BaseClassDeclaration baseClassDeclaration, 
+			Set<String> baseClasses, Set<String> constructorCallClasses, List<String> patches) throws IOException
 	{
 
-		String fileName = reactiveClassDeclaration.getName();
+		String fileName = baseClassDeclaration.getName();
 
 		VelocityContext context = new VelocityContext();
-		context.put("reactiveClassDeclarations", rebecaModel
-				.getRebecaCode().getReactiveClassDeclaration());
-		context.put("reactiveClassDeclaration", reactiveClassDeclaration);
+
+		List<BaseClassDeclaration> allClassDeclarations = new ArrayList<BaseClassDeclaration>();
+		allClassDeclarations.addAll(rebecaModel.getRebecaCode().getReactiveClassDeclaration());
+		allClassDeclarations.addAll(rebecaModel.getRebecaCode().getInterfaceDeclaration());
+		context.put("allClassDeclarations", allClassDeclarations);
+
+		context.put("reactiveClassDeclaration", baseClassDeclaration);
 		context.put("Integer", Integer.MIN_VALUE);
 		context.put("aFeatures", analysisFeaturesNames);
 		context.put("cFeatures", compilerFeaturesNames);
@@ -576,20 +590,44 @@ public class CoreRebecaFileGenerator extends AbstractFileGenerator {
 		context.put("newline", "\n");
 		context.put("methodBodyConvertor", methodBodyConvertor);
 		context.put("translator", translator);
-		context.put("reactiveClassName", reactiveClassDeclaration.getName());
-		if (reactiveClassDeclaration.getExtends() != null) {
-			baseClasses.clear();
-			String parentName = TypesUtilities.getTypeName(reactiveClassDeclaration.getExtends()) + "Actor";
-			baseClasses.add(parentName);
-			context.put("parentName",parentName);
+		context.put("reactiveClassName", baseClassDeclaration.getName());
+
+
+		if (baseClassDeclaration instanceof ReactiveClassDeclaration) {
+			ReactiveClassDeclaration rcd = (ReactiveClassDeclaration) baseClassDeclaration;
+			if (rcd.getExtends() != null) {
+				String parentName = TypesUtilities.getTypeName(rcd.getExtends()) + "Actor";
+				baseClasses.add(parentName);
+				context.put("parentName",parentName);
+
+			}
+			if(!rcd.getImplements().isEmpty()) {
+				for (Type intdType : rcd.getImplements()) {
+					String impName = TypesUtilities.getTypeName(intdType) + "Actor";
+					baseClasses.add(impName);
+				}
+			}
+		} else if (baseClassDeclaration instanceof InterfaceDeclaration) {
+			InterfaceDeclaration intd = (InterfaceDeclaration) baseClassDeclaration;
+			if (!intd.getExtends().isEmpty()) {
+				for (Type intdType : intd.getExtends()) {
+					String impName = TypesUtilities.getTypeName(intdType) + "Actor";
+					baseClasses.add(impName);
+				}
+			}
 		}
-		context.put("parentMSGSRVCount", parentMethodCounts(reactiveClassDeclaration));
+
+		context.put("parentMSGSRVCount", parentMethodCounts(baseClassDeclaration));
 		context.put("baseClasses", baseClasses);
+
+		getAllConstructorCallNames(baseClassDeclaration, constructorCallClasses);
+		constructorCallClasses.removeAll(baseClasses);
+		constructorCallClasses.remove(baseClassDeclaration.getName() + "Actor");
+		
 		context.put("constructorCallClasses", constructorCallClasses);
 		context.put("patches", patches);
-		int stateSize = getStateSize(reactiveClassDeclaration);
+		int stateSize = getStateSize(baseClassDeclaration);
 		context.put("stateSize", stateSize);
-//		context.put("stateSize", getStateSize(reactiveClassDeclaration));
 		context.put("AnnotationsUtility", AnnotationsUtility.getInstance());
 		// Create Header File
 		Template template = velocityEngine
@@ -607,6 +645,48 @@ public class CoreRebecaFileGenerator extends AbstractFileGenerator {
 		template.merge(context, fileWriter);
 		fileWriter.close();
 
+	}
+
+	private void getAllConstructorCallNames(BaseClassDeclaration baseClassDeclaration , Set<String> constructorNames) {
+
+		if (baseClassDeclaration instanceof ReactiveClassDeclaration) {
+			ReactiveClassDeclaration rcd = (ReactiveClassDeclaration) baseClassDeclaration;
+			if (rcd.getExtends() != null) {
+				try {
+					getAllConstructorCallNames
+					(TypesUtilities.getInstance().getMetaData(rcd.getExtends()),constructorNames);
+				} catch (CodeCompilationException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			} if (!rcd.getImplements().isEmpty()) {
+				for (Type impType : rcd.getImplements()) {
+					try {
+						InterfaceDeclaration idec =(InterfaceDeclaration)(TypesUtilities.getInstance().getMetaData(impType));
+						getAllConstructorCallNames(idec , constructorNames);
+					} catch (CodeCompilationException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+				}
+			}
+			constructorNames.add(rcd.getName() + "Actor");
+		} else if (baseClassDeclaration instanceof InterfaceDeclaration) {
+			InterfaceDeclaration idec = (InterfaceDeclaration) baseClassDeclaration;
+			if (!idec.getExtends().isEmpty()) {
+				for (Type extType : idec.getExtends()) {
+					try {
+						InterfaceDeclaration intd =(InterfaceDeclaration)(TypesUtilities.getInstance().getMetaData(extType));
+						getAllConstructorCallNames(intd , constructorNames);
+					} catch (CodeCompilationException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+				}
+
+			}
+			constructorNames.add(idec.getName() + "Actor");
+		}
 	}
 
 	/**
@@ -654,8 +734,8 @@ public class CoreRebecaFileGenerator extends AbstractFileGenerator {
 		context.put("aFeatures", analysisFeaturesNames);
 		context.put("TypesUtilities", TypesUtilities.getInstance());
 
-		
-		
+
+
 		template = velocityEngine.getTemplate(FilesNames.REBECMGR_CPP_TEMPLATE);
 		fileWriter = new FileWriter(destinationLocation.getPath()
 				+ File.separatorChar + FilesNames.REBECMGR_OUTPUT_CPP);
@@ -663,9 +743,12 @@ public class CoreRebecaFileGenerator extends AbstractFileGenerator {
 		fileWriter.close();
 
 	}
-	private int parentMethodCounts(ReactiveClassDeclaration rcd) {
+	private int parentMethodCounts(BaseClassDeclaration bcd) {
 
-		//This counter is set to 0 as it has to ignore "0" as the empty message
+		if (bcd instanceof InterfaceDeclaration)
+			return 0;
+		ReactiveClassDeclaration rcd = (ReactiveClassDeclaration) bcd;
+		//This counter is set to 1 as it has to ignore "0" as the empty message
 		int cnt = 1; 
 		while(rcd.getExtends() != null) {
 			try {
@@ -675,12 +758,12 @@ public class CoreRebecaFileGenerator extends AbstractFileGenerator {
 				// TODO Auto-generated catch block
 				e1.printStackTrace();
 			}
-			
-			
+
+
 		}
 		return cnt;
 	}
-	
+
 	protected void createTypeAndConfig(String configPatch) throws IOException {
 
 		VelocityContext context = new VelocityContext();
@@ -769,17 +852,6 @@ public class CoreRebecaFileGenerator extends AbstractFileGenerator {
 
 	}
 
-	//	@SuppressWarnings("static-access")
-	//	public static OptionGroup getOptions() {
-	//		OptionGroup group = new OptionGroup();
-	//		group.addOption(
-	//				OptionBuilder.withArgName("file")
-	//                .hasArg()
-	//                .withDescription("Rebeca model property file.")
-	//                .withLongOpt("property").create('p')
-	//				);
-	//		return group;
-	//	}
 
 
 

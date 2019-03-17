@@ -3,6 +3,7 @@ package org.rebecalang.rmc.timedrebeca;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.LinkedList;
 import java.util.List;
@@ -13,6 +14,7 @@ import org.apache.velocity.Template;
 import org.apache.velocity.VelocityContext;
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.BinaryExpression;
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.Expression;
+import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.InterfaceDeclaration;
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.Literal;
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.MainRebecDefinition;
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.NonDetExpression;
@@ -144,18 +146,27 @@ public class TimedRebecaFileGenerator extends CoreRebecaFileGenerator {
 
 	protected void createActors(List<String> patches) throws IOException {
 
-		List<String> constructorCallClasses = new LinkedList<String>();
-		constructorCallClasses.add("AbstractActor");
 
 		// Translate Each Reactive Class to its CPP & Header files.
+
 		for (ReactiveClassDeclaration reactiveClassDeclaration : rebecaModel
 				.getRebecaCode().getReactiveClassDeclaration()) {
 			// Get Reactive Class to Generate Code for It.
-			List<String> baseClasses = new LinkedList<String>();
+			Set<String> constructorCallClasses = new HashSet<String>();
+			constructorCallClasses.add("AbstractActor");
+			Set<String> baseClasses = new HashSet<String>();
 			baseClasses.add("AbstractTimedActor");
 
 			super.createAnActor(reactiveClassDeclaration, baseClasses, constructorCallClasses, patches);
 
+		}
+		for (InterfaceDeclaration intd : rebecaModel.getRebecaCode().getInterfaceDeclaration()) {
+			Set<String> constructorCallClasses = new HashSet<String>();
+			constructorCallClasses.add("AbstractActor");
+			Set<String> baseClasses = new HashSet<String>();
+			baseClasses.add("AbstractTimedActor");
+
+			super.createAnActor(intd, baseClasses, constructorCallClasses, patches);
 		}
 	}
 

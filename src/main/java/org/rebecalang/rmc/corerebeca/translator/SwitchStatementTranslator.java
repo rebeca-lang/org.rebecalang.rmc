@@ -37,6 +37,7 @@ public class SwitchStatementTranslator extends AbstractStatementTranslator {
 				retValue += StatementTranslatorContainer.translate(innerStatement, tab + TAB);
 				retValue += super.adjustSemicolonForExpression(innerStatement);
 			}
+			retValue += ";";
 		}
 
 		return retValue + "}" + NEW_LINE;
