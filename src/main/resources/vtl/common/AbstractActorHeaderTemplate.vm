@@ -77,10 +77,10 @@ protected:
     void enqueue(byte **queue, byte *message, int size);
 
     //void _synchmethod_assertion (/*string message*/ byte id, boolean condition);
-    void _synchmethod_assertion (boolean condition, string message);
-    void _synchmethod_assertion (boolean condition);
+    void assertion (boolean condition, string message);
+    void assertion (boolean condition);
     
-    ArrayList<AbstractActor*>& _synchmethod_getAllActors();
+    ArrayList<AbstractActor*>& getAllActors();
     
 	#ifdef DEBUG_LEVEL_2 
 		ostream &analysisOutputStream;

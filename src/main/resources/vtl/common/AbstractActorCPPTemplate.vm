@@ -96,17 +96,17 @@ char* AbstractActor::getName() const {
     return myName;
 }
 
-void AbstractActor::_synchmethod_assertion(boolean condition) {
+void AbstractActor::assertion(boolean condition) {
 	if (!condition)
 		throw AssertionFailedException("no message", this);
 }
 
-void AbstractActor::_synchmethod_assertion(boolean condition, string message) {
+void AbstractActor::assertion(boolean condition, string message) {
 	if (!condition)
 		throw AssertionFailedException(message, this);
 }
 
- ArrayList<AbstractActor*>& AbstractActor::_synchmethod_getAllActors() {
+ ArrayList<AbstractActor*>& AbstractActor::getAllActors() {
  
  	return rebecs;
  }
