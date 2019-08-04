@@ -48,7 +48,7 @@ public class DotPrimaryExpressionTranslator extends AbstractStatementTranslator 
 						+ TypesUtilities.getTypeName(TypesAnalysisUtilities.getBaseType(
 								dotPrimary.getLeft().getType())) + "Actor *" + tempVariable + ";");
 				retValue = tab + "(" +  tempVariable + "=" + retValue.trim();
-				retValue += ", _synchmethod_assertion(" + tempVariable + "!= null, "
+				retValue += ", assertion(" + tempVariable + "!= null, "
 						+ "\"Null Pointer Exception in method \" + reactiveClassName + " +
 						"\".\" + methodName + \"line " +
 						dotPrimary.getLineNumber() +

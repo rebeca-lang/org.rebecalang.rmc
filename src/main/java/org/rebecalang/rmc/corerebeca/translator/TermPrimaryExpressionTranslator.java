@@ -49,7 +49,7 @@ public class TermPrimaryExpressionTranslator extends AbstractStatementTranslator
 		for (Expression expression : termPrimary.getIndices()) {
 			if (aFeatures.contains(AnalysisFeature.SAFE_MODE)) {
 				retValue += "[(arrayIndexChecker=" + StatementTranslatorContainer.translate(expression, "") + 
-						", _synchmethod_assertion(arrayIndexChecker >= 0 && arrayIndexChecker <" +
+						", assertion(arrayIndexChecker >= 0 && arrayIndexChecker <" +
 						((ArrayType)termPrimary.getType()).getDimensions().get(indexCounter) +
 						", string(\"Array index out of bound: \") + to_string((long long)arrayIndexChecker)" +
 						" + \", method \\\"\" + reactiveClassName + \".\" + methodName + \"\\\" line " +
