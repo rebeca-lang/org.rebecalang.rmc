@@ -130,6 +130,8 @@ void AbstractCoreRebecaAnalyzer::instantiationPart() {
     											, hashmapSize
     											#applyPatch($patches 'AdditionalInitializationParameters' false)
     											);
+    											$instance.getAnnotations()
+		#setAnnotationsBasedSpecification()
         rebecs.push_back(_ref_${instance.getName()});
         referenceToRebecs->push_back(_ref_${instance.getName()});
 	#end

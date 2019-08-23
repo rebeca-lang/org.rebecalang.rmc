@@ -14,7 +14,6 @@ import java.util.Set;
 import org.apache.log4j.Logger;
 import org.apache.velocity.Template;
 import org.apache.velocity.VelocityContext;
-import org.apache.velocity.app.event.ReferenceInsertionEventHandler.referenceInsertExecutor;
 import org.rebecalang.compiler.modelcompiler.corerebeca.CoreRebecaLabelUtility;
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.ArrayType;
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.BaseClassDeclaration;
@@ -49,9 +48,9 @@ import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.UnaryExpress
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.VariableDeclarator;
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.VariableInitializer;
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.WhileStatement;
+import org.rebecalang.compiler.propertycompiler.corerebeca.objectmodel.LTLDefinition;
 import org.rebecalang.compiler.propertycompiler.generalrebeca.objectmodel.AssertionDefinition;
 import org.rebecalang.compiler.propertycompiler.generalrebeca.objectmodel.Definition;
-import org.rebecalang.compiler.propertycompiler.corerebeca.objectmodel.LTLDefinition;
 import org.rebecalang.compiler.propertycompiler.generalrebeca.objectmodel.PropertyModel;
 import org.rebecalang.compiler.utils.CodeCompilationException;
 import org.rebecalang.compiler.utils.CompilerFeature;

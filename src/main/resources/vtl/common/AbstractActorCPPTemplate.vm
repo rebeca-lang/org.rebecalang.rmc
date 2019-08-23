@@ -3,6 +3,7 @@
 \#include "AbstractActor.h"
 \#include <stdio.h>
 \#include <string.h>
+\#include <limits>
 
 string to_string(int number){
     string number_string = "";
@@ -50,6 +51,7 @@ AbstractActor::AbstractActor(byte myID, char* myName, int maxQueueLength, int ma
 	this->myName = myName;
 	this->maxQueueLength = maxQueueLength;
 	this->maxParamLength = maxParamLength;
+	this->priority = std::numeric_limits<int>::max();
 	shift = 0;
     messageQueue = new byte[maxQueueLength];
 	memset (messageQueue, 0, sizeof(byte) * maxQueueLength);
@@ -141,4 +143,12 @@ void AbstractActor::exportStateInXML(ostream &out, string tab) {
 	exportStateVariablesInXML(out, tab + "\t");
 	exportQueueContentInXML(out, tab + "\t");	
 	out << tab << "</rebec>" << endl;
+}
+
+int AbstractActor::getPriority() {
+	return priority;
+}
+
+void AbstractActor::setPriority(int priority) {
+	this->priority = priority;
 }

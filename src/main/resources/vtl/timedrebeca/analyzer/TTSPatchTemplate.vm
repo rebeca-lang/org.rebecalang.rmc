@@ -110,7 +110,6 @@ void TimedModelChecker::storeInitialState() {
     }
 }
 
-
 void TimedModelChecker::doTimedModelChecking(string userSelectedPropertyName, string userSelectedPropertyType) {
     byte result;
     TIME_TYPE shift;
@@ -127,10 +126,28 @@ void TimedModelChecker::doTimedModelChecking(string userSelectedPropertyName, st
 	    #ifdef DEBUG
 	        out << "State is unmarshalled and try to find an enabled rebec." << endl;
 	    #endif
+
+	    int highestPriority = std::numeric_limits<int>::max();
+        for (int r = 0; r < REBEC_COUNT; r++) {
+        	if (rebecs[r]->__pc == -1) {
+	            if (!rebecs[r]->messageQueue[0])
+	                continue;
+	            if ((max(rebecs[r]->getNow(), rebecs[r]->executionTime[0])) > currentTime) {
+	                continue;
+                }
+                highestPriority = min(rebecs[r]->getPriority(), highestPriority);
+        	} else {
+        		if (rebecs[r]->__res != currentTime)
+        			continue;
+                highestPriority = min(rebecs[r]->getPriority(), highestPriority);
+			}
+		}
 	    
         for (int r = 0; r < REBEC_COUNT; r++) {
         	TIME_TYPE executionTime;
             int numberOfAlternatives = 1;
+            if (rebecs[r]->getPriority() != highestPriority)
+            	continue;
         	if (rebecs[r]->__pc == -1) {
 	            if (!rebecs[r]->messageQueue[0])
 	                continue;

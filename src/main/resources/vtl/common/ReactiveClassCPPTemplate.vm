@@ -4,6 +4,7 @@
 \#include "${reactiveClassName}Actor.h"
 \#include <stdio.h>
 \#include <string.h>
+\#include <limits>
 
 #foreach($tempReactiveClassDeclaration in $allClassDeclarations)
 #if ($tempReactiveClassDeclaration.getName() != $reactiveClassName)
@@ -70,8 +71,22 @@ ${reactiveClassName}Actor::${reactiveClassName}Actor(byte myID, char* myName, in
 		delete [] messageNames;
     #end	
     messageNames = new char *[$reactiveClassDeclaration.getMsgsrvs().size() + $parentMSGSRVCount];
+    messagePriorities = new int[$reactiveClassDeclaration.getMsgsrvs().size() + $parentMSGSRVCount];
 	messageNames[0] = (char*)"Empty";
 	#set ($counter = 1)
+	
+	#macro (setMessageAnnotationsBasedSpecification)
+		#set($defaultPriority = true)
+	    #foreach($annotation in $methodDeclaration.getAnnotations())
+	    	#if ($annotation.getIdentifier() == "priority")
+	    		#set($defaultPriority = false)
+	    		messagePriorities[$counter] = $annotation.getValue().getLiteralValue();
+	    	#end
+		#end
+		#if($defaultPriority)
+			messagePriorities[$counter] = std::numeric_limits<int>::max();
+		#end
+	#end
 	
 	#macro (printParentMethods $reactiveClass)
 		#if ($reactiveClass.getExtends())
@@ -80,6 +95,7 @@ ${reactiveClassName}Actor::${reactiveClassName}Actor(byte myID, char* myName, in
 		#end
 		#foreach ($methodDeclaration in $reactiveClass.getMsgsrvs())
        		 messageNames[$counter] = (char*)"$methodDeclaration.getName().toUpperCase()";
+       		 #setMessageAnnotationsBasedSpecification()
       		 #set ($counter = $counter + 1)
   	 	#end	
 		

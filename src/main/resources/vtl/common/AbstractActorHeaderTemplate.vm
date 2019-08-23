@@ -61,10 +61,16 @@ public:
     byte* senderQueue;
     
     char ** messageNames;
+    int *messagePriorities;
+
     byte** paramQueue;
     int maxParamLength;
     int maxQueueLength;
     int shift;
+    
+    int priority;
+    int getPriority();
+    void setPriority(int priority);
 
 	#applyPatch($patches 'AdditionalSignatures' '')
     
@@ -89,6 +95,7 @@ protected:
     #ifdef NO_ATOMIC_EXECUTION
     	int __pc;
     #endif
+    
 };
 
 #endif

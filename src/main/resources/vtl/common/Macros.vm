@@ -1,5 +1,13 @@
 #*In the name of Allah*#
 
+#macro (setAnnotationsBasedSpecification)
+    #foreach($annotation in $instance.getAnnotations())
+    	#if ($annotation.getIdentifier() == "priority")
+    		_ref_${instance.getName()}->setPriority($annotation.getValue().getLiteralValue());
+    	#end
+	#end
+#end
+
 #macro (applyPatch $patches $methodName $param)
 	#foreach($patch in $patches)
 		#parse("$patch")

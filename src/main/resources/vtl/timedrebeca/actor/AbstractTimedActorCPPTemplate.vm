@@ -78,15 +78,18 @@ void AbstractTimedActor::applyPolicy(boolean isSendToSelf) {
 			|| __pc != -1 
 		#endif
 		))) {
-			if (messageQueue[cnt] > messageQueue[cnt - 1]) break;
-			if (messageQueue[cnt] == messageQueue[cnt - 1]) {
-				if (senderQueue[cnt] > senderQueue[cnt - 1]) break;
-				if (senderQueue[cnt] == senderQueue[cnt - 1]) {
-					if (deadline[cnt] > deadline[cnt - 1]) break;
-					if (deadline[cnt] == deadline[cnt - 1]) {
-						int memcmpResult = memcmp(paramQueue[cnt], paramQueue[cnt - 1], maxParamLength);
-						if (memcmpResult >= 0) break;
-					}					
+			if (messagePriorities[messageQueue[cnt]] > messagePriorities[messageQueue[cnt - 1]]) break;
+			if (messagePriorities[messageQueue[cnt]] == messagePriorities[messageQueue[cnt - 1]]) {
+				if (messageQueue[cnt] > messageQueue[cnt - 1]) break;
+				if (messageQueue[cnt] == messageQueue[cnt - 1]) {
+					if (senderQueue[cnt] > senderQueue[cnt - 1]) break;
+					if (senderQueue[cnt] == senderQueue[cnt - 1]) {
+						if (deadline[cnt] > deadline[cnt - 1]) break;
+						if (deadline[cnt] == deadline[cnt - 1]) {
+							int memcmpResult = memcmp(paramQueue[cnt], paramQueue[cnt - 1], maxParamLength);
+							if (memcmpResult >= 0) break;
+						}					
+					}
 				}
 			}
 			
