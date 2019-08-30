@@ -40,6 +40,13 @@ AbstractTimedActor::~AbstractTimedActor() {
 
 }
 
+#if ($priorityType == "global")
+int AbstractTimedActor::getPriority() {
+    if (messageQueue[0] == null)
+        return std::numeric_limits<int>::max();
+	return messagePriorities[messageQueue[0]];
+}
+#end
 void AbstractTimedActor::setNow(TIME_TYPE now) {
     this->_ref_now = now;
 }

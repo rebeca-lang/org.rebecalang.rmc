@@ -69,7 +69,7 @@ public:
     int shift;
     
     int priority;
-    int getPriority();
+    virtual int getPriority();
     void setPriority(int priority);
 
 	#applyPatch($patches 'AdditionalSignatures' '')

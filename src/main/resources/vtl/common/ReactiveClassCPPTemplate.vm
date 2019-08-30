@@ -78,7 +78,7 @@ ${reactiveClassName}Actor::${reactiveClassName}Actor(byte myID, char* myName, in
 	#macro (setMessageAnnotationsBasedSpecification)
 		#set($defaultPriority = true)
 	    #foreach($annotation in $methodDeclaration.getAnnotations())
-	    	#if ($annotation.getIdentifier() == "priority")
+	    	#if ($annotation.getIdentifier() == "priority" || $annotation.getIdentifier() == "globalPriority")
 	    		#set($defaultPriority = false)
 	    		messagePriorities[$counter] = $annotation.getValue().getLiteralValue();
 	    	#end
@@ -134,7 +134,6 @@ void ${reactiveClassName}Actor::exportAMessageInXML(ostream &out, string tab, in
                }
 	        #end
     	}
-
 }
 
 

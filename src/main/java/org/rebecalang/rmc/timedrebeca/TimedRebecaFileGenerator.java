@@ -12,16 +12,19 @@ import java.util.Set;
 
 import org.apache.velocity.Template;
 import org.apache.velocity.VelocityContext;
+import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.Annotation;
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.BinaryExpression;
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.Expression;
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.InterfaceDeclaration;
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.Literal;
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.MainRebecDefinition;
+import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.MethodDeclaration;
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.NonDetExpression;
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.ReactiveClassDeclaration;
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.RebecaModel;
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.TermPrimary;
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.UnaryExpression;
+import org.rebecalang.compiler.modelcompiler.timedrebeca.PriorityType;
 import org.rebecalang.compiler.propertycompiler.generalrebeca.objectmodel.PropertyModel;
 import org.rebecalang.compiler.propertycompiler.timedrebeca.objectmodel.TCTLDefinition;
 import org.rebecalang.compiler.utils.CodeCompilationException;
@@ -189,7 +192,9 @@ public class TimedRebecaFileGenerator extends CoreRebecaFileGenerator {
 
 	protected void createAbstractTimedActor(List<String> patches) throws IOException {
 
+		PriorityType priorityType = getPriorityType();
 		VelocityContext context = new VelocityContext();
+		context.put("priorityType", priorityType.name());
 		context.put("patches", patches);
 		
 		Template template = velocityEngine
@@ -203,6 +208,18 @@ public class TimedRebecaFileGenerator extends CoreRebecaFileGenerator {
 				+ File.separatorChar + FilesNames.ABSTRACT_TIMED_ACTOR_OUTPUT_CPP);
 		template.merge(context, fileWriter);
 		fileWriter.close();
+	}
+
+	private PriorityType getPriorityType() {
+		for (ReactiveClassDeclaration rcd : rebecaModel.getRebecaCode().getReactiveClassDeclaration()) {
+			for (MethodDeclaration md : rcd.getMsgsrvs()) {
+				for (Annotation annotation : md.getAnnotations()) {
+					if(annotation.getIdentifier().equals("globalPriority"))
+						return PriorityType.global;
+				}
+			}
+		}
+		return PriorityType.local;
 	}
 
 	protected void createTimedModelChecker() throws IOException {

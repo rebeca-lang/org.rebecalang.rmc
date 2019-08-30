@@ -7,6 +7,8 @@
 \#include <list>
 \#include <stdio.h>
 \#include <string.h>
+\#include <limits>
+
 using namespace std;
 
 \#define typedSwap(x,y,type) { type __tempvar = x; x = y; y = __tempvar; }
@@ -31,6 +33,11 @@ public:
         int __pc;
         TIME_TYPE __res;
     #endif
+    
+    #if ($priorityType == "global")
+    	virtual int getPriority();
+    #end
+    
 
     TIME_TYPE* executionTime;
     TIME_TYPE* deadline;
