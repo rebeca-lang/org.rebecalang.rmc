@@ -4,6 +4,8 @@
 
 AbstractCoreRebecaAnalyzer::AbstractCoreRebecaAnalyzer(ostream &outStream, int hashmapSize) : analysisOutputStream(outStream){
 	this->hashmapSize = hashmapSize;
+	this->numberOfTransitions = 0;
+	this->numberOfStates = 0;
 }
 
 void AbstractCoreRebecaAnalyzer::unmarshalRebecs(long* node) {
@@ -130,7 +132,6 @@ void AbstractCoreRebecaAnalyzer::instantiationPart() {
     											, hashmapSize
     											#applyPatch($patches 'AdditionalInitializationParameters' false)
     											);
-    											$instance.getAnnotations()
 		#setAnnotationsBasedSpecification()
         rebecs.push_back(_ref_${instance.getName()});
         referenceToRebecs->push_back(_ref_${instance.getName()});

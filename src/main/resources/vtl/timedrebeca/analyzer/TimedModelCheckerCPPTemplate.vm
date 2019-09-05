@@ -44,6 +44,9 @@ long TimedModelChecker::getConsumedMemory() {
 
 void TimedModelChecker::printCounterExample(int result, AbstractActor* causedBy) {
 
+	if(!current.state)
+		return;
+
 	string lastStateRebecName, lastStateAction, lastStateSender;
 	TIME_TYPE lastStateTime;
 	if (causedBy != null) {

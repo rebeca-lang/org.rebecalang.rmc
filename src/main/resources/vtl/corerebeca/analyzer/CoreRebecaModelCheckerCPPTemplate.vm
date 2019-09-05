@@ -13,6 +13,7 @@ CoreRebecaModelChecker::CoreRebecaModelChecker(ostream &outStream
 	{
 
 	this->hashmapSize = hashmapSize;
+	depth = -1;
 }
 
 long CoreRebecaModelChecker::getConsumedMemory() {

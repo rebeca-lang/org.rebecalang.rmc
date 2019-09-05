@@ -503,6 +503,9 @@ void CoreRebecaModelChecker::printCounterExample(int result, const AbstractActor
     int loopID = -1;
     int counter = 0;
 
+    if(depth == -1)
+    	return;
+
 	unmarshalRebecs(stack[0].state->rebecs);
 	exportState(stack[0].state, out);
 	short int rebecId = stack[0].rebec;
