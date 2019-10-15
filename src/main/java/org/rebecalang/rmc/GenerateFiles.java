@@ -7,6 +7,7 @@ import java.util.Set;
 import org.rebecalang.compiler.modelcompiler.RebecaCompiler;
 import org.rebecalang.compiler.modelcompiler.SymbolTable;
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.RebecaModel;
+import org.rebecalang.compiler.propertycompiler.PropertyCodeCompilationException;
 import org.rebecalang.compiler.propertycompiler.generalrebeca.objectmodel.PropertyModel;
 import org.rebecalang.compiler.utils.CodeCompilationException;
 import org.rebecalang.compiler.utils.CompilerFeature;
@@ -58,7 +59,7 @@ public class GenerateFiles {
 							new org.rebecalang.compiler.propertycompiler.timedrebeca.TimedRebecaPropertyCompiler();
 					propertyModel = propertyCompiler.compilePropertyModel(
 							rebecaModel, compilationResult.getSecond(), propertyFile, compilerFeatures);
-					container.addAll(propertyCompiler.getExceptionContainer());
+					container.addAll(cloneAndConvertPropertyCompilationExceptions(propertyCompiler.getExceptionContainer()));
 					if (!container.getExceptions().isEmpty()) {
 						return;
 					}
@@ -72,7 +73,7 @@ public class GenerateFiles {
 							new org.rebecalang.compiler.propertycompiler.corerebeca.CoreRebecaPropertyCompiler();
 					propertyModel = propertyCompiler.compilePropertyModel(
 							rebecaModel, compilationResult.getSecond(), propertyFile, compilerFeatures);
-					container.addAll(propertyCompiler.getExceptionContainer());
+					container.addAll(cloneAndConvertPropertyCompilationExceptions(propertyCompiler.getExceptionContainer()));
 					if (!container.getExceptions().isEmpty()) {
 						return;
 					}
@@ -86,6 +87,23 @@ public class GenerateFiles {
 			container.addException(ce);
 		}
 
+	}
+
+	public static ExceptionContainer cloneAndConvertPropertyCompilationExceptions(ExceptionContainer exceptionContainer) {
+		ExceptionContainer container = new ExceptionContainer();
+		for(Exception exception : exceptionContainer.getExceptions()) {
+			if (exception instanceof PropertyCodeCompilationException)
+				container.getExceptions().add(exception);
+			else if (exception instanceof CodeCompilationException) {
+				PropertyCodeCompilationException propertyCompileException = new PropertyCodeCompilationException(
+						exception.getMessage(),
+						((CodeCompilationException)exception).getLine(),
+						((CodeCompilationException)exception).getColumn());
+				container.addException(propertyCompileException);
+			} else
+				container.getExceptions().add(exception);
+		}
+		return container;
 	}
 
 //	public Set<OptionGroup> getOptions() {

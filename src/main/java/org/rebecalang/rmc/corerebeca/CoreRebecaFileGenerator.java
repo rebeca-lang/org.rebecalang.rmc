@@ -222,14 +222,6 @@ public class CoreRebecaFileGenerator extends AbstractFileGenerator {
 			createAbstractCoreRebecaAnalyzer();
 			createCoreRebecaModelChecker(graphs);
 
-			//
-			//			createAcAut(null);
-			//
-			//			createPropDefinitions();
-			//			
-			//			createRBFSMC();
-			//
-			//			createCTLStaticFiles();
 		} catch (IOException e) {
 			container.addException(e);
 		}
@@ -306,7 +298,7 @@ public class CoreRebecaFileGenerator extends AbstractFileGenerator {
 		}
 	}
 
-	public void createBFSHashmapTemplate() throws IOException {
+	protected void createBFSHashmapTemplate() throws IOException {
 		VelocityContext context = new VelocityContext();
 
 		Template template = velocityEngine
@@ -317,7 +309,7 @@ public class CoreRebecaFileGenerator extends AbstractFileGenerator {
 		fileWriter.close();
 	}
 
-	public void createCoreRebecaBFSHashmap() throws IOException {
+	protected void createCoreRebecaBFSHashmap() throws IOException {
 		VelocityContext context = new VelocityContext();
 
 		Template template = velocityEngine
@@ -334,7 +326,7 @@ public class CoreRebecaFileGenerator extends AbstractFileGenerator {
 		fileWriter.close();
 	}
 
-	public void createCoreRebecaDFSHashmap() throws IOException {
+	protected void createCoreRebecaDFSHashmap() throws IOException {
 
 		VelocityContext context = new VelocityContext();
 		context.put("REBEC_COUNT", rebecaModel.getRebecaCode().getMainDeclaration().getMainRebecDefinition().size());
@@ -565,7 +557,7 @@ public class CoreRebecaFileGenerator extends AbstractFileGenerator {
 	 * @throws IOException
 	 *             All velocity exceptions that occurs in function.
 	 */
-	public void createAnActor(BaseClassDeclaration baseClassDeclaration, 
+	protected void createAnActor(BaseClassDeclaration baseClassDeclaration, 
 			Set<String> baseClasses, Set<String> constructorCallClasses, List<String> patches) throws IOException
 	{
 
@@ -590,7 +582,6 @@ public class CoreRebecaFileGenerator extends AbstractFileGenerator {
 		context.put("methodBodyConvertor", methodBodyConvertor);
 		context.put("translator", translator);
 		context.put("reactiveClassName", baseClassDeclaration.getName());
-
 
 		if (baseClassDeclaration instanceof ReactiveClassDeclaration) {
 			ReactiveClassDeclaration rcd = (ReactiveClassDeclaration) baseClassDeclaration;

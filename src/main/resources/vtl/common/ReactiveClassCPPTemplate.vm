@@ -73,7 +73,8 @@ ${reactiveClassName}Actor::${reactiveClassName}Actor(byte myID, char* myName, in
     messageNames = new char *[$reactiveClassDeclaration.getMsgsrvs().size() + $parentMSGSRVCount];
     messagePriorities = new int[$reactiveClassDeclaration.getMsgsrvs().size() + $parentMSGSRVCount];
 	messageNames[0] = (char*)"Empty";
-	#set ($counter = 1)
+
+	#set($counter = 1)
 	
 	#macro (setMessageAnnotationsBasedSpecification)
 		#set($defaultPriority = true)
@@ -87,21 +88,24 @@ ${reactiveClassName}Actor::${reactiveClassName}Actor(byte myID, char* myName, in
 			messagePriorities[$counter] = std::numeric_limits<int>::max();
 		#end
 	#end
-	
-	#macro (printParentMethods $reactiveClass)
+		
+	#set($hierarchy = $reactiveClassDeclaration.getClass().forName("java.util.LinkedList").newInstance())
+	#macro (fillHierarchy $reactiveClass)
+		$hierarchy.addFirst($reactiveClass)
 		#if ($reactiveClass.getExtends())
-			 #set ($parent = $TypesUtilities.getInstance().getMetaData($reactiveClass.getExtends()));
-   			 #printParentMethods($parent) 			
+			 #set ($parent = $TypesUtilities.getInstance().getMetaData($reactiveClass.getExtends()))
+   			 #fillHierarchy($parent)
 		#end
-		#foreach ($methodDeclaration in $reactiveClass.getMsgsrvs())
+	#end
+	
+	#fillHierarchy($reactiveClassDeclaration)
+	#foreach ($rcd in $hierarchy)
+		#foreach ($methodDeclaration in $rcd.getMsgsrvs())
        		 messageNames[$counter] = (char*)"$methodDeclaration.getName().toUpperCase()";
        		 #setMessageAnnotationsBasedSpecification()
       		 #set ($counter = $counter + 1)
   	 	#end	
-		
 	#end
-    #printParentMethods($reactiveClassDeclaration)
-
 
 	#applyPatch($patches 'AdditionalInitializations' '')
 	
@@ -306,7 +310,7 @@ long ${reactiveClassName}Actor::methodSelectorAndExecutor() {
         #end
     }
     #if($parentName)
-    return ${parentName}::execute();   // if queue empty, we have no transitions
+    return ${parentName}::methodSelectorAndExecutor();   // if queue empty, we have no transitions
 	#else 
 	return -1;
 	#end
