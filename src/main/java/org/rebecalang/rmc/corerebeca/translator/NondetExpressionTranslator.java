@@ -76,7 +76,7 @@ public class NondetExpressionTranslator extends AbstractStatementTranslator {
 			String nonDetVariableName) throws StatementTranslationException {
 		
 		int nondetId = ((int)Math.pow(2, nonDetCounter));
-
+		String nonDetTailString = "";
 		nonDetTailString += TAB + TAB + "if (__tNumber & " + nondetId + ") {" + NEW_LINE +
 				TAB + TAB + TAB + 
 				"if (false){/*Dummy 'if' statement to create nested else-if easily!*/}" + NEW_LINE;
@@ -107,6 +107,7 @@ public class NondetExpressionTranslator extends AbstractStatementTranslator {
 				TAB + TAB + TAB + TAB + "return __tNumber;" + NEW_LINE +
 				TAB + TAB + TAB + "}" + NEW_LINE +
 				TAB + TAB + "}" + NEW_LINE;
+		this.nonDetTailString = nonDetTailString + this.nonDetTailString;
 	}
 
 	protected String nondetResolverForTraceGenerator(NonDetExpression ndExpression, String nonDetVariableName) throws StatementTranslationException {
