@@ -20,21 +20,21 @@
 #ifdef DEBUG
 
 	\#define PUSH(d, newState) \
-		stack[d].state = newState;	\
-		stack[d].rebec = (unsigned char)-1; \
-		stack[d].flag = false; \
-		stack[d].undoMark = undoMark; \
-		stack[d].fc =  stack[d-1].fc;
+		localStack[d].state = newState;	\
+		localStack[d].rebec = (unsigned char)-1; \
+		localStack[d].flag = false; \
+		localStack[d].undoMark = undoMark; \
+		localStack[d].fc =  localStack[d-1].fc;
 \#else
 	\#define PUSH(d, newState) \
-		stack[d].state = newState;	\
-		stack[d].rebec = (unsigned char)-1; \
-		stack[d].flag = false; \
-		stack[d].undoMark = fairnessCounter;
+		localStack[d].state = newState;	\
+		localStack[d].rebec = (unsigned char)-1; \
+		localStack[d].flag = false; \
+		localStack[d].undoMark = fairnessCounter;
 #endif
 
 \#define PRINT_STACK(d) \
-	cout<< "..........." << endl;for(int sti = d; sti != 0; sti--) {cout << stack[sti].state->stateID << "," << stack[sti].state->claim << "," << stack[sti].state->isOnStack() << endl;}cout<< "..........." << endl;
+	cout<< "..........." << endl;for(int sti = d; sti != 0; sti--) {cout << localStack[sti].state->stateID << "," << localStack[sti].state->claim << "," << localStack[sti].state->isOnStack() << endl;}cout<< "..........." << endl;
 
 struct StackEl {
 	State *state;	// a pointer to the real state stored in HashMap
@@ -53,7 +53,7 @@ struct StackEl {
 	#ifdef DEBUG
 		byte fc;	// fairness counter
 	#endif
-}*stack;
+}*localStack;
 
 
 bool CoreRebecaModelChecker::incDepth() {
@@ -132,7 +132,7 @@ boolean CoreRebecaModelChecker::isAccepting(short int claim, int propertySelecto
 void CoreRebecaModelChecker::doDFSModelChecking(string userSelectedPropertyName, string userSelectedPropertyType) {
 	int propertySelector;
 	short int claim;
-	stack = new StackEl[maxDepth];
+	localStack = new StackEl[maxDepth];
 	std::list<short int>claims;
 
 	byte fairnessCounter;	// for fairness algorithm
@@ -172,14 +172,14 @@ void CoreRebecaModelChecker::doDFSModelChecking(string userSelectedPropertyName,
 		throw UnknownPropertyException(message);
 	}
  	// store initial state of system
- 	stack[0].state = storeRecentlyCreatedState (result, claim, fairnessCounter);
+ 	localStack[0].state = storeRecentlyCreatedState (result, claim, fairnessCounter);
     #ifdef EXPORT_STATE_SPACE
 	    statespace << "<transitionsystem>" << endl;
-	    exportState(stack[0].state, statespace);
+	    exportState(localStack[0].state, statespace);
     #endif
  	
  	#ifdef DEBUG
- 		stack[0].fc = fairnessCounter;
+ 		localStack[0].fc = fairnessCounter;
  	#endif
 	depth = 0;
     #ifdef EXPORT_STATE_SPACE
@@ -206,13 +206,13 @@ void CoreRebecaModelChecker::doDFSModelChecking(string userSelectedPropertyName,
  		goto TryReduction;
  FullyExpand:
  		// In 1st DFS: If reduction fails for all rebecs, get back here to start phase 2 (which is fully expansion)
- 		stack[depth].state->setFullyExpandBit();
+ 		localStack[depth].state->setFullyExpandBit();
  TryReduction:
  	#endif
     #end
  	undoMark = fairnessCounter;
  	// Make sure rebecs are unmarshall properly if "for" and "while" below iterate!
- 	unmarshalRebecs(stack[depth].state->rebecs);	// unmarshal is needed for checking disabled rebecs - also needed because of symmetry detection!
+ 	unmarshalRebecs(localStack[depth].state->rebecs);	// unmarshal is needed for checking disabled rebecs - also needed because of symmetry detection!
  	//check if disabled rebecs can contribute to fairnessCounter
 #if ($aFeatures.contains("REDUCTION"))
 #ifdef SYMM
@@ -229,8 +229,8 @@ void CoreRebecaModelChecker::doDFSModelChecking(string userSelectedPropertyName,
         #ifdef PO
  			// in 1st DFS this tests which phase of loop over processes
  			// in 2nd DFS this tests if 1st DFS had to fully expand
- 			if (!stack[depth].state->isFullyExpandBitSet()){	// check if we are fully expanding or trying reduction
- 				if (!areActiveActionsSafe(stack[depth].state->rebecs, r, propertySelector))
+ 			if (!localStack[depth].state->isFullyExpandBitSet()){	// check if we are fully expanding or trying reduction
+ 				if (!areActiveActionsSafe(localStack[depth].state->rebecs, r, propertySelector))
  					continue;	// if current rebec's active actions are not safe, continue with next rebec
  				//else execute this rebec and if proviso is not violated, other rebecs will not be executed (ReductionSuccessful)
  			}
@@ -293,9 +293,9 @@ void CoreRebecaModelChecker::doDFSModelChecking(string userSelectedPropertyName,
 			}
  			deadlock = false;	// if some rebec has some enabled transition, then there is no deadlock
  			// we are going to call another method, so we need to store our own local variables onto stack
- 			stack[depth].flag = flag;
- 			stack[depth].undoMark = undoMark;
- 			stack[depth].rebec = (effectiveDepth == depth)? r : -1;	// we need to know where to resume when we're back!
+ 			localStack[depth].flag = flag;
+ 			localStack[depth].undoMark = undoMark;
+ 			localStack[depth].rebec = (effectiveDepth == depth)? r : -1;	// we need to know where to resume when we're back!
  			// if we are here, deadlock is false, so no need to store it
 
  			// claimDfs(sNext);
@@ -304,10 +304,10 @@ void CoreRebecaModelChecker::doDFSModelChecking(string userSelectedPropertyName,
  			if (nonDetTrans <= 0) {	// if no BFS, i.e., if back tracking
  				// POP from stack
  				deadlock = false;	// useful when "deadlockEnable" is false
- 				flag = stack[depth].flag;
- 				undoMark = stack[depth].undoMark;
- 				r = stack[depth].rebec;
- 				while((r == -1) && stack[depth].state->isVisited(fairnessCounter)) {
+ 				flag = localStack[depth].flag;
+ 				undoMark = localStack[depth].undoMark;
+ 				r = localStack[depth].rebec;
+ 				while((r == -1) && localStack[depth].state->isVisited(fairnessCounter)) {
  					// r == -1 means it was a BFS state
  					// If it is visited later, just skip it here (it is already explored)
  					/* If POR: this state was visited at a bigger depth, so if stack proviso
@@ -316,22 +316,22 @@ void CoreRebecaModelChecker::doDFSModelChecking(string userSelectedPropertyName,
  					   stack!
  					*/
  					depth--;
- 					flag = stack[depth].flag;
- 					undoMark = stack[depth].undoMark;
- 					r = stack[depth].rebec;
+ 					flag = localStack[depth].flag;
+ 					undoMark = localStack[depth].undoMark;
+ 					r = localStack[depth].rebec;
  				}
  			}
- 			unmarshalRebecs(stack[effectiveDepth].state->rebecs);	// make ready for next non_det execution
+ 			unmarshalRebecs(localStack[effectiveDepth].state->rebecs);	// make ready for next non_det execution
  		} while (nonDetTrans>0);
 
  		if (r == -1) {	// unexplored state - caused by non_det BFS
  			// explore it now - first visit, then if in 1st-DFS put it on stack
- 			stack[depth].state->visit(fairnessCounter);
+ 			localStack[depth].state->visit(fairnessCounter);
  			if (fairnessCounter > REBEC_COUNT)
- 				stack[depth].state->setOnStack();
+ 				localStack[depth].state->setOnStack();
             #if ($aFeatures.contains("REDUCTION"))
             #ifdef SYMM
-			    updatePermutation(stack[depth].perm); // new! for non-det
+			    updatePermutation(localStack[depth].perm); // new! for non-det
             #endif
             #end
 	 		goto systemTurn;	// continue with current DFS
@@ -367,7 +367,7 @@ void CoreRebecaModelChecker::doDFSModelChecking(string userSelectedPropertyName,
 				/*We must undo, only if fairnessCounter is incremented and current rebec was not disabled*/
  				fairnessCounter = undoMark;
  		}
- 		unmarshalRebecs(stack[depth].state->rebecs);	// make ready for next rebec
+ 		unmarshalRebecs(localStack[depth].state->rebecs);	// make ready for next rebec
     }	// end of loop over processes
  	#if ($aFeatures.contains("REDUCTION"))
     #ifdef PO
@@ -392,7 +392,7 @@ void CoreRebecaModelChecker::doDFSModelChecking(string userSelectedPropertyName,
  claimTurn:
  	newStateFlag = false;
 	// Do Rebecs still have their unmarshaled state??? YES, because of BFS
-	claims = getNextClaimState(stack[effectiveDepth].state->claim, propertySelector);	// we may use recently executed rebec
+	claims = getNextClaimState(localStack[effectiveDepth].state->claim, propertySelector);	// we may use recently executed rebec
 
 	/* The next state in the product automaton is reached when both system and claim move
 	one state forward. So we can store() a new state here.
@@ -415,7 +415,7 @@ void CoreRebecaModelChecker::doDFSModelChecking(string userSelectedPropertyName,
  		if (result & NEW_STATE) {	// bitwise AND
 		    #ifdef EXPORT_STATE_SPACE
 		    	exportState(newState, statespace);
-			    exportTransition(stack[effectiveDepth].state, newState, sender, rebecs[r]->getName(), label, statespace);
+			    exportTransition(localStack[effectiveDepth].state, newState, sender, rebecs[r]->getName(), label, statespace);
 		    #endif
  			// Move one step deeper in the stack
  			if (!incDepth()) break;
@@ -428,14 +428,14 @@ void CoreRebecaModelChecker::doDFSModelChecking(string userSelectedPropertyName,
  			*/
 	    #ifdef EXPORT_STATE_SPACE
  		} else {
-		    exportTransition(stack[effectiveDepth].state, newState, sender, rebecs[r]->getName(), label, statespace);
+		    exportTransition(localStack[effectiveDepth].state, newState, sender, rebecs[r]->getName(), label, statespace);
 		#endif
  		}
         #if ($aFeatures.contains("REDUCTION"))
  		#ifdef PO
  			// stack proviso
  			if (/*1st DFS?*/fairnessCounter > REBEC_COUNT && /*stack proviso violated?*/(result & ON_STACK)
- 				&& !stack[effectiveDepth].state->isFullyExpandBitSet()/*phase 1: make sure we haven't given up reduction*/){
+ 				&& !localStack[effectiveDepth].state->isFullyExpandBitSet()/*phase 1: make sure we haven't given up reduction*/){
  					depth = effectiveDepth;	// ignore the possible (unvisited) states due to non_det - undo execution of this rebec
  					goto TryNextRebec;	// in systemTurn
  					/* If proviso is not violated for any of the non_det transitions of this rebec, we just
@@ -445,7 +445,7 @@ void CoreRebecaModelChecker::doDFSModelChecking(string userSelectedPropertyName,
  			} else
  		#endif
         #end
- 		if (/*equals(stack[seedDepth].state, sys, claim)*/ (result & ON_STACK) && fairnessCounter == REBEC_COUNT) {
+ 		if (/*equals(localStack[seedDepth].state, sys, claim)*/ (result & ON_STACK) && fairnessCounter == REBEC_COUNT) {
  			// If the stack of 1st DFS is cut, a cycle is definitly closed.
  			/*-->implies && seedDepth != -1*/
  			// implied: in 2nd DFS
@@ -456,15 +456,15 @@ void CoreRebecaModelChecker::doDFSModelChecking(string userSelectedPropertyName,
 
      if (newStateFlag && !nonDetTrans) {
 
-         stack[depth].state->visit(fairnessCounter);
+         localStack[depth].state->visit(fairnessCounter);
          if (fairnessCounter > REBEC_COUNT)
-             stack[depth].state->setOnStack();
+             localStack[depth].state->setOnStack();
  		#ifdef DEBUG
- 			stack[depth].fc = fairnessCounter;
+ 			localStack[depth].fc = fairnessCounter;
  		#endif
         #if ($aFeatures.contains("REDUCTION"))
         #ifdef SYMM
-			updatePermutation(stack[depth].perm);
+			updatePermutation(localStack[depth].perm);
         #endif SYMM
         #end
 
@@ -479,7 +479,7 @@ void CoreRebecaModelChecker::doDFSModelChecking(string userSelectedPropertyName,
  			// After the 1st DFS exploration of current rebec is finished, if it is accepting, we
  			// start the 2nd DFS from this state. This post-order behavior allows us to keep the
  			// state-space of 2nd DFS between consecutive calls.
- 			if (/*in 1st DFS?*/fairnessCounter > REBEC_COUNT && isAccepting(stack[depth].state->claim, propertySelector)) {
+ 			if (/*in 1st DFS?*/fairnessCounter > REBEC_COUNT && isAccepting(localStack[depth].state->claim, propertySelector)) {
  				seedDepth = depth;
  				fairnessCounter = 0;	//enter 2nd DFS
  				goto systemTurn;	// start 2nd DFS
@@ -487,11 +487,11 @@ void CoreRebecaModelChecker::doDFSModelChecking(string userSelectedPropertyName,
  		}
  		// if we just want to start 2nd DFS, we have to keep the ON_STACK flag of the last state (seed)
  		if (fairnessCounter > REBEC_COUNT)	// we only keep track of 1st DFS stack
- 			stack[depth].state->clearOnStack();
+ 			localStack[depth].state->clearOnStack();
  		depth--;
         #if ($aFeatures.contains("REDUCTION"))
         #ifdef SYMM
-		    undoPermutation(stack[depth].perm);	// no need to restore pRebec, because it is calculated every time needed -> in store()
+		    undoPermutation(localStack[depth].perm);	// no need to restore pRebec, because it is calculated every time needed -> in store()
         #endif SYMM
         #end
      }
@@ -506,25 +506,25 @@ void CoreRebecaModelChecker::printCounterExample(int result, const AbstractActor
     if(depth == -1)
     	return;
 
-	unmarshalRebecs(stack[0].state->rebecs);
-	exportState(stack[0].state, out);
-	short int rebecId = stack[0].rebec;
+	unmarshalRebecs(localStack[0].state->rebecs);
+	exportState(localStack[0].state, out);
+	short int rebecId = localStack[0].rebec;
 	short int parent = 0;
 	
     for (int cnt = 1; cnt <= depth; cnt++) {
         // non_det BFS state(not visited in DFS)
-        if (stack[cnt].rebec == (byte)-1 && cnt != depth)
+        if (localStack[cnt].rebec == (byte)-1 && cnt != depth)
             continue;
-        //if (stack[cnt].state->equals(sys, claim))
+        //if (localStack[cnt].state->equals(sys, claim))
         //    loopID = counter;
 		
         string rebecName = rebecs[rebecId]->getName();
         string action = rebecs[rebecId]->activeAction();
         string sender = rebecs[rebecs[rebecId]->senderQueue[0]]->getName();
-		unmarshalRebecs(stack[cnt].state->rebecs);
-		exportTransition(stack[parent].state, stack[cnt].state, sender, rebecName, action, out);
-		exportState(stack[cnt].state, out);
-		rebecId = stack[cnt].rebec;
+		unmarshalRebecs(localStack[cnt].state->rebecs);
+		exportTransition(localStack[parent].state, localStack[cnt].state, sender, rebecName, action, out);
+		exportState(localStack[cnt].state, out);
+		rebecId = localStack[cnt].rebec;
         parent = cnt;
 	}
 	
@@ -538,7 +538,7 @@ void CoreRebecaModelChecker::printCounterExample(int result, const AbstractActor
 			case DEADLOCK: terminationStateName = "deadlock"; break; 
 			case QUEUE_OVERFLOW: terminationStateName = "queue overflow"; break; 
 		}
-		exportTransition(to_string(stack[parent].state->stateID), terminationStateName, sender, rebecName, action, out);
+		exportTransition(to_string(localStack[parent].state->stateID), terminationStateName, sender, rebecName, action, out);
 		out << "<state id=\"" << terminationStateName << "\" atomicpropositions=\"" << terminationStateName << "\">" << endl << "</state>" << endl;
 	}
 }
