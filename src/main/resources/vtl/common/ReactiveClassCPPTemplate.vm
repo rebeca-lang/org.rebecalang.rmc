@@ -137,6 +137,10 @@ void ${reactiveClassName}Actor::exportAMessageInXML(ostream &out, string tab, in
                 break;
                }
 	        #end
+        	#if ($parentName)
+        		default:
+				${parentName}::exportAMessageInXML(out, tab, cnt);
+			#end
     	}
 }
 
