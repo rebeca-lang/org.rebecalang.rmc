@@ -26,7 +26,7 @@ public:
     	#applyPatch($patches 'AdditionalInitializationParameters' true)
     );
     virtual ~AbstractTimedActor();
-    void setNow(TIME_TYPE now);
+    virtual void setNow(TIME_TYPE now);
     TIME_TYPE getNow();
 
     #ifdef TTS
@@ -55,6 +55,10 @@ protected:
 
     void timeEnqueue(TIME_TYPE *queue, TIME_TYPE value);
     virtual void applyPolicy(boolean isSendToSelf);
+    
+    void startTimer(Timer &t);
+    void stopTimer(Timer &t);
+    TIME_TYPE getTimerValue(Timer &t);
 
 #applyPatch($patches 'AdditionalSignatures' '')
 

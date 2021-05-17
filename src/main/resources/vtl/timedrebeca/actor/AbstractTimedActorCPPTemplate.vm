@@ -142,4 +142,15 @@ void AbstractTimedActor::exportQueueContentInXML(ostream &out, string tab) {
 	out << tab << "</queue>" << endl;	
 }
 
+void AbstractTimedActor::startTimer(Timer &t) {
+	t = 0;
+}
+void AbstractTimedActor::stopTimer(Timer &t) {
+	t = -1;
+}
+TIME_TYPE AbstractTimedActor::getTimerValue(Timer &t) {
+	return t;
+}
+
+
 #applyPatch($patches 'AdditionalBodies' '')

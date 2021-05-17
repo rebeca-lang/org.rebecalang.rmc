@@ -10,6 +10,7 @@ import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.FormalParame
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.GenericTypeInstance;
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.Type;
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.VariableDeclarator;
+import org.rebecalang.compiler.utils.CodeCompilationException;
 import org.rebecalang.compiler.utils.TypesUtilities;
 
 public class TypesAnalysisUtilities {
@@ -23,12 +24,19 @@ public class TypesAnalysisUtilities {
 		return object;
 	}
 	
+	@Deprecated //Think about Timer!
 	public int getTypeSize(Type type) throws TypeAnalysisException {
 		int size = 1;
 		if (type instanceof ArrayType) {
 			for (Integer dimention : ((ArrayType) type).getDimensions())
 				size *= dimention;
 			type = ((ArrayType) type).getOrdinaryPrimitiveType();
+		}
+		Type TIMER_TYPE = null;
+		try {
+			TIMER_TYPE  = TypesUtilities.getInstance().getType("Timer");
+		} catch (CodeCompilationException e) {
+			e.printStackTrace();
 		}
 		if (type == TypesUtilities.BOOLEAN_TYPE)
 			size *= 1;
@@ -42,6 +50,8 @@ public class TypesAnalysisUtilities {
 			size *= 4;
 		else if (type == TypesUtilities.DOUBLE_TYPE)
 			size *= 8;
+		else if (type == TIMER_TYPE)
+			size *= 4;
 		//I have to think about dynamic pointer size in OSx and 32bit systems
 		else if (TypesUtilities.getInstance().canTypeUpCastTo(type, TypesUtilities.REACTIVE_CLASS_TYPE))
 			size *= 8;
@@ -50,6 +60,7 @@ public class TypesAnalysisUtilities {
 		return size;
 	}
 	
+	@Deprecated //Think about Timer!
 	public String getTypeSizeLabel(Type type) throws TypeAnalysisException {
 		int size = 1;
 		if (type instanceof ArrayType) {
@@ -58,6 +69,12 @@ public class TypesAnalysisUtilities {
 			type = ((ArrayType) type).getOrdinaryPrimitiveType();
 		}
 		String label = "(" + size + " * ";
+		Type TIMER_TYPE = null;
+		try {
+			TIMER_TYPE  = TypesUtilities.getInstance().getType("Timer");
+		} catch (CodeCompilationException e) {
+			e.printStackTrace();
+		}
 		if (type == TypesUtilities.BOOLEAN_TYPE)
 			label += "BOOLEAN_SIZE";
 		else if (type == TypesUtilities.BYTE_TYPE)
@@ -70,6 +87,8 @@ public class TypesAnalysisUtilities {
 			label += "FLOAT_SIZE";
 		else if (type == TypesUtilities.DOUBLE_TYPE)
 			label += "DOUBLE_SIZE";
+		else if (type == TIMER_TYPE)
+			label += "INT_SIZE";
 		else if (TypesUtilities.getInstance().canTypeUpCastTo(type, TypesUtilities.REACTIVE_CLASS_TYPE))
 			label += "REACTIVE_CLASS_SIZE";
 		else 
@@ -106,8 +125,15 @@ public class TypesAnalysisUtilities {
 		return fields;
 	}
 
+	@Deprecated //Think about Timer!
 	public static String getVaribleValue(String varName, Type type) {
 		String retValue = "";
+		Type TIMER_TYPE = null;
+		try {
+			TIMER_TYPE  = TypesUtilities.getInstance().getType("Timer");
+		} catch (CodeCompilationException e) {
+			e.printStackTrace();
+		}
 		if (type instanceof ArrayType) {
 			retValue = "\"[\" << ";
 			ArrayType aType = (ArrayType) type;
@@ -132,6 +158,8 @@ public class TypesAnalysisUtilities {
 			else 
 				if (TypesUtilities.getInstance().canTypeCastTo(type, TypesUtilities.INT_TYPE)) 
 					retValue = "((int)" + varName +")";
+				else if (type == TIMER_TYPE)
+					retValue = "((" + varName + " == -1) ? string(\"STOP\") : " + "std::to_string(" + varName + "))";
 				else if (TypesUtilities.getInstance().canTypeCastTo(type, TypesUtilities.REACTIVE_CLASS_TYPE)) 
 					retValue = "(" + varName + " == NULL ? \"NULL\" : " + varName +"->getName())";
 				else

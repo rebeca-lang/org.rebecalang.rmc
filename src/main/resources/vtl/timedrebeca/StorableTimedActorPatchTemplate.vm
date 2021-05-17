@@ -43,6 +43,7 @@
 	    void unmarshalActor(TimedRebecStateIndexType state, TIME_TYPE shiftTime);
 		TimedRebecStateIndexType storeLocalState(long stateNum, TIME_TYPE& shiftTime);
 		
+		
 	protected:
 		int timeBundleCount;
 		virtual vector<TimeFrame>** getHashtableTimeExtension() = 0;
@@ -138,5 +139,5 @@
 	    retValue.bundleIndex = cnt;
 	    return retValue;
 	}
-	
+		
 #end

@@ -7,6 +7,7 @@
 #endif
 \#define TIME_TYPE int
 \#define MAX_TIME 0x7FFFFFFF
+\#define Timer TIME_TYPE
 
 class AbstractActor;
 class DeadlineMissedException: public Exception {

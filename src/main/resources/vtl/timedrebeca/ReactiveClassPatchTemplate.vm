@@ -3,9 +3,34 @@
 #set($patchRelatedTo = "timedRebeca")
 
 #macro (timedRebecaAdditionalDeclarations $param)
+
 #end
 
 #macro (timedRebecaAdditionalInitializations $param)
+		#foreach($fieldDec in $reactiveClassDeclaration.getStatevars())
+	        #foreach($variableDec in $fieldDec.getVariableDeclarators())
+	            #set($type = $fieldDec.getType())
+	            #set($isTimer = ($type == $TypesUtilities.getInstance().getType("Timer")))
+	            #if ($isTimer)
+	            	#if($ArrayType.getClass().isAssignableFrom($type.getClass()))
+	            		#set($dimensions = $type.getDimensions())
+	            		#set($index = "")
+						#foreach($dimension in $type.getDimensions())
+							#set($index = $index + "[cnt$velocityCount]")
+							for (int cnt$velocityCount = 0; cnt$velocityCount < $dimension; cnt$velocityCount++) {
+						#end
+							stopTimer(this->_ref_${variableDec.getVariableName()}$index);
+						#foreach($dimension in $type.getDimensions())
+							#if( $foreach.hasNext )
+								}
+							#end
+						#end
+					#else
+		            	stopTimer(this->_ref_${variableDec.getVariableName()});
+		            #end
+	            #end
+    		#end
+		#end
 	
 #end
 
@@ -26,6 +51,8 @@ public:
         	#end	
         		;
     #end
+    virtual void setNow(TIME_TYPE now);
+    
 #end
 
 #macro (timedRebecaAdditionalBodies $reactiveClassDeclaration)
@@ -40,4 +67,35 @@ public:
 		}
 		#end
 	#end
+	void ${reactiveClassDeclaration.getName()}Actor::setNow(TIME_TYPE now) {
+	
+		#foreach($fieldDec in $reactiveClassDeclaration.getStatevars())
+	        #foreach($variableDec in $fieldDec.getVariableDeclarators())
+	            #set($type = $fieldDec.getType())
+	            #set($isTimer = ($type == $TypesUtilities.getInstance().getType("Timer")))
+	            #if ($isTimer)
+	            	#if($ArrayType.getClass().isAssignableFrom($type.getClass()))
+	            		#set($dimensions = $type.getDimensions())
+	            		#set($index = "")
+						#foreach($dimension in $type.getDimensions())
+							#set($index = $index + "[cnt$velocityCount]")
+							for (int cnt$velocityCount = 0; cnt$velocityCount < $dimension; cnt$velocityCount++) {
+						#end
+							if (this->_ref_${variableDec.getVariableName()}$index != -1)
+								this->_ref_${variableDec.getVariableName()}$index += (now - _ref_now);
+						#foreach($dimension in $type.getDimensions())
+							#if( $foreach.hasNext )
+								}
+							#end
+						#end
+					#else
+						if (this->_ref_${variableDec.getVariableName()} != -1)
+		            		this->_ref_${variableDec.getVariableName()} += (now - _ref_now);
+		            #end
+	            #end
+    		#end
+		#end
+		AbstractTimedActor::setNow(now);
+	}	
+	
 #end
