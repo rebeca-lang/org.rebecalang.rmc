@@ -173,4 +173,3 @@ void TimedModelChecker::segmentationFault() {
 }
 
 #applyPatch($patches 'AdditionalBodies' false)
-

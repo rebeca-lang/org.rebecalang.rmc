@@ -20,7 +20,7 @@ string to_string(int number);
 \#define MAX_KNOWN ($maxKnownRebec + 1)
 
 #*maxActions will hold one plus max number of msgsrvs*#
-\#define MAX_ACTIONS $maxMethodNumber
+\#define MAX_ACTIONS $maxMsgsrvs
 
 #applyPatch($patches 'AdditionalDeclarations' '')
 
@@ -32,7 +32,7 @@ public:
     AbstractActor(byte myID, char * myName, int maxQueueLength, int maxParamLength, vector<AbstractActor*>& rebecsRef
 		#ifdef DEBUG_LEVEL_2 
 			, ostream &out
-		#endif
+		#[[#endif]]#
     	#applyPatch($patches 'AdditionalInitializationParameters' true)
     );
     virtual ~AbstractActor();
@@ -90,12 +90,11 @@ protected:
     
 	#ifdef DEBUG_LEVEL_2 
 		ostream &analysisOutputStream;
-	#endif
+	#[[#endif]]#
 
     #ifdef NO_ATOMIC_EXECUTION
     	int __pc;
-    #endif
-    
+    #[[#endif]]#
 };
 
-#endif
+#[[#endif]]#

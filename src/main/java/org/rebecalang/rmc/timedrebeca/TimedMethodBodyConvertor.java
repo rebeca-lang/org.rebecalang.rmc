@@ -1,18 +1,22 @@
 package org.rebecalang.rmc.timedrebeca;
 
-import java.util.Set;
-
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.MethodDeclaration;
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.ReactiveClassDeclaration;
-import org.rebecalang.rmc.AnalysisFeature;
-import org.rebecalang.rmc.MethodBodyConvertor;
 import org.rebecalang.rmc.StatementTranslationException;
+import org.rebecalang.rmc.corerebeca.CoreRebecaMethodBodyConvertor;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.config.ConfigurableBeanFactory;
+import org.springframework.context.annotation.Scope;
+import org.springframework.stereotype.Component;
 
-public class TimedMethodBodyConvertor extends MethodBodyConvertor {
+@Component
+@Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
+@Qualifier("TIMED_REBECA")
+public class TimedMethodBodyConvertor extends CoreRebecaMethodBodyConvertor {
 
-	public TimedMethodBodyConvertor(Set<AnalysisFeature> analysisFeatures) {
-		super(analysisFeatures);
-	}
+//	public TimedMethodBodyConvertor(StatementTranslatorContainer statementTranslatorContainer) {
+//		super(statementTranslatorContainer);	
+//	}
 
 	public String convertConstructorBody(ReactiveClassDeclaration reactiveClassDeclaration,
 			MethodDeclaration methodDeclaration) throws StatementTranslationException {

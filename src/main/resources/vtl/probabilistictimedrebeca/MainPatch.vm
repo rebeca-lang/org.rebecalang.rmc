@@ -3,7 +3,7 @@
 #parse ("vtl/timedrebeca/MainPatch.vm")
 
 #macro (mainMacroPutAdditionalIncludes)
-	#if ($aFeatures.contains("TRACE_GENERATOR")) 
+	#if ($fileGeneratorProperties.isTraceGenerator()) 
 		\#include "AbstractTimedTraceGenerator.h"
 	#else
 		\#include "ProbabilisticTimedModelChecker.h"
@@ -11,18 +11,18 @@
 #end
 
 #macro (mainMacroPutInstanceReference)
-	#if ($aFeatures.contains("TRACE_GENERATOR")) 
+	#if ($fileGeneratorProperties.isTraceGenerator())
 		AbstractTimedTraceGenerator *analyzer;
 	#else
 		#ifdef EXPORT_STATE_SPACE
 		ofstream statespace;
-		#endif
+		#[[#endif]]#
 		ProbabilisticTimedModelChecker *analyzer;
 	#end
 #end
 
 #macro (mainMacroPutAnalyzerAllocation)
-	#if ($aFeatures.contains("TRACE_GENERATOR"))
+	#if ($fileGeneratorProperties.isTraceGenerator())
 		int numberOfTraces = parser.hasOption('g') ? atoi(parser.getOptionValue('g').c_str()) : 1;
 		TIME_TYPE timeLimit = parser.hasOption('l') ? atoi(parser.getOptionValue('l').c_str()) : 0;
 		analyzer = new AbstractTimedTraceGenerator(*result, hashmapSize, numberOfTraces, timeLimit);
@@ -34,7 +34,7 @@
 		} else {
 			statespace.open("statespace.xml", ofstream::out|ofstream::trunc);
 		}
-		#endif
+		#[[#endif]]#
 		analyzer = new ProbabilisticTimedModelChecker(*result
 	    	#ifdef EXPORT_STATE_SPACE
 	    		, statespace
@@ -44,11 +44,11 @@
 		#ifdef PROGRESS_REPORT
 			continueReportProgress = true;
 			std::thread t1(progressReport);
-		#endif
+		#[[#endif]]#
 		analyzer->doModelChecking("Deadlock-Freedom and No Deadline Missed", "Reachability");
 		#ifdef PROGRESS_REPORT
 			continueReportProgress = false;
 			t1.join();
-		#endif
+		#[[#endif]]#
 	#end
 #end

@@ -4,20 +4,19 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.HashSet;
-import java.util.Hashtable;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Properties;
 import java.util.Set;
 
-import org.apache.velocity.Template;
 import org.apache.velocity.VelocityContext;
+import org.rebecalang.compiler.modelcompiler.abstractrebeca.AbstractTypeSystem;
+import org.rebecalang.compiler.modelcompiler.corerebeca.CoreRebecaTypeSystem;
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.Annotation;
+import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.BaseClassDeclaration;
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.BinaryExpression;
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.Expression;
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.InterfaceDeclaration;
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.Literal;
-import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.MainRebecDefinition;
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.MethodDeclaration;
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.NonDetExpression;
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.ReactiveClassDeclaration;
@@ -25,44 +24,53 @@ import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.RebecaModel;
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.TermPrimary;
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.UnaryExpression;
 import org.rebecalang.compiler.modelcompiler.timedrebeca.PriorityType;
+import org.rebecalang.compiler.propertycompiler.generalrebeca.objectmodel.AssertionDefinition;
+import org.rebecalang.compiler.propertycompiler.generalrebeca.objectmodel.Definition;
 import org.rebecalang.compiler.propertycompiler.generalrebeca.objectmodel.PropertyModel;
 import org.rebecalang.compiler.propertycompiler.timedrebeca.objectmodel.TCTLDefinition;
-import org.rebecalang.compiler.utils.CodeCompilationException;
-import org.rebecalang.compiler.utils.CompilerFeature;
-import org.rebecalang.compiler.utils.ExceptionContainer;
-import org.rebecalang.compiler.utils.Pair;
-import org.rebecalang.compiler.utils.TypesUtilities;
+import org.rebecalang.compiler.utils.CompilerExtension;
 import org.rebecalang.rmc.AbstractStatementTranslator;
-import org.rebecalang.rmc.AnalysisFeature;
+import org.rebecalang.rmc.FileGeneratorProperties;
 import org.rebecalang.rmc.StatementTranslatorContainer;
 import org.rebecalang.rmc.corerebeca.CoreRebecaFileGenerator;
-import org.rebecalang.rmc.timedrebeca.translator.NondetExpressionTranslator;
-import org.rebecalang.rmc.timedrebeca.translator.TermPrimaryExpressionTranslator;
+import org.rebecalang.rmc.corerebeca.CoreRebecaMethodBodyConvertor;
+import org.rebecalang.rmc.timedrebeca.translator.TimedRebecaNondetExpressionTranslator;
+import org.rebecalang.rmc.timedrebeca.translator.TimedRebecaTermPrimaryExpressionTranslator;
 import org.rebecalang.rmc.utils.TypeAnalysisException;
 import org.rebecalang.rmc.utils.TypesAnalysisUtilities;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.context.ConfigurableApplicationContext;
+import org.springframework.stereotype.Component;
 
+@Component
 public class TimedRebecaFileGenerator extends CoreRebecaFileGenerator {
 	
-	public void prepare(RebecaModel rebecaModel, PropertyModel propertyModel,
-			Set<CompilerFeature> compilerFeatures, 
-			Set<AnalysisFeature> analysisFeatures,
-			File destinationLocation, 
-			Properties properties, 
-			ExceptionContainer container) throws CodeCompilationException {
-
-		super.prepare(rebecaModel, propertyModel, compilerFeatures, analysisFeatures,
-				destinationLocation, properties, container);
-
-		
-		analysisFeaturesNames = getFeaturesNames(analysisFeatures);
-		methodBodyConvertor = new TimedMethodBodyConvertor(analysisFeatures);
-		StatementTranslatorContainer.registerTranslator(NonDetExpression.class, new NondetExpressionTranslator(cFeatures, aFeatures));
-		StatementTranslatorContainer.registerTranslator(TermPrimary.class, new TermPrimaryExpressionTranslator(cFeatures, aFeatures));
+	@Autowired
+	public TimedRebecaFileGenerator(@Qualifier("TIMED_REBECA") AbstractTypeSystem typeSystem, 
+			@Qualifier("TIMED_REBECA") CoreRebecaMethodBodyConvertor methodBodyConvertor,
+			@Qualifier("TIMED_REBECA") StatementTranslatorContainer statementTranslatorContainer,
+			ConfigurableApplicationContext appContext) {
+		super(typeSystem, methodBodyConvertor, statementTranslatorContainer, appContext);
 	}
-
-	public void generateFiles() {
+	
+	@Override
+	protected void addTranslators() {
+		super.addTranslators();
+		statementTranslatorContainer.registerTranslator(NonDetExpression.class, 
+				appContext.getBean(TimedRebecaNondetExpressionTranslator.class, statementTranslatorContainer));
+		statementTranslatorContainer.registerTranslator(TermPrimary.class, 
+				appContext.getBean(TimedRebecaTermPrimaryExpressionTranslator.class, statementTranslatorContainer));
+	}
+	
+	@Override
+	public void generateFiles(RebecaModel rebecaModel, PropertyModel propertyModel, 
+			File destinationLocation, Set<CompilerExtension> extension, FileGeneratorProperties fileGenerationProperties) {
 		
 		try {
+			
+			initilizeGeneratingFiles(rebecaModel, propertyModel, destinationLocation, extension, fileGenerationProperties);
+
 			super.createMain(FilesNames.MAIN_PATCH_TEMPLATE);
 
 			super.createTypeAndConfig(FilesNames.CONFIG_PATCH_TEMPLATE);
@@ -86,7 +94,7 @@ public class TimedRebecaFileGenerator extends CoreRebecaFileGenerator {
 			
 			createAbstractCoreRebecaAnalyzer();
 			
-			if (aFeatures.contains(AnalysisFeature.TRACE_GENERATOR)) {
+			if (fileGenerationProperties.isTraceGenerator()) {
 				createTraceGenerator();
 			} else { 
 				createTimedModelChecker();
@@ -97,11 +105,127 @@ public class TimedRebecaFileGenerator extends CoreRebecaFileGenerator {
 			}
 
 		} catch (IOException e) {
-			container.addException(e);
+			exceptionContainer.addException(e);
 		}
 
 	}
 
+	protected void createActors(List<String> patches) throws IOException {
+
+		for (ReactiveClassDeclaration reactiveClassDeclaration : rebecaModel
+				.getRebecaCode().getReactiveClassDeclaration()) {
+			Set<String> constructorCallClasses = new HashSet<String>();
+			constructorCallClasses.add("AbstractActor");
+			Set<String> baseClasses = new HashSet<String>();
+			baseClasses.add("AbstractTimedActor");
+
+			super.createAnActor(reactiveClassDeclaration, baseClasses, constructorCallClasses, patches);
+
+		}
+		for (InterfaceDeclaration intd : rebecaModel.getRebecaCode().getInterfaceDeclaration()) {
+			Set<String> constructorCallClasses = new HashSet<String>();
+			constructorCallClasses.add("AbstractActor");
+			Set<String> baseClasses = new HashSet<String>();
+			baseClasses.add("AbstractTimedActor");
+
+			super.createAnActor(intd, baseClasses, constructorCallClasses, patches);
+		}
+	}
+
+	protected void createTimedRebecaBFSHashmap() throws IOException {
+		VelocityContext context = new VelocityContext();
+
+		mergeTemplat(context, FilesNames.TIMED_REBECA_BFS_HASHMAP_HEADER_TEMPLATE, FilesNames.TIMED_REBECA_BFS_HASHMAP_OUTPUT_HEADER);
+
+		mergeTemplat(context, FilesNames.TIMED_REBECA_BFS_HASHMAP_CPP_TEMPLATE, FilesNames.TIMED_REBECA_BFS_HASHMAP_OUTPUT_CPP);
+	}
+
+	protected void createAbstractTimedActor(List<String> patches) throws IOException {
+
+		PriorityType priorityType = getPriorityType();
+		VelocityContext context = new VelocityContext();
+		context.put("priorityType", priorityType.name());
+		context.put("patches", patches);
+		
+		mergeTemplat(context, FilesNames.ABSTRACT_TIMED_ACTOR_HEADER_TEMPLATE, 
+				FilesNames.ABSTRACT_TIMED_ACTOR_OUTPUT_HEADER);
+		
+		mergeTemplat(context, FilesNames.ABSTRACT_TIMED_ACTOR_CPP_TEMPLATE, 
+				FilesNames.ABSTRACT_TIMED_ACTOR_OUTPUT_CPP);
+	}
+
+	private PriorityType getPriorityType() {
+		for (ReactiveClassDeclaration rcd : rebecaModel.getRebecaCode().getReactiveClassDeclaration()) {
+			for (MethodDeclaration md : rcd.getMsgsrvs()) {
+				for (Annotation annotation : md.getAnnotations()) {
+					if(annotation.getIdentifier().equals("globalPriority"))
+						return PriorityType.global;
+				}
+			}
+		}
+		return PriorityType.local;
+	}
+
+	protected void createAbstractCoreRebecaAnalyzer() throws IOException {
+
+		super.createAbstractCoreRebecaAnalyzer(
+				FilesNames.ABSTRACT_TIMED_REBECA_ANALYZER_HEADER_TEMPLATE,
+				FilesNames.ABSTRACT_TIMED_REBECA_ANALYZER_OUTPUT_HEADER,
+				FilesNames.ABSTRACT_TIMED_REBECA_ANALYZER_CPP_TEMPLATE,
+				FilesNames.ABSTRACT_TIMED_REBECA_ANALYZER_OUTPUT_CPP
+				);		
+	}
+
+	protected void createTimedModelChecker() throws IOException {
+
+		super.createAbstractModelChecker();
+		
+		VelocityContext context = new VelocityContext();
+
+		List<Definition> definitions = getDefinitionsFromPropertyModel(propertyModel);
+		List<AssertionDefinition> assertions = getAssetionDefinitionFromPropertyModel(propertyModel);
+
+		context.put("propertyDefinitions", definitions);
+		context.put("propertyAssertions", assertions);
+
+		List<String> patches = new LinkedList<String>();
+		if (((TimedRebecaFileGeneratorProperties)fileGeneratorProperties).isTTS())
+			patches.add(FilesNames.TTS_PATCH_TEMPLATE);
+		else 
+			patches.add(FilesNames.FTTS_PATCH_TEMPLATE);
+		context.put("patches", patches);
+		
+		mergeTemplat(context, FilesNames.TIMED_MODEL_CHECKER_HEADER_TEMPLATE, 
+				FilesNames.TIMED_MODEL_CHECKER_OUTPUT_HEADER);
+		
+		mergeTemplat(context, FilesNames.TIMED_MODEL_CHECKER_CPP_TEMPLATE, 
+				FilesNames.TIMED_MODEL_CHECKER_OUTPUT_CPP);
+	}
+
+	protected void createTraceGenerator() throws IOException {
+		VelocityContext context = new VelocityContext();
+
+		mergeTemplat(context, FilesNames.ABSTRACT_TIMED_TRACE_GENERATOR_HEADER_TEMPLATE, 
+				FilesNames.ABSTRACT_TIMED_TRACE_GENERATOR_OUTPUT_HEADER);
+
+		mergeTemplat(context, FilesNames.ABSTRACT_TIMED_TRACE_GENERATOR_CPP_TEMPLATE, 
+				FilesNames.ABSTRACT_TIMED_TRACE_GENERATOR_OUTPUT_CPP);
+	}
+
+	
+	@Override
+	protected int getStateSize(BaseClassDeclaration baseClassDeclaration) {
+		try {
+			//In case of TTS four extra bytes are required to store program-counter of msgsrv
+			return super.getStateSize(baseClassDeclaration) + 
+					(((TimedRebecaFileGeneratorProperties)fileGeneratorProperties).isTTS() ? 
+					TypesAnalysisUtilities.getInstance().getTypeSize(CoreRebecaTypeSystem.INT_TYPE) : 
+					0);
+		} catch (TypeAnalysisException e) {
+			e.printStackTrace();
+		}
+		return 0;
+	}
 
 	private void createDecomposedProperty(Expression expression, FileWriter fileWriter) throws IOException {
 		if (expression instanceof BinaryExpression) {
@@ -146,205 +270,4 @@ public class TimedRebecaFileGenerator extends CoreRebecaFileGenerator {
 		}
 		fileWriter.close();
 	}
-
-	protected void createActors(List<String> patches) throws IOException {
-
-
-		// Translate Each Reactive Class to its CPP & Header files.
-
-		for (ReactiveClassDeclaration reactiveClassDeclaration : rebecaModel
-				.getRebecaCode().getReactiveClassDeclaration()) {
-			// Get Reactive Class to Generate Code for It.
-			Set<String> constructorCallClasses = new HashSet<String>();
-			constructorCallClasses.add("AbstractActor");
-			Set<String> baseClasses = new HashSet<String>();
-			baseClasses.add("AbstractTimedActor");
-
-			super.createAnActor(reactiveClassDeclaration, baseClasses, constructorCallClasses, patches);
-
-		}
-		for (InterfaceDeclaration intd : rebecaModel.getRebecaCode().getInterfaceDeclaration()) {
-			Set<String> constructorCallClasses = new HashSet<String>();
-			constructorCallClasses.add("AbstractActor");
-			Set<String> baseClasses = new HashSet<String>();
-			baseClasses.add("AbstractTimedActor");
-
-			super.createAnActor(intd, baseClasses, constructorCallClasses, patches);
-		}
-	}
-
-	protected void createTimedRebecaBFSHashmap() throws IOException {
-		VelocityContext context = new VelocityContext();
-
-		Template template = velocityEngine
-				.getTemplate(FilesNames.TIMED_REBECA_BFS_HASHMAP_HEADER_TEMPLATE);
-		FileWriter fileWriter = new FileWriter(destinationLocation.getPath()
-				+ File.separatorChar + FilesNames.TIMED_REBECA_BFS_HASHMAP_OUTPUT_HEADER);
-		template.merge(context, fileWriter);
-		fileWriter.close();
-
-		template = velocityEngine.getTemplate(FilesNames.TIMED_REBECA_BFS_HASHMAP_CPP_TEMPLATE);
-		fileWriter = new FileWriter(destinationLocation.getPath()
-				+ File.separatorChar + FilesNames.TIMED_REBECA_BFS_HASHMAP_OUTPUT_CPP);
-		template.merge(context, fileWriter);
-		fileWriter.close();
-	}
-
-	protected void createAbstractTimedActor(List<String> patches) throws IOException {
-
-		PriorityType priorityType = getPriorityType();
-		VelocityContext context = new VelocityContext();
-		context.put("priorityType", priorityType.name());
-		context.put("patches", patches);
-		
-		Template template = velocityEngine
-				.getTemplate(FilesNames.ABSTRACT_TIMED_ACTOR_HEADER_TEMPLATE);
-		FileWriter fileWriter = new FileWriter(destinationLocation.getPath()
-				+ File.separatorChar + FilesNames.ABSTRACT_TIMED_ACTOR_OUTPUT_HEADER);
-		template.merge(context, fileWriter);
-		fileWriter.close();
-		template = velocityEngine.getTemplate(FilesNames.ABSTRACT_TIMED_ACTOR_CPP_TEMPLATE);
-		fileWriter = new FileWriter(destinationLocation.getPath()
-				+ File.separatorChar + FilesNames.ABSTRACT_TIMED_ACTOR_OUTPUT_CPP);
-		template.merge(context, fileWriter);
-		fileWriter.close();
-	}
-
-	private PriorityType getPriorityType() {
-		for (ReactiveClassDeclaration rcd : rebecaModel.getRebecaCode().getReactiveClassDeclaration()) {
-			for (MethodDeclaration md : rcd.getMsgsrvs()) {
-				for (Annotation annotation : md.getAnnotations()) {
-					if(annotation.getIdentifier().equals("globalPriority"))
-						return PriorityType.global;
-				}
-			}
-		}
-		return PriorityType.local;
-	}
-
-	protected void createTimedModelChecker() throws IOException {
-
-		super.createAbstractModelChecker();
-		
-		VelocityContext context = new VelocityContext();
-		context.put("aFeatures", analysisFeaturesNames);
-		context.put("cFeatures", compilerFeaturesNames);
-		if (propertyModel != null)
-			context.put("propertyAssertions", propertyModel.getAssertionDefinitions());
-
-		List<String> patches = new LinkedList<String>();
-		if (aFeatures.contains(AnalysisFeature.TTS))
-			patches.add(FilesNames.TTS_PATCH_TEMPLATE);
-		else 
-			patches.add(FilesNames.FTTS_PATCH_TEMPLATE);
-		context.put("patches", patches);
-		
-		Template template = velocityEngine
-				.getTemplate(FilesNames.TIMED_MODEL_CHECKER_HEADER_TEMPLATE);
-		FileWriter fileWriter = new FileWriter(destinationLocation.getPath()
-				+ File.separatorChar + FilesNames.TIMED_MODEL_CHECKER_OUTPUT_HEADER);
-		template.merge(context, fileWriter);
-		fileWriter.close();
-		template = velocityEngine.getTemplate(FilesNames.TIMED_MODEL_CHECKER_CPP_TEMPLATE);
-		fileWriter = new FileWriter(destinationLocation.getPath()
-				+ File.separatorChar + FilesNames.TIMED_MODEL_CHECKER_OUTPUT_CPP);
-		template.merge(context, fileWriter);
-		fileWriter.close();
-		
-	}
-
-	protected void createAbstractCoreRebecaAnalyzer() throws IOException {
-
-		VelocityContext context = new VelocityContext();
-		context.put("aFeatures", analysisFeaturesNames);
-		context.put("cFeatures", compilerFeaturesNames);
-
-		Hashtable<String, Integer> reactiveClassTypeOrder = new Hashtable<String, Integer>();
-		Hashtable<String, Pair<Integer, Integer>> sizes= new Hashtable<String, Pair<Integer,Integer>>();
-		int order = 0;
-		for (ReactiveClassDeclaration reactiveClassDeclaration : rebecaModel
-				.getRebecaCode().getReactiveClassDeclaration()) {
-			String name = reactiveClassDeclaration.getName();
-			reactiveClassTypeOrder.put(name,
-					order++);
-			sizes.put(name, new Pair<Integer, Integer>
-				(reactiveClassDeclaration.getQueueSize(), getMaximumParametersSize(reactiveClassDeclaration)));
-		}
-		Hashtable<String, Integer> rebecInstanceOrder = new Hashtable<String, Integer>();
-		order = 0;
-		for (MainRebecDefinition mainRebecDefinition : rebecaModel
-				.getRebecaCode().getMainDeclaration().getMainRebecDefinition()) {
-			rebecInstanceOrder.put(mainRebecDefinition.getName(), order++);
-		}
-
-		context.put("reactiveClassDeclarations", rebecaModel.getRebecaCode()
-				.getReactiveClassDeclaration());
-		context.put("mainDefinition", rebecaModel.getRebecaCode()
-				.getMainDeclaration());
-		context.put("reactiveClassTypeOrder", reactiveClassTypeOrder);
-		context.put("rebecInstanceOrder", rebecInstanceOrder);
-		context.put("aFeatures", analysisFeaturesNames);
-		context.put("TypesUtilities", TypesUtilities.getInstance());
-		context.put("translator", translator);
-		context.put("sizes", sizes);
-		if (propertyModel != null) {
-			context.put("propertyDefinitions", propertyModel.getDefinitions());
-			context.put("propertyAssertions", propertyModel.getAssertionDefinitions());
-		}
-		for(ReactiveClassDeclaration rd: rebecaModel.getRebecaCode()
-				.getReactiveClassDeclaration()){
-					context.put(rd.getName()+"StateSize", getStateSize(rd));
-					
-				}
-		
-		boolean safeModeIsEnabled = analysisFeaturesNames.remove(AnalysisFeature.SAFE_MODE.name());
-		if(safeModeIsEnabled)
-			translator.TurnOffSafeMode();
-		Template template = velocityEngine
-				.getTemplate(FilesNames.ABSTRACT_TIMED_REBECA_ANALYZER_HEADER_TEMPLATE);
-		FileWriter fileWriter = new FileWriter(destinationLocation.getPath()
-				+ File.separatorChar + FilesNames.ABSTRACT_TIMED_REBECA_ANALYZER_OUTPUT_HEADER);
-		template.merge(context, fileWriter);
-		fileWriter.close();
-		template = velocityEngine.getTemplate(FilesNames.ABSTRACT_TIMED_REBECA_ANALYZER_CPP_TEMPLATE);
-		fileWriter = new FileWriter(destinationLocation.getPath()
-				+ File.separatorChar + FilesNames.ABSTRACT_TIMED_REBECA_ANALYZER_OUTPUT_CPP);
-		template.merge(context, fileWriter);
-		fileWriter.close();
-		
-		if(safeModeIsEnabled)
-			translator.TurnOnSafeMode();
-	}
-
-	protected void createTraceGenerator() throws IOException {
-		VelocityContext context = new VelocityContext();
-
-		Template template = velocityEngine
-				.getTemplate(FilesNames.ABSTRACT_TIMED_TRACE_GENERATOR_HEADER_TEMPLATE);
-		FileWriter fileWriter = new FileWriter(destinationLocation.getPath()
-				+ File.separatorChar + FilesNames.ABSTRACT_TIMED_TRACE_GENERATOR_OUTPUT_HEADER);
-		template.merge(context, fileWriter);
-		fileWriter.close();
-
-		template = velocityEngine.getTemplate(FilesNames.ABSTRACT_TIMED_TRACE_GENERATOR_CPP_TEMPLATE);
-		fileWriter = new FileWriter(destinationLocation.getPath()
-				+ File.separatorChar + FilesNames.ABSTRACT_TIMED_TRACE_GENERATOR_OUTPUT_CPP);
-		template.merge(context, fileWriter);
-		fileWriter.close();
-	}
-
-	
-	protected int getStateSize(ReactiveClassDeclaration reactiveClassDeclaration) {
-		try {
-			//In case of TTS four extra bytes are required to store program-counter of msgsrv
-			return super.getStateSize(reactiveClassDeclaration) + 
-					(aFeatures.contains(AnalysisFeature.TTS) ? 
-					TypesAnalysisUtilities.getInstance().getTypeSize(TypesUtilities.INT_TYPE) : 
-					0);
-		} catch (TypeAnalysisException e) {
-			e.printStackTrace();
-		}
-		return 0;
-	}
-
 }

@@ -126,19 +126,19 @@ int main(int argc, char* argv[]) {
 				
 				if (name == "$variableDeclarator.getVariableName()")				
 					try {
-						#if($TypesUtilities.getTypeName($fieldDeclaration.getType()) == "int")
+						#if($fieldDeclaration.getType().getTypeName() == "int")
 							_ref_$variableDeclarator.getVariableName() = stoi(value);
-						#elseif($TypesUtilities.getTypeName($fieldDeclaration.getType()) == "byte")
+						#elseif($fieldDeclaration.getType().getTypeName() == "byte")
 							_ref_$variableDeclarator.getVariableName() = stoi(value);
-						#elseif($TypesUtilities.getTypeName($fieldDeclaration.getType()) == "short")
+						#elseif($fieldDeclaration.getType().getTypeName() == "short")
 							_ref_$variableDeclarator.getVariableName() = stoi(value);
-						#elseif($TypesUtilities.getTypeName($fieldDeclaration.getType()) == "float")
+						#elseif($fieldDeclaration.getType().getTypeName() == "float")
 							_ref_$variableDeclarator.getVariableName() = stof(value);
-						#elseif($TypesUtilities.getTypeName($fieldDeclaration.getType()) == "double")
+						#elseif($fieldDeclaration.getType().getTypeName() == "double")
 							_ref_$variableDeclarator.getVariableName() = stod(value);
 						#else
 							cout << "<!--Dynamic value assignment only supports numerical types not " <<
-								"\"$TypesUtilities.getTypeName($fieldDeclaration.getType())\" type of variable" << 
+								"\"$fieldDeclaration.getType().getTypeName()\" type of variable" << 
 								" \"$variableDeclarator.getVariableName()\".-->" << endl;
 						#end						
 					} catch(std::invalid_argument e) {

@@ -1,7 +1,6 @@
 package org.rebecalang.rmc.corerebeca.translator;
 
 import java.util.List;
-import java.util.Set;
 
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.ArrayVariableInitializer;
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.FieldDeclaration;
@@ -10,13 +9,17 @@ import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.OrdinaryVari
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.Statement;
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.VariableDeclarator;
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.VariableInitializer;
-import org.rebecalang.compiler.utils.CompilerFeature;
 import org.rebecalang.rmc.AbstractStatementTranslator;
-import org.rebecalang.rmc.AnalysisFeature;
 import org.rebecalang.rmc.StatementTranslationException;
 import org.rebecalang.rmc.StatementTranslatorContainer;
 import org.rebecalang.rmc.utils.TypesAnalysisUtilities;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.config.ConfigurableBeanFactory;
+import org.springframework.context.annotation.Scope;
+import org.springframework.stereotype.Component;
 
+@Component
+@Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
 public class FieldDeclarationStatementTranslator extends AbstractStatementTranslator {
 
 	protected VariableInitializer initialization;
@@ -25,9 +28,9 @@ public class FieldDeclarationStatementTranslator extends AbstractStatementTransl
 		initialization = null;
 	}
 	
-	public FieldDeclarationStatementTranslator(Set<CompilerFeature> cFeatures,
-			Set<AnalysisFeature> aFeatures) {
-		super(cFeatures, aFeatures);
+	@Autowired
+	public FieldDeclarationStatementTranslator(StatementTranslatorContainer statementTranslatorContainer) {
+		super(statementTranslatorContainer);
 	}
 
 	public String translate(Statement statement, String tab)
@@ -56,7 +59,7 @@ public class FieldDeclarationStatementTranslator extends AbstractStatementTransl
 		initialization = variableInitializer;
 		String retValue = "";
 		if (variableInitializer instanceof OrdinaryVariableInitializer) {
-			retValue = StatementTranslatorContainer.translate(((OrdinaryVariableInitializer) variableInitializer).getValue(), "");
+			retValue = statementTranslatorContainer.translate(((OrdinaryVariableInitializer) variableInitializer).getValue(), "");
 		} else if (variableInitializer instanceof ArrayVariableInitializer) {
 			retValue = "{{";
 			List<VariableInitializer> values = ((ArrayVariableInitializer) variableInitializer).getValues();

@@ -1,5 +1,7 @@
                                     #*In the name of Allah*#
 
+#set($reactiveClassName = $reactiveClassDeclaration.getName())
+
 \#include "Types.h"
 \#include "${reactiveClassName}Actor.h"
 \#include <stdio.h>
@@ -30,16 +32,11 @@
 #set($cnt = 1)
 #foreach($fieldDec in $reactiveClassDeclaration.getKnownRebecs())
     #foreach ($varDec in $fieldDec.getVariableDeclarators())
-    	\#define _ref_$varDec.getVariableName() (dynamic_cast<$TypesUtilities.getInstance().getTypeName($fieldDec.getType())Actor*>(rebecs[known[$cnt]]))
+    	\#define _ref_$varDec.getVariableName() (dynamic_cast<$fieldDec.getType().getTypeName()Actor*>(rebecs[known[$cnt]]))
 	    #set($cnt = $cnt + 1)
     #end
 #end
     
-#foreach($knownRebec in $reactiveClassDeclaration.getKnownRebecs().getKnownRebecDeclaration())
-    \#define _ref_$knownRebec.getName() (known[$cnt])
-    #set($cnt = $cnt + 1)
-#end
-
 ${reactiveClassName}Actor::${reactiveClassName}Actor(byte myID, char* myName, int maxQueueLength, int maxParamLength, vector<AbstractActor*>& rebecsRef
 		#ifdef DEBUG_LEVEL_2 
 			, ostream &out
@@ -163,7 +160,7 @@ void ${reactiveClassName}Actor::exportInsideStateVariablesTagInXML(ostream &out,
 		        #set($name = $variableDec.getVariableName())
 		        #set($refName = "_ref_" + $name)
 		        #set($type = $fieldDec.getType())
-			    	out << tab << '\t' << "<variable name=\"$reactiveClassName.$name\" type=\"$TypesUtilities.getInstance().getTypeName($type)\">" <<  
+			    	out << tab << '\t' << "<variable name=\"$reactiveClassName.$name\" type=\"$type.getTypeName()\">" <<  
 			    		$TypesAnalysisUtilities.getVaribleValue($refName, $type) << "</variable>" << endl;
     		#end
 		#end
@@ -349,7 +346,6 @@ long ${reactiveClassName}Actor::methodSelectorAndExecutor() {
         queueTail = 0;
         enqueue(messageQueue, $methodDeclaration.getName().toUpperCase());
         enqueue(senderQueue, senderId);
-        #set($msgSrv = $reactiveClass.item($msgSrvCounter))
 
         if (maxParamLength != 0) {
             int index = 0;

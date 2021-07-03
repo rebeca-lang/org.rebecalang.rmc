@@ -1,6 +1,9 @@
 #*In the name of Allah*#
 
 #macro (addDefinitions)
+#if($fileGeneratorProperties.isTTS())
+\#define TTS
+#end
 
 #ifdef TTS
 \#define NO_ATOMIC_EXECUTION

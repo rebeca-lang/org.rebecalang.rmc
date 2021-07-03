@@ -10,7 +10,7 @@
 		#foreach($fieldDec in $reactiveClassDeclaration.getStatevars())
 	        #foreach($variableDec in $fieldDec.getVariableDeclarators())
 	            #set($type = $fieldDec.getType())
-	            #set($isTimer = ($type == $TypesUtilities.getInstance().getType("Timer")))
+	            #set($isTime = ($type == $typeSystem.TIMER_TYPE))
 	            #if ($isTimer)
 	            	#if($ArrayType.getClass().isAssignableFrom($type.getClass()))
 	            		#set($dimensions = $type.getDimensions())
@@ -37,7 +37,7 @@
 #macro (timedRebecaAdditionalInitializationParameters $hasType)
 #end
 
-#macro (timedRebecaAdditionalSignatures $reactiveClassDeclaration)
+#macro (timedRebecaAdditionalSignatures)
 public:
     #foreach ($method in $reactiveClassDeclaration.getMsgsrvs())
       	 #if ($method.isAbstract())
@@ -55,7 +55,7 @@ public:
     
 #end
 
-#macro (timedRebecaAdditionalBodies $reactiveClassDeclaration)
+#macro (timedRebecaAdditionalBodies)
 
 	#foreach ($methodDeclaration in $reactiveClassDeclaration.getMsgsrvs())
 		#if (!$methodDeclaration.isAbstract())
@@ -72,7 +72,7 @@ public:
 		#foreach($fieldDec in $reactiveClassDeclaration.getStatevars())
 	        #foreach($variableDec in $fieldDec.getVariableDeclarators())
 	            #set($type = $fieldDec.getType())
-	            #set($isTimer = ($type == $TypesUtilities.getInstance().getType("Timer")))
+	            #set($isTimer = ($type == $typeSystem.TIMER_TYPE))
 	            #if ($isTimer)
 	            	#if($ArrayType.getClass().isAssignableFrom($type.getClass()))
 	            		#set($dimensions = $type.getDimensions())

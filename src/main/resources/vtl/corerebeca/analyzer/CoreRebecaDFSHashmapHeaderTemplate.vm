@@ -21,23 +21,12 @@ Suppose we have n processes, we need
 
 struct State {
 
-//    #if ($REBEC_COUNT >= 1)
-//	    long
-//	        #foreach($cnt in [1..$REBEC_COUNT])
-//               r${cnt}
-//	            #if ($cnt != $REBEC_COUNT)
-//	                ,
-//	            #end
-//	        #end
-//	        ;
-//    #end
-
 	long rebecs[REBEC_COUNT];
 	short int claim;
     long stateID;
     State *next;	// in bucket
 
-#if ($aFeatures.contains("REDUCTION"))
+#if ($fileGeneratorProperties.isReduction())
 #ifdef PO
 	#set ($divideBy8 = ($REBEC_COUNT + 3) / 8 + 1)  // n + 4
     byte
@@ -60,8 +49,8 @@ struct State {
 	#else
 	    flag1;
 	#end
-#if ($aFeatures.contains("REDUCTION"))
-#endif
+#if ($fileGeneratorProperties.isReduction())
+#[[#endif]]#
 #end
 
 	boolean isOnStack();
@@ -87,4 +76,4 @@ public:
 	//State* getState();
 };
 
-#endif
+#[[#endif]]#

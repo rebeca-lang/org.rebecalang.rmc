@@ -41,7 +41,7 @@ struct StackEl {
 	byte rebec;		// ID of the last rebec executed at this state at current depth
 	bool flag;		// used in fairness algorithm
 	byte undoMark;	// used in fairness algorithm
-#if ($aFeatures.contains("REDUCTION"))
+#if ($fileGeneratorProperties.isReduction())
 #ifdef SYMM
 #ifdef ON_THE_FLY
 	byte perm[REBEC_COUNT];
@@ -195,7 +195,7 @@ void CoreRebecaModelChecker::doDFSModelChecking(string userSelectedPropertyName,
 
  	deadlock = deadlockEnable;	// choose whether to detect deadlocks
     flag = false;
-    #if ($aFeatures.contains("REDUCTION"))
+    #if ($fileGeneratorProperties.isReduction())
  	#ifdef PO
  		/*
  		  In 1st DFS: fullyExpandBit is initially false (try reduction) - We always check this bit
@@ -214,7 +214,7 @@ void CoreRebecaModelChecker::doDFSModelChecking(string userSelectedPropertyName,
  	// Make sure rebecs are unmarshall properly if "for" and "while" below iterate!
  	unmarshalRebecs(localStack[depth].state->rebecs);	// unmarshal is needed for checking disabled rebecs - also needed because of symmetry detection!
  	//check if disabled rebecs can contribute to fairnessCounter
-#if ($aFeatures.contains("REDUCTION"))
+#if ($fileGeneratorProperties.isReduction())
 #ifdef SYMM
 	while(fairnessCounter < REBEC_COUNT && !rebecs[currentSysPerm[fairnessCounter]]->messageQueue[0]) fairnessCounter++;
 \#else
@@ -225,7 +225,7 @@ void CoreRebecaModelChecker::doDFSModelChecking(string userSelectedPropertyName,
 #end
      for (r = 0; r < REBEC_COUNT; r++) {	// try to execute all rebecs in the system (interleaving)
  		if (!rebecs[r]->messageQueue[0] && deadlockEnable) continue;	// if disabled continue with next rebec
- 		#if ($aFeatures.contains("REDUCTION"))
+ 		#if ($fileGeneratorProperties.isReduction())
         #ifdef PO
  			// in 1st DFS this tests which phase of loop over processes
  			// in 2nd DFS this tests if 1st DFS had to fully expand
@@ -237,7 +237,7 @@ void CoreRebecaModelChecker::doDFSModelChecking(string userSelectedPropertyName,
  		#endif
         #end
  		// fairness algorithm: check whether to move to the next copy of state-space (only in 2nd DFS)
-        #if ($aFeatures.contains("REDUCTION"))
+        #if ($fileGeneratorProperties.isReduction())
         #ifdef SYMM
 		    if (r == currentSysPerm[fairnessCounter])
         \#else
@@ -251,7 +251,7 @@ void CoreRebecaModelChecker::doDFSModelChecking(string userSelectedPropertyName,
 			fairnessCounter++;
  			flag = true;
  			//check if disabled rebecs can contribute to fairnessCounter
-            #if ($aFeatures.contains("REDUCTION"))
+            #if ($fileGeneratorProperties.isReduction())
             #ifdef SYMM
 			    while(fairnessCounter < REBEC_COUNT && !rebecs[currentSysPerm[fairnessCounter]]->messageQueue[0]) fairnessCounter++;
             \#else
@@ -264,7 +264,7 @@ void CoreRebecaModelChecker::doDFSModelChecking(string userSelectedPropertyName,
 
  		effectiveDepth = depth;
  		do {	// explore all non-det transitions in system in BFS manner
-            #if ($aFeatures.contains("REDUCTION"))
+            #if ($fileGeneratorProperties.isReduction())
  			#ifdef PO
  				result = UNDEFINED;
  			#endif
@@ -329,14 +329,14 @@ void CoreRebecaModelChecker::doDFSModelChecking(string userSelectedPropertyName,
  			localStack[depth].state->visit(fairnessCounter);
  			if (fairnessCounter > REBEC_COUNT)
  				localStack[depth].state->setOnStack();
-            #if ($aFeatures.contains("REDUCTION"))
+            #if ($fileGeneratorProperties.isReduction())
             #ifdef SYMM
 			    updatePermutation(localStack[depth].perm); // new! for non-det
             #endif
             #end
 	 		goto systemTurn;	// continue with current DFS
  		} else {
-            #if ($aFeatures.contains("REDUCTION"))
+            #if ($fileGeneratorProperties.isReduction())
  			#ifdef PO
  				// In 1st DFS we check reduction possibility. In 2nd DFS we follow the decision made in 1st DFS.
  				// phase 1: If this rebec is executed and we get here, stack proviso was staisfied for this state!
@@ -355,7 +355,7 @@ void CoreRebecaModelChecker::doDFSModelChecking(string userSelectedPropertyName,
  			#endif
             #end
  			if (flag && nonDetTrans != -1 &&
-            #if ($aFeatures.contains("REDUCTION"))
+            #if ($fileGeneratorProperties.isReduction())
             #ifdef SYMM
 				currentSysPerm[undoMark] == r )
             \#else // if not SYMM
@@ -369,7 +369,7 @@ void CoreRebecaModelChecker::doDFSModelChecking(string userSelectedPropertyName,
  		}
  		unmarshalRebecs(localStack[depth].state->rebecs);	// make ready for next rebec
     }	// end of loop over processes
- 	#if ($aFeatures.contains("REDUCTION"))
+ 	#if ($fileGeneratorProperties.isReduction())
     #ifdef PO
  		if (/*phase 1?*/!stack[depth].state->isFullyExpandBitSet() && /*1st DFS?*/fairnessCounter > REBEC_COUNT)
  			// reduction proviso was not met for any of the rebecs with safe actions, so start next phase of loop, i.e. fully expand
@@ -431,7 +431,7 @@ void CoreRebecaModelChecker::doDFSModelChecking(string userSelectedPropertyName,
 		    exportTransition(localStack[effectiveDepth].state, newState, sender, rebecs[r]->getName(), label, statespace);
 		#endif
  		}
-        #if ($aFeatures.contains("REDUCTION"))
+        #if ($fileGeneratorProperties.isReduction())
  		#ifdef PO
  			// stack proviso
  			if (/*1st DFS?*/fairnessCounter > REBEC_COUNT && /*stack proviso violated?*/(result & ON_STACK)
@@ -462,7 +462,7 @@ void CoreRebecaModelChecker::doDFSModelChecking(string userSelectedPropertyName,
  		#ifdef DEBUG
  			localStack[depth].fc = fairnessCounter;
  		#endif
-        #if ($aFeatures.contains("REDUCTION"))
+        #if ($fileGeneratorProperties.isReduction())
         #ifdef SYMM
 			updatePermutation(localStack[depth].perm);
         #endif SYMM
@@ -489,7 +489,7 @@ void CoreRebecaModelChecker::doDFSModelChecking(string userSelectedPropertyName,
  		if (fairnessCounter > REBEC_COUNT)	// we only keep track of 1st DFS stack
  			localStack[depth].state->clearOnStack();
  		depth--;
-        #if ($aFeatures.contains("REDUCTION"))
+        #if ($fileGeneratorProperties.isReduction())
         #ifdef SYMM
 		    undoPermutation(localStack[depth].perm);	// no need to restore pRebec, because it is calculated every time needed -> in store()
         #endif SYMM

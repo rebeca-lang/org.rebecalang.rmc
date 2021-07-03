@@ -20,12 +20,6 @@ AbstractModelChecker::AbstractModelChecker(std::ostream &outStream
 	{
 }
 
-#foreach($definition in $propertyDefinitions)
-	$TypesUtilities.getInstance().getTypeName($definition.getExpression().getType())  AbstractModelChecker::_propDef_$definition.getName() () {
-		
-	}
-#end
-
 void AbstractModelChecker::doModelChecking(string userSelectedPropertyName, string userSelectedPropertyType) {
     startTime = time(NULL);
     numberOfTransitions = 0;

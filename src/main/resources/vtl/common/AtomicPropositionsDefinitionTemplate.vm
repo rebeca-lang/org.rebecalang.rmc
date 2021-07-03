@@ -2,29 +2,23 @@
 
 #macro (putDefinitionsAndAssertionsSignatures $propertyDefinitions $propertyAssertions)
     #foreach($definition in $propertyDefinitions)
-    	$TypesUtilities.getInstance().getTypeName($definition.getExpression().getType()) _propDef_$definition.getName() ();
+    	$definition.getExpression().getType().getTypeName() _propDef_$definition.getName() ();
     #end
 	#foreach($assertion in $propertyAssertions)
 		void _propAssert_$assertion.getName() ();
-	#end
-
-	#foreach($patch in $patches)
-		#parse("$patch")
-		#set($call = "#${patchRelatedTo}$methodName($param)")
-		#evaluate($call)
 	#end
 #end
 
 #macro (putDefinitionsAndAssertionsBodies $mainDefinition $propertyDefinitions $propertyAssertions $className)
 	#set($cnt = 0)
 	#foreach($instance in $mainDefinition.getMainRebecDefinition())
-		#set($type = $TypesUtilities.getInstance().getTypeName($instance.getType()))
+		#set($type = $instance.getType().getTypeName())
 		\#define _ref_${instance.getName()} (dynamic_cast<${type}Actor*>(rebecs[$cnt]))
 	    #set($cnt = $cnt + 1)
 	#end
 	
 	#foreach($definition in $propertyDefinitions)
-		$TypesUtilities.getInstance().getTypeName($definition.getExpression().getType()) $className::_propDef_$definition.getName() () {
+		$definition.getExpression().getType().getTypeName() $className::_propDef_$definition.getName() () {
 			return $translator.translate($definition.getExpression(), "");
 		}
 	#end

@@ -27,7 +27,7 @@ protected:
 	
 	#ifdef EXPORT_STATE_SPACE
 	    ostream &statespace;
-	#endif
+	#[[#endif]]#
 
     virtual void printModelCheckingOptions() = 0;
     virtual long getConsumedMemory() = 0;
@@ -39,7 +39,7 @@ public:
 	AbstractModelChecker(ostream &outStream 
 		#ifdef EXPORT_STATE_SPACE
 		    , ostream &statespace
-		#endif
+		#[[#endif]]#
 	);
 
 	virtual void doModelChecking(string userSelectedPropertyName, string userSelectedPropertyType);
@@ -48,7 +48,7 @@ public:
 		
 	#ifdef PROGRESS_REPORT
 		virtual void progressReport(ostream& reportStream);
-	#endif
+	#[[#endif]]#
 		
 };
 
@@ -58,5 +58,5 @@ public:
 	    virtual char do_thousands_sep() const { return ','; }
 	    virtual std::string do_grouping() const { return "\03"; }
 	};
-#endif
-#endif
+#[[#endif]]#
+#[[#endif]]#

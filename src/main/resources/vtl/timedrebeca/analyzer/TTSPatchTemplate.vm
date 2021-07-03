@@ -287,5 +287,4 @@ void TimedModelChecker::exportProgressOfTimeTransition(OpenBorderNode &source,
     	"\" executionTime=\"" << (int)executionTime << "\" shift=\"" << (int) shift <<
 		"\"> <time value=\"" << (int)time << "\"/></transition>" << endl;
 }
-
 #end

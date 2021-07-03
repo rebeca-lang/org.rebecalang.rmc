@@ -8,9 +8,6 @@
 #macro (coreRebecaStorableAdditionalInitializations $param)
 	this->stateSize = stateSize;
 	this->hashmapSize = hashmapSize;
-    //byte *statevariablesInitialValues = new byte[stateSize];
-    //memset (statevariablesInitialValues, 0, sizeof(byte) * stateSize);
-    //unmarshalActorFromArray(statevariablesInitialValues);	
 #end
 
 #macro (coreRebecaStorableAdditionalInitializationParameters $hasType)
@@ -77,25 +74,25 @@
 		byte currentValues[stateSize];
 		#ifndef __LP64__
 			memset(currentValues, 0, stateSize);
-		#endif
+		#[[#endif]]#
 		marshalActorToArray(currentValues);
 		#ifdef DEBUG_LEVEL_2
 			analysisOutputStream << "Rebec " << myName << " is marshaled to array [";
 			for (int cnt = 0; cnt < stateSize; cnt++)
 				analysisOutputStream << (int)currentValues[cnt] << ",";
 			analysisOutputStream << "]" << endl;
-		#endif
+		#[[#endif]]#
 	    return storeLocalState(currentValues);
 	}
 	
 	void AbstractActor::unmarshalActor(long stateId) {
 	    byte* currentValues = getTable()[stateId];
 		#ifdef DEBUG_LEVEL_2
-			analysisOutputStream << "Rebec " << myName << " is unmarshaled from array [";
+			analysisOutputStream << "Rebec " << myName << " is unmarshalled from array [";
 			for (int cnt = 0; cnt < stateSize; cnt++)
 				analysisOutputStream << (int)currentValues[cnt] << ",";
 			analysisOutputStream << "]" << endl;
-		#endif
+		#[[#endif]]#
 		unmarshalActorFromArray(currentValues);
 	}
 	
@@ -117,7 +114,7 @@
 	        return stateNum;
 	    }
 	
-		// Collision has occured
+		// Collision has occurred
 		// Check next slot (linear probing) for collision handling
 		stateNum = (stateNum < (1 << hashmapSize)-1)? stateNum+1 : 0; // may wrap arond
 		if (stateNum == h) {

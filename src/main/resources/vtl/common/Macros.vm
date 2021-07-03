@@ -1,5 +1,7 @@
 #*In the name of Allah*#
 
+#set($newline = "
+")
 #macro (setAnnotationsBasedSpecification)
     #foreach($annotation in $instance.getAnnotations())
     	#if ($annotation.getIdentifier() == "priority")
@@ -23,7 +25,7 @@
 	    #end
         #foreach($param in $parameterList)
             _ref_$param.getName()
-	        #if ($velocityCount < $parameterList.size())
+	        #if (!$foreach.last)
 	        , 
 	        #end
         #end
@@ -38,7 +40,7 @@
 	    #foreach($param in $parameterList)
     		$TypesAnalysisUtilities.getCPPTypeName($param.getType())
 	         _ref_$param.getName()
-	        #if ($velocityCount < $parameterList.size())
+	        #if (!$foreach.last)
 	        , 
 	        #end
 	    #end
@@ -68,9 +70,9 @@
             #end            
             
             #if($ArrayType.getClass().isAssignableFrom($type.getClass()))
-            	#set($isBoolean = ($type.getOrdinaryPrimitiveType() == $TypesUtilities.BOOLEAN_TYPE))
+            	#set($isBoolean = ($type.getOrdinaryPrimitiveType() == $typeSystem.BOOLEAN_TYPE))
             #else
-            	#set($isBoolean = ($type == $TypesUtilities.BOOLEAN_TYPE))
+            	#set($isBoolean = ($type == $typeSystem.BOOLEAN_TYPE))
             #end
             
             #if ($isBoolean)
@@ -119,7 +121,7 @@
         #if ($booleanCounter > 0)
             #set($booleanResult = $booleanResult + "++$indexName;")
         #end
-        $booleanResult
+        #evaluate($booleanResult)
     #end
 #end
 
@@ -146,9 +148,9 @@
             #set($type = $variableDec.getType())            
             
             #if($ArrayType.getClass().isAssignableFrom($type.getClass()))
-            	#set($isBoolean = ($type.getOrdinaryPrimitiveType() == $TypesUtilities.BOOLEAN_TYPE))
+            	#set($isBoolean = ($type.getOrdinaryPrimitiveType() == $typeSystem.BOOLEAN_TYPE))
             #else
-            	#set($isBoolean = ($type == $TypesUtilities.BOOLEAN_TYPE))
+            	#set($isBoolean = ($type == $typeSystem.BOOLEAN_TYPE))
             #end
             #if ($isBoolean)
             	#set($size = $TypesAnalysisUtilities.getInstance().getTypeSize($type))
@@ -197,6 +199,6 @@
             #set($booleanResult = $booleanResult + "++$indexName;")
         #end
 
-        $booleanResult
+        #evaluate($booleanResult)
     #end
 #end

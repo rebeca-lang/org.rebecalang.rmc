@@ -97,6 +97,4 @@ void CoreRebecaModelChecker::segmentationFault() {
 	#endif
 }
 
-
 #applyPatch($patches 'AdditionalBodies' false)
-

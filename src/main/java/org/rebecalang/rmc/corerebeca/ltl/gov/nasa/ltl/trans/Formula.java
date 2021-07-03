@@ -469,7 +469,7 @@ public class Formula implements Comparable<Formula> {
       return "( \"" + name + "\" )";
 
     default:
-      return new Character(content).toString();
+      return String.valueOf(content);
     }
   }
 

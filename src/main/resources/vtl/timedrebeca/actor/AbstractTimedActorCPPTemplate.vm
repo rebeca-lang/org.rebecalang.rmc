@@ -152,5 +152,4 @@ TIME_TYPE AbstractTimedActor::getTimerValue(Timer &t) {
 	return t;
 }
 
-
 #applyPatch($patches 'AdditionalBodies' '')

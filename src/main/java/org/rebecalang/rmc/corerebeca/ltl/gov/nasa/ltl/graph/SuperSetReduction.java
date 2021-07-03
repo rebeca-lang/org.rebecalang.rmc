@@ -128,10 +128,10 @@ public class SuperSetReduction {
       final boolean[][] asets = new boolean[nsets][nedges];
       final Edge[]      edges = new Edge[nedges];
 
-      g.forAllEdges(new EmptyVisitor(new Integer(0)) {
+      g.forAllEdges(new EmptyVisitor(0) {
         public void visitEdge (Edge e) {
           int id = ((Integer) arg).intValue();
-          arg = new Integer(id + 1);
+          arg = id + 1;
 
           edges[id] = e;
 

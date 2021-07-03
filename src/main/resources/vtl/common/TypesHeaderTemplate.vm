@@ -9,36 +9,25 @@
  
 using namespace std;
 
-
 \#define INITIAL_SENDER 99
 
 #ifndef null
 \#define null 0
-#endif
+#[[#endif]]#
 
 #ifndef boolean
 \#define boolean bool
-#endif
+#[[#endif]]#
 
 #ifndef ArrayList
 \#define ArrayList vector
-#endif
+#[[#endif]]#
 
-
-#*
-#ifndef false
-\#define false 0
-#endif
-
-#ifndef true
-\#define true 1
-#endif
-*#
 
 #ifndef byte
 //Modified by Ehsan (byte is a signed value, why MMJ changed it to unsigned?)
 \#define byte char
-#endif
+#[[#endif]]#
 
 
 \#define REBEC_COUNT $rebecCount
@@ -141,4 +130,4 @@ string operator+(const string left, const boolean right);
 class AbstractActor;
 string operator+(const string left, const AbstractActor *right);
 
-#endif
+#[[#endif]]#

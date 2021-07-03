@@ -1,0 +1,68 @@
+reactiveclass Customer(3) {
+    knownrebecs {
+        Agent a;
+    }
+    statevars {
+    	Timer t;
+		byte id;
+        boolean sent;
+    }
+    Customer(byte myId) {
+        id = myId;
+        sent = false;
+		self.try();
+    }
+    msgsrv try() {
+    	startTimer(t);
+    	a.requestTicket();
+        sent = true;
+    }
+    msgsrv ticketIssued() {
+    	int passedTime = getTimerValue(t);
+    	assertion(passedTime < 7, "deadline missed");
+    	stopTimer(t);
+        sent = false;
+        self.try() after(30);
+    }
+}
+reactiveclass Agent(10) {
+    knownrebecs {
+        TicketService ts;
+    }
+    statevars {
+    }
+    Agent() {
+    }
+    msgsrv requestTicket() {
+        ts.requestTicket((Customer)sender) deadline(24);
+    }
+    msgsrv ticketIssued(Customer customer) {
+		customer.ticketIssued();
+    }
+}
+reactiveclass TicketService(10) {
+    knownrebecs {
+        Agent a;
+    }
+    statevars {
+        int issueDelay;
+    }
+    TicketService(int myIssueDelay) {
+        issueDelay = myIssueDelay;
+    }
+    msgsrv requestTicket(Customer customer) {
+        delay(issueDelay);
+        a.ticketIssued(customer);
+    }
+}
+main {
+    Agent a(ts):();
+    TicketService ts(a):(2);
+    Customer c1(a):(1);
+    Customer c2(a):(2);
+    Customer c3(a):(3);
+    /*Customer c4(a):(4);
+    Customer c5(a):(5);
+    Customer c6(a):(6);
+    Customer c7(a):(7);*/
+}

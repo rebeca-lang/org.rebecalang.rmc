@@ -20,7 +20,7 @@ Summary:
   we need 1 bit to flag "on_stack"
   ifdef PO, we need 1 bit to flag "fully expansion"
 */
-#if ($aFeatures.contains("REDUCTION"))
+#if ($fileGeneratorProperties.isReduction())
 #ifdef PO
 
 void State::setFullyExpandBit(){
@@ -33,11 +33,11 @@ boolean State::isFullyExpandBitSet(){
     return flag$divideBy8 & 0x40;   // n + 4
 }
 
-#endif
+#[[#endif]]#
 #end
 
 void State::clearOnStack(){
-#if ($aFeatures.contains("REDUCTION"))
+#if ($fileGeneratorProperties.isReduction())
 #ifdef PO
 	#set ($divideBy8 = ($REBEC_COUNT + 3) / 8 + 1)
     flag$divideBy8 &= ~0x80; // n + 4
@@ -45,13 +45,13 @@ void State::clearOnStack(){
 #end
 	#set ($divideBy8 = ($REBEC_COUNT + 2) / 8 + 1)
     flag$divideBy8 &= ~0x80; // n + 3
-#if ($aFeatures.contains("REDUCTION"))
-#endif
+#if ($fileGeneratorProperties.isReduction())
+#[[#endif]]#
 #end
 }
 
 boolean State::isOnStack(){
-#if ($aFeatures.contains("REDUCTION"))
+#if ($fileGeneratorProperties.isReduction())
 #ifdef PO
 	#set ($divideBy8 = ($REBEC_COUNT + 3) / 8 + 1)
     return flag$divideBy8 & 0x80;   // n + 4
@@ -59,13 +59,13 @@ boolean State::isOnStack(){
 #end
 	#set ($divideBy8 = ($REBEC_COUNT + 2) / 8 + 1)
     return flag$divideBy8 & 0x80;   // n + 3
-#if ($aFeatures.contains("REDUCTION"))
-#endif
+#if ($fileGeneratorProperties.isReduction())
+#[[#endif]]#
 #end
 }
 
 void State::setOnStack(){
-#if ($aFeatures.contains("REDUCTION"))
+#if ($fileGeneratorProperties.isReduction())
 	#ifdef PO
     	#set ($divideBy8 = ($REBEC_COUNT + 2) / 8 + 1)
 		flag$divideBy8 |= 0x80;   // n + 4
@@ -73,8 +73,8 @@ void State::setOnStack(){
 #end
     	#set ($divideBy8 = ($REBEC_COUNT + 2) / 8 + 1)
 		flag$divideBy8 |= 0x80;   // n + 3
-#if ($aFeatures.contains("REDUCTION"))
-    #endif
+#if ($fileGeneratorProperties.isReduction())
+    #[[#endif]]#
 #end
 }
 
@@ -174,21 +174,21 @@ State* CoreRebecaDFSHashmap::exists (long* sys, long claim) {
     if (current == null) {
         #ifdef DEBUG_LEVEL_2
     		out << "State does not exist in hash table." << endl;
-   		#endif
+   		#[[#endif]]#
     	return NULL;
     }
     while (current){	// use "buckets" for collision handling
         if (current->equals(sys, claim)) {
 	        #ifdef DEBUG_LEVEL_2
 	    		out << "State exists in one bucket of hash table. Going for checking the value of the claim." << endl;
-	   		#endif        
+	   		#[[#endif]]#        
 			return current;
 		}
         current = current->next;
     }
     #ifdef DEBUG_LEVEL_2
 		out << "State does not exist in hash table (search in a filled bucket)." << endl;
-	#endif
+	#[[#endif]]#
     return NULL;
 }
 
@@ -204,7 +204,7 @@ State* CoreRebecaDFSHashmap::put (long* sys, long claim){
     State* current = table[hashValue];
     #ifdef VERBOSE
 	    if (current) collision++;	// count the number of collisions
-    #endif
+    #[[#endif]]#
     State *prev = null;
     while (current){	// move to the end of bucket
         prev = current;

@@ -22,7 +22,7 @@ public:
     AbstractTimedActor(byte myID, char *myName, int maxQueueLength, int maxParamQueueLength, vector<AbstractActor*>& rebecsRef
 		#ifdef DEBUG_LEVEL_2 
 			, ostream &out
-		#endif
+		#[[#endif]]#
     	#applyPatch($patches 'AdditionalInitializationParameters' true)
     );
     virtual ~AbstractTimedActor();
@@ -32,7 +32,7 @@ public:
     #ifdef TTS
         int __pc;
         TIME_TYPE __res;
-    #endif
+    #[[#endif]]#
     
     #if ($priorityType == "global")
     	virtual int getPriority();
@@ -64,4 +64,4 @@ protected:
 
 };
 
-#endif
+#[[#endif]]#

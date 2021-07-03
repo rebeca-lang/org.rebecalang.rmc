@@ -4,14 +4,13 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.ListIterator;
 
+import org.rebecalang.compiler.modelcompiler.corerebeca.CoreRebecaTypeSystem;
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.ArrayType;
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.FieldDeclaration;
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.FormalParameterDeclaration;
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.GenericTypeInstance;
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.Type;
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.VariableDeclarator;
-import org.rebecalang.compiler.utils.CodeCompilationException;
-import org.rebecalang.compiler.utils.TypesUtilities;
 
 public class TypesAnalysisUtilities {
 
@@ -32,31 +31,31 @@ public class TypesAnalysisUtilities {
 				size *= dimention;
 			type = ((ArrayType) type).getOrdinaryPrimitiveType();
 		}
-		Type TIMER_TYPE = null;
-		try {
-			TIMER_TYPE  = TypesUtilities.getInstance().getType("Timer");
-		} catch (CodeCompilationException e) {
-			e.printStackTrace();
-		}
-		if (type == TypesUtilities.BOOLEAN_TYPE)
+//		Type TIMER_TYPE = null;
+//		try {
+//			TIMER_TYPE  = TypesUtilities.getInstance().getType("Timer");
+//		} catch (CodeCompilationException e) {
+//			e.printStackTrace();
+//		}
+		if (type == CoreRebecaTypeSystem.BOOLEAN_TYPE)
 			size *= 1;
-		else if (type == TypesUtilities.BYTE_TYPE)
+		else if (type == CoreRebecaTypeSystem.BYTE_TYPE)
 			size *= 1;
-		else if (type == TypesUtilities.SHORT_TYPE)
+		else if (type == CoreRebecaTypeSystem.SHORT_TYPE)
 			size *= 2;
-		else if (type == TypesUtilities.INT_TYPE)
+		else if (type == CoreRebecaTypeSystem.INT_TYPE)
 			size *= 4;
-		else if (type == TypesUtilities.FLOAT_TYPE)
+		else if (type == CoreRebecaTypeSystem.FLOAT_TYPE)
 			size *= 4;
-		else if (type == TypesUtilities.DOUBLE_TYPE)
+		else if (type == CoreRebecaTypeSystem.DOUBLE_TYPE)
 			size *= 8;
-		else if (type == TIMER_TYPE)
+		else if (type.getTypeName().equals("Timer"))
 			size *= 4;
 		//I have to think about dynamic pointer size in OSx and 32bit systems
-		else if (TypesUtilities.getInstance().canTypeUpCastTo(type, TypesUtilities.REACTIVE_CLASS_TYPE))
+		else if (type.canTypeUpCastTo(CoreRebecaTypeSystem.REACTIVE_CLASS_TYPE))
 			size *= 8;
 		else 
-			throw new TypeAnalysisException("Unknown type " + TypesUtilities.getTypeName(type));
+			throw new TypeAnalysisException("Unknown type " + type.getTypeName());
 		return size;
 	}
 	
@@ -69,30 +68,24 @@ public class TypesAnalysisUtilities {
 			type = ((ArrayType) type).getOrdinaryPrimitiveType();
 		}
 		String label = "(" + size + " * ";
-		Type TIMER_TYPE = null;
-		try {
-			TIMER_TYPE  = TypesUtilities.getInstance().getType("Timer");
-		} catch (CodeCompilationException e) {
-			e.printStackTrace();
-		}
-		if (type == TypesUtilities.BOOLEAN_TYPE)
+		if (type == CoreRebecaTypeSystem.BOOLEAN_TYPE)
 			label += "BOOLEAN_SIZE";
-		else if (type == TypesUtilities.BYTE_TYPE)
+		else if (type == CoreRebecaTypeSystem.BYTE_TYPE)
 			label += "BYTE_SIZE";
-		else if (type == TypesUtilities.SHORT_TYPE)
+		else if (type == CoreRebecaTypeSystem.SHORT_TYPE)
 			label += "SHORT_SIZE";
-		else if (type == TypesUtilities.INT_TYPE)
+		else if (type == CoreRebecaTypeSystem.INT_TYPE)
 			label += "INT_SIZE";
-		else if (type == TypesUtilities.FLOAT_TYPE)
+		else if (type == CoreRebecaTypeSystem.FLOAT_TYPE)
 			label += "FLOAT_SIZE";
-		else if (type == TypesUtilities.DOUBLE_TYPE)
+		else if (type == CoreRebecaTypeSystem.DOUBLE_TYPE)
 			label += "DOUBLE_SIZE";
-		else if (type == TIMER_TYPE)
+		else if (type.getTypeName().equals("Timer"))
 			label += "INT_SIZE";
-		else if (TypesUtilities.getInstance().canTypeUpCastTo(type, TypesUtilities.REACTIVE_CLASS_TYPE))
+		else if (type.canTypeUpCastTo(CoreRebecaTypeSystem.REACTIVE_CLASS_TYPE))
 			label += "REACTIVE_CLASS_SIZE";
 		else 
-			throw new TypeAnalysisException("Unknown type " + TypesUtilities.getTypeName(type));
+			throw new TypeAnalysisException("Unknown type " + type.getTypeName());
 		return label + ")";
 	}
 
@@ -128,12 +121,6 @@ public class TypesAnalysisUtilities {
 	@Deprecated //Think about Timer!
 	public static String getVaribleValue(String varName, Type type) {
 		String retValue = "";
-		Type TIMER_TYPE = null;
-		try {
-			TIMER_TYPE  = TypesUtilities.getInstance().getType("Timer");
-		} catch (CodeCompilationException e) {
-			e.printStackTrace();
-		}
 		if (type instanceof ArrayType) {
 			retValue = "\"[\" << ";
 			ArrayType aType = (ArrayType) type;
@@ -153,17 +140,17 @@ public class TypesAnalysisUtilities {
 			}
 			retValue += "\"]\"";
 		} else {
-			if (type == TypesUtilities.BOOLEAN_TYPE)
+			if (type == CoreRebecaTypeSystem.BOOLEAN_TYPE)
 				retValue = "(" + varName + "? \"true\" : \"false\")";
 			else 
-				if (TypesUtilities.getInstance().canTypeCastTo(type, TypesUtilities.INT_TYPE)) 
+				if (type.canTypeUpCastTo(CoreRebecaTypeSystem.INT_TYPE)) 
 					retValue = "((int)" + varName +")";
-				else if (type == TIMER_TYPE)
+				else if (type.getTypeName().equals("Timer"))
 					retValue = "((" + varName + " == -1) ? string(\"STOP\") : " + "std::to_string(" + varName + "))";
-				else if (TypesUtilities.getInstance().canTypeCastTo(type, TypesUtilities.REACTIVE_CLASS_TYPE)) 
+				else if (type.canTypeUpCastTo(CoreRebecaTypeSystem.REACTIVE_CLASS_TYPE)) 
 					retValue = "(" + varName + " == NULL ? \"NULL\" : " + varName +"->getName())";
 				else
-					retValue = "\"unknown type " + TypesUtilities.getTypeName(type) + "\"";
+					retValue = "\"unknown type " + type.getTypeName() + "\"";
 		}
 		return retValue;
 	}
@@ -176,20 +163,20 @@ public class TypesAnalysisUtilities {
 
 	public static String getTypeName(Type type) {
 		
-		if (type == TypesUtilities.REACTIVE_CLASS_TYPE)
+		if (type == CoreRebecaTypeSystem.REACTIVE_CLASS_TYPE)
 			return "AbstractActor*";	
-		else if (TypesUtilities.getInstance().canTypeUpCastTo(type, TypesUtilities.REACTIVE_CLASS_TYPE))
-			return TypesUtilities.getTypeName(type)+ "Actor*";
-		return TypesUtilities.getTypeName(type);
+		else if (type.canTypeUpCastTo(CoreRebecaTypeSystem.REACTIVE_CLASS_TYPE))
+			return type.getTypeName()+ "Actor*";
+		return type.getTypeName();
 	}
 
 	public static String getCPPTypeName(Type type) {
 		String typeName = "";
 		Type baseType = (type instanceof ArrayType) ? ((ArrayType)type).getOrdinaryPrimitiveType() : type;
-		if (baseType == TypesUtilities.REACTIVE_CLASS_TYPE)
+		if (baseType == CoreRebecaTypeSystem.REACTIVE_CLASS_TYPE)
 			typeName = "AbstractActor*";	
-		else if (TypesUtilities.getInstance().canTypeUpCastTo(baseType, TypesUtilities.REACTIVE_CLASS_TYPE))
-			typeName = TypesUtilities.getTypeName(baseType) + "Actor*";
+		else if (baseType.canTypeUpCastTo(CoreRebecaTypeSystem.REACTIVE_CLASS_TYPE))
+			typeName = baseType.getTypeName() + "Actor*";
 		else if (baseType instanceof GenericTypeInstance) {
 			GenericTypeInstance git = (GenericTypeInstance) baseType;
 			typeName = git.getBase().getName() +"<";
@@ -199,7 +186,7 @@ public class TypesAnalysisUtilities {
 		}
 			
 		else
-			typeName = TypesUtilities.getTypeName(baseType);
+			typeName = baseType.getTypeName();
 		if (type instanceof ArrayType) {
 			List<Integer> dimentions = ((ArrayType)type).getDimensions();
 			ListIterator<Integer> dimentionsIterator = dimentions.listIterator(dimentions.size());

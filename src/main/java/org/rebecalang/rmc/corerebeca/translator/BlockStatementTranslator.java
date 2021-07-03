@@ -1,27 +1,29 @@
 package org.rebecalang.rmc.corerebeca.translator;
 
-import java.util.Set;
-
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.BlockStatement;
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.Statement;
-import org.rebecalang.compiler.utils.CompilerFeature;
-import org.rebecalang.rmc.AnalysisFeature;
-import org.rebecalang.rmc.StatementTranslationException;
 import org.rebecalang.rmc.AbstractStatementTranslator;
+import org.rebecalang.rmc.StatementTranslationException;
 import org.rebecalang.rmc.StatementTranslatorContainer;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.config.ConfigurableBeanFactory;
+import org.springframework.context.annotation.Scope;
+import org.springframework.stereotype.Component;
 
+@Component
+@Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
 public class BlockStatementTranslator extends AbstractStatementTranslator {
 
-	public BlockStatementTranslator(Set<CompilerFeature> cFeatures,
-			Set<AnalysisFeature> aFeatures) {
-		super(cFeatures, aFeatures);
+	
+	@Autowired BlockStatementTranslator(StatementTranslatorContainer statementTranslatorContainer) {
+		super(statementTranslatorContainer);
 	}
 
 	public String translate(Statement statement, String tab) throws StatementTranslationException {
 		BlockStatement blockStatement = (BlockStatement) statement;
 		String retValue = tab + "{" + NEW_LINE;
 		for (Statement innerStatement : blockStatement.getStatements()) {
-			retValue += StatementTranslatorContainer.translate(innerStatement, tab + TAB);
+			retValue += statementTranslatorContainer.translate(innerStatement, tab + TAB);
 			retValue += super.adjustSemicolonForExpression(innerStatement);
 			retValue += NEW_LINE;
 		}

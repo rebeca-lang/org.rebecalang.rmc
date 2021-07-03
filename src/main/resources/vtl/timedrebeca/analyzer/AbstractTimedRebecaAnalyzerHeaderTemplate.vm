@@ -71,4 +71,4 @@ public:
 	virtual void instantiationPart();
 };
 
-#endif
+#[[#endif]]#

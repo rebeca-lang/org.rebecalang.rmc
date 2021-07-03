@@ -27,7 +27,7 @@ public:
 	CoreRebecaModelChecker(std::ostream &out 
 		#ifdef EXPORT_STATE_SPACE
 		    , ostream &statespace
-		#endif
+		#[[#endif]]#
 		, int hashmapSize);
 	virtual void doModelChecking(string userSelectedPropertyName, string userSelectedPropertyType);
 	virtual void exportModelCheckingResult(string userSelectedPropertyName, 
@@ -38,4 +38,4 @@ public:
 	void segmentationFault();
 };
 
-#endif
+#[[#endif]]#

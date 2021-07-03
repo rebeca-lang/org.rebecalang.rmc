@@ -1,7 +1,7 @@
 #*In the name of Allah*#
 
 #macro (mainMacroPutAdditionalIncludes)
-	#if ($aFeatures.contains("TRACE_GENERATOR")) 
+	#if ($fileGeneratorProperties.isTraceGenerator()) 
 		\#include "AbstractCoreRebecaTraceGenerator.h"
 	#else
 		\#include "CoreRebecaModelChecker.h"
@@ -10,7 +10,7 @@
 #end
 
 #macro (mainMacroPutInstanceReference)
-	#if ($aFeatures.contains("TRACE_GENERATOR")) 
+	#if ($fileGeneratorProperties.isTraceGenerator()) 
 		AbstractCoreRebecaTraceGenerator *analyzer;
 	#else
 		#ifdef EXPORT_STATE_SPACE
@@ -26,7 +26,7 @@
 	parser.addOption('d', "delta", "Confidence value of the calculated results", "fileName");
 	#endif
 	
-	#if ($aFeatures.contains("TRACE_GENERATOR"))
+	#if ($fileGeneratorProperties.isTraceGenerator())
 		parser.addOption('g', "generatetraces", "Simulate the model for number of times which is specified by \"value\".", "value");
 		parser.addOption('l', "timelimit", "Set termination time for each simulation trace.", "value");
 	#else
@@ -40,7 +40,7 @@
 
 
 #macro (mainMacroPutAnalyzerAllocation)
-	#if ($aFeatures.contains("TRACE_GENERATOR"))
+	#if ($fileGeneratorProperties.isTraceGenerator())
 		int numberOfTraces = parser.hasOption('g') ? atoi(parser.getOptionValue('g').c_str()) : 1;
 		TIME_TYPE timeLimit = parser.hasOption('l') ? atoi(parser.getOptionValue('l').c_str()) : 0;
 		analyzer = new AbstractCoreRebecaTraceGenerator(*result, hashmapSize, numberOfTraces, depthLimit);

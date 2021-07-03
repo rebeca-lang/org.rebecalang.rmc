@@ -1,82 +1,96 @@
 package org.rebecalang.rmc;
 
-import java.util.HashSet;
 import java.util.Hashtable;
-import java.util.Set;
 
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.FieldDeclaration;
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.FormalParameterDeclaration;
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.Statement;
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.VariableInitializer;
-import org.rebecalang.compiler.utils.CompilerFeature;
 import org.rebecalang.compiler.utils.ExceptionContainer;
 import org.rebecalang.rmc.corerebeca.translator.FieldDeclarationStatementTranslator;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
+@Component
 public class StatementTranslatorContainer {
 
-	private static Hashtable<Class<? extends Statement>, AbstractStatementTranslator> translatorsRepository = 
-			new Hashtable<Class<? extends Statement>, AbstractStatementTranslator>();
-	static {
-		translatorsRepository.put(Statement.class, getEmptyTranslator());
-	}
+	private Hashtable<Class<? extends Statement>, AbstractStatementTranslator> translatorsRepository; 
 
-	private static EmptyStatementTranslator getEmptyTranslator() {
-		return new EmptyStatementTranslator(new HashSet<CompilerFeature>(), new HashSet<AnalysisFeature>());
+	@Autowired
+	ExceptionContainer exceptionContainer;
+
+	private boolean safeMode;
+
+	private FileGeneratorProperties fileGenerationProperties;
+	
+	public StatementTranslatorContainer() {
+		clearTranslator();
 	}
 	
-	public static void clearTranslator() {
+	public void clearTranslator() {
 		translatorsRepository = 
 				new Hashtable<Class<? extends Statement>, AbstractStatementTranslator>();
 		translatorsRepository.put(Statement.class, getEmptyTranslator());
 	}
-
-	public static void initialize() {
+	
+	public void initialize() {
 		for(AbstractStatementTranslator translator : translatorsRepository.values())
 			translator.initialize();
 	}
-	public static ExceptionContainer getExceptions() {
-		ExceptionContainer container = new ExceptionContainer();
-		
-		for(AbstractStatementTranslator translator : translatorsRepository.values()) {
-			translator.fillExceptionContainer(container);
-		}
-		
-		return container;
+
+	public void initialize(FileGeneratorProperties fileGenerationProperties) {
+		this.fileGenerationProperties = fileGenerationProperties;
+		this.initialize();
 	}
 	
-	public static void registerTranslator(Class<? extends Statement> type, AbstractStatementTranslator translator) {
+	public void registerTranslator(Class<? extends Statement> type, AbstractStatementTranslator translator) {
 		translatorsRepository.put(type, translator);
 	}
 
-	public static void unregisterTranslator(Class<? extends Statement> type) {
+	public void unregisterTranslator(Class<? extends Statement> type) {
 		translatorsRepository.remove(type);
 	}
 
-	public static AbstractStatementTranslator getTranslator(Class<? extends Statement> type) {
+	public AbstractStatementTranslator getTranslator(Class<? extends Statement> type) {
 		return translatorsRepository.get(type);
 	}
 	
-	public static String translator(FormalParameterDeclaration fpd) {
+	public String translator(FormalParameterDeclaration fpd) {
 		return ((FieldDeclarationStatementTranslator)getTranslator(FieldDeclaration.class)).resolveFormalParameterDeclarationStatement(fpd);
 	}
 	
-	public static String translate(VariableInitializer variableInitializer) throws StatementTranslationException {
+	public String translate(VariableInitializer variableInitializer) throws StatementTranslationException {
 		return ((FieldDeclarationStatementTranslator)getTranslator(FieldDeclaration.class)).resolveVariableInitializer(variableInitializer);
 	}
 	
-	public static String translate(Statement statement, String tab) throws StatementTranslationException {
-		try {
-			return translatorsRepository.get(statement.getClass()).translate(statement, tab);
-		} catch (NullPointerException e) {
+	public String translate(Statement statement, String tab) throws StatementTranslationException {
+
+		if(!translatorsRepository.containsKey(statement.getClass()))
 			throw new StatementTranslationException("Unknown translator for statement of type \"" +
 					statement.getClass() + "\".", statement.getLineNumber(), statement.getCharacter());
-		}
+		return translatorsRepository.get(statement.getClass()).translate(statement, tab);
 	}
 	
-	private static class EmptyStatementTranslator extends AbstractStatementTranslator {
-		public EmptyStatementTranslator(Set<CompilerFeature> cFeatures,
-				Set<AnalysisFeature> aFeatures) {
-			super(cFeatures, aFeatures);
+	public void TurnOnSafeMode() {
+		safeMode = true;
+	}
+
+	public void TurnOffSafeMode() {
+		safeMode = false;
+	}
+	
+	public boolean isSafeMode() {
+		return safeMode;
+	}
+	
+	private EmptyStatementTranslator getEmptyTranslator() {
+		return new EmptyStatementTranslator(null);
+	}
+
+	private class EmptyStatementTranslator extends AbstractStatementTranslator {
+		@Autowired
+		public EmptyStatementTranslator(StatementTranslatorContainer statementTranslatorContainer) {
+			super(statementTranslatorContainer);
 		}
 
 		public String translate(Statement statement, String tab)
@@ -85,14 +99,7 @@ public class StatementTranslatorContainer {
 		}
 	}
 	
-	public void TurnOnSafeMode() {
-		for(AbstractStatementTranslator translator : translatorsRepository.values())
-			translator.addAnalysisFeature(AnalysisFeature.SAFE_MODE);
+	public FileGeneratorProperties getFileGenerationProperties() {
+		return fileGenerationProperties;
 	}
-
-	public void TurnOffSafeMode() {
-		for(AbstractStatementTranslator translator : translatorsRepository.values())
-			translator.removeAnalysisFeature(AnalysisFeature.SAFE_MODE);
-	}
-
 }

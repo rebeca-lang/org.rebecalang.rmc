@@ -42,10 +42,10 @@ public:
 	
 	#ifdef PROGRESS_REPORT
 	virtual void progressReport(ostream& reportStream);
-	#endif
+	#[[#endif]]#
 	
 };
 
 \#define QUEUE_TYPE std::priority_queue<OpenBorderNode, std::vector<OpenBorderNode>, std::greater<OpenBorderNode> >
 
-#endif
+#[[#endif]]#

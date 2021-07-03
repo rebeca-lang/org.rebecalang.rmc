@@ -1,28 +1,30 @@
 package org.rebecalang.rmc.corerebeca.translator;
 
-import java.util.Set;
-
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.BinaryExpression;
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.Statement;
-import org.rebecalang.compiler.utils.CompilerFeature;
-import org.rebecalang.rmc.AnalysisFeature;
-import org.rebecalang.rmc.StatementTranslationException;
 import org.rebecalang.rmc.AbstractStatementTranslator;
+import org.rebecalang.rmc.StatementTranslationException;
 import org.rebecalang.rmc.StatementTranslatorContainer;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.config.ConfigurableBeanFactory;
+import org.springframework.context.annotation.Scope;
+import org.springframework.stereotype.Component;
 
+@Component
+@Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
 public class BinaryExpressionTranslator extends AbstractStatementTranslator {
 
-	public BinaryExpressionTranslator(Set<CompilerFeature> cFeatures,
-			Set<AnalysisFeature> aFeatures) {
-		super(cFeatures, aFeatures);
+	@Autowired
+	public BinaryExpressionTranslator(StatementTranslatorContainer statementTranslatorContainer) {
+		super(statementTranslatorContainer);
 	}
 
 	@Override
 	public String translate(Statement statement, String tab)
 			throws StatementTranslationException {
 		BinaryExpression bExpression = (BinaryExpression) statement;
-		return tab + "(" + StatementTranslatorContainer.translate(bExpression.getLeft(), "") +
-				 bExpression.getOperator() + StatementTranslatorContainer.translate(bExpression.getRight(), "") + ")";
+		return tab + "(" + statementTranslatorContainer.translate(bExpression.getLeft(), "") +
+				 bExpression.getOperator() + statementTranslatorContainer.translate(bExpression.getRight(), "") + ")";
 	}
 
 }

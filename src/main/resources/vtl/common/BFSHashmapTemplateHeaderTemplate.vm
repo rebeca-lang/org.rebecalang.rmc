@@ -107,9 +107,9 @@ public:
 	    }
 	    #ifdef DEBUG_LEVEL_2
 			out << "State does not exist in hash table." << endl;
-		#endif
+		#[[#endif]]#
 		return NULL;
 	}
 };
 
-#endif
+#[[#endif]]#

@@ -5,11 +5,11 @@ float probability;
 ProbabilisticTimedModelChecker::ProbabilisticTimedModelChecker(ostream &outStream
 	#ifdef EXPORT_STATE_SPACE
 	    , ostream &statespaceStream
-	#endif
+	#[[#endif]]#
     , int hashmapSize) : TimedModelChecker(outStream
 	#ifdef EXPORT_STATE_SPACE
     	, statespaceStream
-	#endif
+	#[[#endif]]#
 	, hashmapSize) {
 }
 
@@ -46,4 +46,4 @@ void ProbabilisticTimedModelChecker::exportProgressOfTimeTransition(OpenBorderNo
 	tempValue = tempValue.substr(1, tempValue.length() - 13);
 	outStream << "<time" << tempValue << "timetransition>" << endl; 
 }
-#endif
+#[[#endif]]#

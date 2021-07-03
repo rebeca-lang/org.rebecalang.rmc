@@ -2,6 +2,8 @@
 
 #parse ("/vtl/common/Macros.vm")
 
+#set($reactiveClassName = $reactiveClassDeclaration.getName())
+
 #ifndef __${reactiveClassName.toUpperCase()}_ACTOR_H__
 \#define __${reactiveClassName.toUpperCase()}_ACTOR_H__
 
@@ -28,7 +30,7 @@ public:
     ${reactiveClassName}Actor(byte myID, char* myName, int maxQueueLength, int maxParamLength, vector<AbstractActor*>& rebecsRef
 		#ifdef DEBUG_LEVEL_2 
 			, ostream &out
-		#endif
+		#[[#endif]]#
     	#applyPatch($patches 'AdditionalInitializationParameters' true)
     );
 	~${reactiveClassName}Actor();
@@ -90,4 +92,4 @@ protected:
     #end    
 };
 
-#endif
+#[[#endif]]#
