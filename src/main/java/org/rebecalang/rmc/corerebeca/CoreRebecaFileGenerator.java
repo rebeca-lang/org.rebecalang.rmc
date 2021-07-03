@@ -10,7 +10,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
-import org.apache.log4j.Logger;
 import org.apache.velocity.Template;
 import org.apache.velocity.VelocityContext;
 import org.rebecalang.compiler.modelcompiler.abstractrebeca.AbstractTypeSystem;
@@ -88,8 +87,6 @@ import org.springframework.stereotype.Component;
 public class CoreRebecaFileGenerator extends AbstractFileGenerator {
 
 	
-	private final static Logger logger = Logger.getLogger(CoreRebecaFileGenerator.class);
-
 	@Autowired
 	public CoreRebecaFileGenerator(@Qualifier("CORE_REBECA") AbstractTypeSystem typeSystem, 
 			@Qualifier("CORE_REBECA") CoreRebecaMethodBodyConvertor methodBodyConvertor,
@@ -174,8 +171,8 @@ public class CoreRebecaFileGenerator extends AbstractFileGenerator {
 
 					graphs.add(new Pair<String, Graph>(ltlDefinition.getName(), 
 							propertyHandler.ltl2BA(theNegationOfFormula)));
-					logger.debug("\n" + graphs.get(graphs.size() - 1).getFirst() + ": " +
-							LTLPropertyHandler.exportGraph(graphs.get(graphs.size() - 1).getSecond()));
+//					logger.debug("\n" + graphs.get(graphs.size() - 1).getFirst() + ": " +
+//							LTLPropertyHandler.exportGraph(graphs.get(graphs.size() - 1).getSecond()));
 
 				}
 			}
