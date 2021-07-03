@@ -11,11 +11,12 @@ import org.rebecalang.compiler.utils.CompilerExtension;
 import org.rebecalang.compiler.utils.ExceptionContainer;
 import org.rebecalang.rmc.FileGeneratorProperties;
 import org.rebecalang.rmc.ModelCheckersFilesGenerator;
+import org.rebecalang.rmc.RMCConfig;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 
-@ContextConfiguration(classes = CompilerConfig.class) 
+@ContextConfiguration(classes = {CompilerConfig.class, RMCConfig.class}) 
 @SpringJUnitConfig
 public class AddHocTests {
 	
