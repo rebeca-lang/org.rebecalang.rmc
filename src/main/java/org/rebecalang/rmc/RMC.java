@@ -5,11 +5,7 @@ package org.rebecalang.rmc;
 
 import java.io.File;
 import java.io.PrintStream;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 import org.apache.commons.cli.CommandLine;
@@ -43,7 +39,8 @@ public class RMC {
 	@SuppressWarnings("static-access")
 	public static void main(String[] args) {
 		
-        ApplicationContext context = new AnnotationConfigApplicationContext(CompilerConfig.class, RMCConfig.class);
+        @SuppressWarnings("resource")
+		ApplicationContext context = new AnnotationConfigApplicationContext(CompilerConfig.class, RMCConfig.class);
         RMC rmc = context.getBean(RMC.class);
 		
 		CommandLineParser cmdLineParser = new GnuParser();
@@ -191,42 +188,11 @@ public class RMC {
 				fileGenerationProperties.setExportStateSpaceTargetFile(targetFileName);
 			}
 			fileGenerationProperties.setProgressReport(commandLine.hasOption("progressreport"));
-//			if(commandLine.hasOption("errorconsole"))
-//				out = new PrintStream(new File(commandLine.getOptionValue("errorconsole")));
-			
 			
 			rmc.modelCheckersFilesGenerator.generateFiles(rebecaFile, propertyFile, destination, compilerFeatures, fileGenerationProperties);
-			for (Exception e : rmc.exceptionContainer.getWarnings()) {
-				if (e instanceof CodeCompilationException) {
-					CodeCompilationException ce = (CodeCompilationException) e;
-					out.println("Line " + ce.getLine() + ", Warning: " + ce.getMessage());
-				} else {
-					out.println(e.getMessage());
-					e.printStackTrace();
-				}
-			}
-			List<Exception> exceptions = new ArrayList<Exception>();
-			exceptions.addAll(rmc.exceptionContainer.getExceptions());
-			Collections.sort(exceptions, new Comparator<Exception>() {
-				public int compare(Exception o1, Exception o2) {
-					if (!(o1 instanceof CodeCompilationException))
-						return 1;
-					if (!(o2 instanceof CodeCompilationException))
-						return -1;
-					CodeCompilationException cce1 = (CodeCompilationException) o1, cce2 = (CodeCompilationException) o2;
-					return cce1.getLine() < cce2.getLine() ? -1 : cce1.getLine() > cce2.getLine() ? 1 : cce1.getColumn() < cce2.getColumn() ? -1 :
-							cce1.getColumn() > cce2.getColumn() ? 1 : 0;
-				}
-			});
-			for (Exception e : exceptions) {
-				if (e instanceof CodeCompilationException) {
-					CodeCompilationException ce = (CodeCompilationException) e;
-					out.println("Line " + ce.getLine() + ", Error: "
-							+ ce.getMessage());
-				} else {
-					out.println(e.getMessage());
-					e.printStackTrace(out);
-				}
+			
+			if(!rmc.exceptionContainer.exceptionsIsEmpty()) {
+				rmc.exceptionContainer.print(out);
 			}
 
 		} catch (ParseException e) {

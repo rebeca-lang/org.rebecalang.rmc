@@ -54,7 +54,6 @@ public class ModelCheckersFilesGenerator {
 		
 		Pair<RebecaModel, SymbolTable> compilationResult = 
 				rebecaModelCompiler.compileRebecaFile(rebecaFile, extension, fileGenerationProperties.getCoreVersion());
-		this.exceptionContainer = rebecaModelCompiler.getExceptionContainer();
 		
 		if (!exceptionContainer.getExceptions().isEmpty()) {
 			return;
