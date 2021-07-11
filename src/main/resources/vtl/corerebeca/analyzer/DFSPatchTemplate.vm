@@ -111,9 +111,11 @@ boolean CoreRebecaModelChecker::isAccepting(short int claim, int propertySelecto
 	#foreach($graphSpec in $propertyGraph)
 		case $cnt:
 			switch(claim) {
-			#foreach($graphNode in $graphSpec.getSecond().getNodes())
-				case $graphNode.getId():
-					return $graphNode.getBooleanAttribute("accepting");
+			#if(!$graphSpec.getSecond().getNodes().isEmpty())
+				#foreach($graphNode in $graphSpec.getSecond().getNodes())
+					case $graphNode.getId():
+						return $graphNode.getBooleanAttribute("accepting");
+				#end
 			#end
 			}
 		break;
@@ -161,7 +163,11 @@ void CoreRebecaModelChecker::doDFSModelChecking(string userSelectedPropertyName,
 	#foreach($graphSpec in $propertyGraph)
 		else if (userSelectedPropertyName == "$graphSpec.getFirst()") {
 			propertySelector = $cnt;
-			claim = $graphSpec.getSecond().getInit().getId();
+			#if($graphSpec.getSecond().getNodes().isEmpty())
+				claim = -1;
+			#else
+				claim = $graphSpec.getSecond().getInit().getId();
+			#end
 		}
 		#set($cnt = $cnt + 1)
 	#end

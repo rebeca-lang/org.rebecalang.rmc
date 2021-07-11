@@ -55,6 +55,7 @@ import org.rebecalang.rmc.AbstractFileGenerator;
 import org.rebecalang.rmc.FileGeneratorProperties;
 import org.rebecalang.rmc.StatementTranslatorContainer;
 import org.rebecalang.rmc.corerebeca.ltl.LTLPropertyHandler;
+import org.rebecalang.rmc.corerebeca.ltl.LTLTransformer;
 import org.rebecalang.rmc.corerebeca.ltl.gov.nasa.ltl.graph.Graph;
 import org.rebecalang.rmc.corerebeca.translator.BinaryExpressionTranslator;
 import org.rebecalang.rmc.corerebeca.translator.BlockStatementTranslator;
@@ -82,6 +83,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.stereotype.Component;
+
+import owl.ltl.LabelledFormula;
+import owl.ltl.parser.LtlParser;
 
 @Component
 public class CoreRebecaFileGenerator extends AbstractFileGenerator {
@@ -161,6 +165,9 @@ public class CoreRebecaFileGenerator extends AbstractFileGenerator {
 			createCoreRebecaDFSHashmap();
 
 
+//			LTLTransformer ltlTransformer = new LTLTransformer();
+			
+
 			List<Pair<String, Graph>> graphs = new LinkedList<Pair<String, Graph>>();
 			LTLPropertyHandler propertyHandler = new LTLPropertyHandler();
 			if (propertyModel != null) {
@@ -171,8 +178,8 @@ public class CoreRebecaFileGenerator extends AbstractFileGenerator {
 
 					graphs.add(new Pair<String, Graph>(ltlDefinition.getName(), 
 							propertyHandler.ltl2BA(theNegationOfFormula)));
-//					logger.debug("\n" + graphs.get(graphs.size() - 1).getFirst() + ": " +
-//							LTLPropertyHandler.exportGraph(graphs.get(graphs.size() - 1).getSecond()));
+					System.out.println("\n" + graphs.get(graphs.size() - 1).getFirst() + ": " +
+							LTLPropertyHandler.exportGraph(graphs.get(graphs.size() - 1).getSecond()));
 
 				}
 			}

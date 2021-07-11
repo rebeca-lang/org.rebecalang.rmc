@@ -55,13 +55,13 @@ public class ModelCheckersFilesGenerator {
 		Pair<RebecaModel, SymbolTable> compilationResult = 
 				rebecaModelCompiler.compileRebecaFile(rebecaFile, extension, fileGenerationProperties.getCoreVersion());
 		
-		if (!exceptionContainer.getExceptions().isEmpty()) {
+		if (!exceptionContainer.exceptionsIsEmpty()) {
 			return;
 		}
 		RebecaModel rebecaModel = compilationResult.getFirst();
 		if (propertyFile != null) {
 			propertyModel = propertyCompiler.compilePropertyFile(propertyFile, rebecaModel, extension);
-			if (!exceptionContainer.getExceptions().isEmpty()) {
+			if (!exceptionContainer.exceptionsIsEmpty()) {
 				return;
 			}
 		}
@@ -79,21 +79,4 @@ public class ModelCheckersFilesGenerator {
 		fileGenerator.generateFiles(rebecaModel, propertyModel, destination, extension, fileGenerationProperties);
 
 	}
-
-//	public static ExceptionContainer cloneAndConvertPropertyCompilationExceptions(ExceptionContainer exceptionContainer) {
-//		ExceptionContainer container = new ExceptionContainer();
-//		for(Exception exception : exceptionContainer.getExceptions()) {
-//			if (exception instanceof PropertyCodeCompilationException)
-//				container.getExceptions().add(exception);
-//			else if (exception instanceof CodeCompilationException) {
-//				PropertyCodeCompilationException propertyCompileException = new PropertyCodeCompilationException(
-//						exception.getMessage(),
-//						((CodeCompilationException)exception).getLine(),
-//						((CodeCompilationException)exception).getColumn());
-//				container.addException(propertyCompileException);
-//			} else
-//				container.getExceptions().add(exception);
-//		}
-//		return container;
-//	}
 }

@@ -177,15 +177,19 @@ public class LTLPropertyHandler {
 		visited.add(graph.getInit());
 		while(!openBorder.isEmpty()) {
 			org.rebecalang.rmc.corerebeca.ltl.gov.nasa.ltl.graph.Node node = openBorder.removeFirst();
-			if (node.getBooleanAttribute("accepting"))
-				result.insert(0, node.getId() + ", ");
-			for (Edge next : node.getOutgoingEdges()) {
-				result.append(node.getId() + "->" + next.getNext().getId() + "[" +
-						next.getAction() + ", " + next.getGuard() + "]\n");
-				if (!visited.contains(next.getNext())) {
-					visited.add(next.getNext());
-					openBorder.addLast(next.getNext());
-				}
+			if(node != null) {
+				if (node.getBooleanAttribute("accepting"))
+					result.insert(0, node.getId() + ", ");
+				for (Edge next : node.getOutgoingEdges()) {
+					result.append(node.getId() + "->" + next.getNext().getId() + "[" +
+							next.getAction() + ", " + next.getGuard() + "]\n");
+					if (!visited.contains(next.getNext())) {
+						visited.add(next.getNext());
+						openBorder.addLast(next.getNext());
+					}
+				}				
+			} else {
+				result.append("null");
 			}
 		}
 		
