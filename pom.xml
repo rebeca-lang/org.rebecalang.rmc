@@ -109,31 +109,6 @@
 			<artifactId>commons-cli</artifactId>
 			<version>1.4</version>
 		</dependency>
-		<dependency>
-			<groupId>de.tum.in</groupId>
-			<artifactId>jbdd</artifactId>
-			<version>0.5.2</version>
-		</dependency>
- 		<dependency>
-			<groupId>de.tum.in</groupId>
-			<artifactId>naturals-util</artifactId>
-			<version>0.15.0</version>
-		</dependency>
-		<dependency>
-			<groupId>it.unimi.dsi</groupId>
-			<artifactId>fastutil</artifactId>
-			<version>8.3.1</version>
-		</dependency>
-		<dependency>
-			<groupId>org.roaringbitmap</groupId>
-			<artifactId>RoaringBitmap</artifactId>
-			<version>0.8.18</version>
-		</dependency>
-		<dependency>
-			<groupId>org.graalvm.sdk</groupId>
-			<artifactId>graal-sdk</artifactId>
-			<version>20.1.0</version>
-		</dependency>
  
 
 		<dependency>
