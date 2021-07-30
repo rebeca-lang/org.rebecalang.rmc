@@ -78,7 +78,7 @@ public class CoreRebecaMethodBodyConvertor {
 		retValue = attachInitiativePart(reactiveClassDeclaration, methodDeclaration, retValue);
 		CoreRebecaNondetExpressionTranslator ndExpressionTranslator = 
 				((CoreRebecaNondetExpressionTranslator)statementTranslatorContainer.getTranslator(NonDetExpression.class));
-		if (!ndExpressionTranslator.getNonDetHeadString().equals(""))
+		if (ndExpressionTranslator.getNonDetCounter() != 0)
 			exceptionContainer.addException(new StatementTranslationException("This version of translator does not support " +
 					"nonedeterministic assignment inside synch methods.", 
 					methodDeclaration.getLineNumber(), methodDeclaration.getCharacter()));

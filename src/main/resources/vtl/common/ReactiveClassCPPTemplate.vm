@@ -90,7 +90,7 @@ ${reactiveClassName}Actor::${reactiveClassName}Actor(byte myID, char* myName, in
 	#macro (fillHierarchy $reactiveClass)
 		$hierarchy.addFirst($reactiveClass)
 		#if ($reactiveClass.getExtends())
-			 #set ($parent = $TypesUtilities.getInstance().getMetaData($reactiveClass.getExtends()))
+			 #set ($parent = $typeSystem.getMetaData($reactiveClass.getExtends()))
    			 #fillHierarchy($parent)
 		#end
 	#end

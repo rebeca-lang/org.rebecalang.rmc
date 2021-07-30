@@ -8,34 +8,45 @@ import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.rebecalang.compiler.CompilerConfig;
 import org.rebecalang.compiler.utils.CompilerExtension;
+import org.rebecalang.compiler.utils.CoreVersion;
 import org.rebecalang.compiler.utils.ExceptionContainer;
 import org.rebecalang.rmc.FileGeneratorProperties;
 import org.rebecalang.rmc.ModelCheckersFilesGenerator;
 import org.rebecalang.rmc.RMCConfig;
+import org.rebecalang.rmc.timedrebeca.TimedRebecaFileGeneratorProperties;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 
 @ContextConfiguration(classes = {CompilerConfig.class, RMCConfig.class}) 
 @SpringJUnitConfig
-public class AddHocTests {
+public class AdHocTests {
 	
 	@Autowired
 	ModelCheckersFilesGenerator modelCheckersFilesGenerator;
 	@Autowired
 	public ExceptionContainer exceptionContainer;
 	
-	private String MODEL_FILES_BASE = "";
+	private String MODEL_FILES_BASE = "src/test/resources/org/rebecalang/rmc/adhoc/";
 
 	@Test
-	@Disabled
+//	@Disabled
 	public void AddHoc() {
-		File model = new File(MODEL_FILES_BASE + "");
+		File model = new File(MODEL_FILES_BASE + "MedicalCase2.rebeca");
+		File property = null;//new File(MODEL_FILES_BASE + "LBE.property");
 		Set<CompilerExtension> extension = new HashSet<CompilerExtension>();
-		File output = new File("");
+		extension.add(CompilerExtension.TIMED_REBECA);
+		
+		File output = new File("target/MedicalCase2");
 				
-		FileGeneratorProperties properties = new FileGeneratorProperties();
+		FileGeneratorProperties properties = new TimedRebecaFileGeneratorProperties();
 
-		modelCheckersFilesGenerator.generateFiles(model, null, output, extension, properties);
+		properties.setCoreVersion(CoreVersion.CORE_2_3);
+		
+		modelCheckersFilesGenerator.generateFiles(model, property, output, extension, properties);
+		
+		if(!exceptionContainer.getExceptions().isEmpty()) {
+			System.out.println(exceptionContainer);
+		}
 	}
 }
