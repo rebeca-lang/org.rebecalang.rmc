@@ -1,0 +1,60 @@
+env int PACKET_SIZE = 4;
+
+reactiveclass Sensor(3) {
+	statevars{
+		ComputationUnit cu;
+	}
+	
+	Sensor(ComputationUnit cu1) {
+		cu = cu1;
+		self.gatherData();
+	}
+	
+	msgsrv gatherData() {
+		cu.receiveData();
+		self.gatherData(1);
+	}
+}
+
+reactiveclass ComputationUnit(3) {
+	statevars {
+		int receivedDataItems;
+		Network network;
+	}
+	
+	ComputationUnit(Network network1) {
+		receivedDataItems = 0;
+		network = network1;
+	}
+
+	boolean packAndSend(int data) {
+		receivedDataItems++;
+		if(receivedDataItems == PACKET_SIZE) {
+			receivedDataItems = 0;
+			network.send();
+		}
+	}
+
+	msgsrv receiveData(byte data) {
+		packAndSend(data);
+	}
+	
+}
+
+interface Network {
+	msgsrv send();
+}
+
+reactiveclass TDMANetwork implements Network (3) {
+	msgsrv send() {
+		//Send data according to the TDMA protocol
+	}
+}
+
+main {
+	Sensor sensor():(cu);
+
+	ComputationUnit cu():(network);
+
+	TDMANetwork network():();
+}
