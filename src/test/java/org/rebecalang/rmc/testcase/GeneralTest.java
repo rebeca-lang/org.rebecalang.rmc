@@ -50,6 +50,25 @@ public class GeneralTest {
 	}
 
 	@Test
+	public void generateInterfaceDeclaration() {
+		String modelName = "SimpleActorsUpgraded";
+		File model = new File(MODEL_FILES_BASE + modelName + ".rebeca");
+		File output = new File(RMC_OUTPUT + modelName);
+		
+		Set<CompilerExtension> extension = new HashSet<CompilerExtension>();
+		
+		FileGeneratorProperties properties = new FileGeneratorProperties();
+		properties.setDebugAll(true);
+		properties.setSafeMode(true);
+		properties.setCoreVersion(CoreVersion.CORE_2_3);
+		
+
+		modelCheckersFilesGenerator.generateFiles(model, null, output, extension, properties);
+		
+		VerificationUtils.assertExceptionContainerIsEmpty(exceptionContainer);
+	}
+
+	@Test
 	public void generateTinyOSMACB() {
 		String modelName = "TinyOS-MACB";
 		File model = new File(MODEL_FILES_BASE + modelName + ".rebeca");

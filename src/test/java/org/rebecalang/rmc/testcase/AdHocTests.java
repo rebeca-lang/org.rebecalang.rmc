@@ -32,14 +32,16 @@ public class AdHocTests {
 	@Test
 //	@Disabled
 	public void AddHoc() {
-		File model = new File(MODEL_FILES_BASE + "MedicalCase2.rebeca");
+		File model = new File(MODEL_FILES_BASE + "publishsubscribe_newshift.rebeca");
 		File property = null;//new File(MODEL_FILES_BASE + "LBE.property");
 		Set<CompilerExtension> extension = new HashSet<CompilerExtension>();
 		extension.add(CompilerExtension.TIMED_REBECA);
 		
-		File output = new File("target/MedicalCase2");
+		File output = new File("target/publishsubscribe_newshift");
 				
 		FileGeneratorProperties properties = new TimedRebecaFileGeneratorProperties();
+//		properties.setDebugTrace(true);
+//		properties.setDebugAll(true);
 
 		properties.setCoreVersion(CoreVersion.CORE_2_3);
 		
