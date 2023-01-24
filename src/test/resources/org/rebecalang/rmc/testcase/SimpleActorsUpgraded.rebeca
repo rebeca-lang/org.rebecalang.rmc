@@ -11,8 +11,8 @@ reactiveclass Sensor(3) {
 	}
 	
 	msgsrv gatherData() {
-		cu.receiveData();
-		self.gatherData(1);
+		cu.receiveData(1);
+		self.gatherData();
 	}
 }
 

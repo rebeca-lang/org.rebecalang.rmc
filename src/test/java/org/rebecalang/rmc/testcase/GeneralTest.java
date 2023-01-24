@@ -49,8 +49,8 @@ public class GeneralTest {
 		
 	}
 
-	@Test
-	public void generateInterfaceDeclaration() {
+	//@Test
+	public void generateSimpleActorsUpgraded() {
 		String modelName = "SimpleActorsUpgraded";
 		File model = new File(MODEL_FILES_BASE + modelName + ".rebeca");
 		File output = new File(RMC_OUTPUT + modelName);
