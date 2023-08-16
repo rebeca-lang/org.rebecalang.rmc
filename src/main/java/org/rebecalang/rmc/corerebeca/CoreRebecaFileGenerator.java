@@ -55,7 +55,6 @@ import org.rebecalang.rmc.AbstractFileGenerator;
 import org.rebecalang.rmc.FileGeneratorProperties;
 import org.rebecalang.rmc.StatementTranslatorContainer;
 import org.rebecalang.rmc.corerebeca.ltl.LTLPropertyHandler;
-import org.rebecalang.rmc.corerebeca.ltl.LTLTransformer;
 import org.rebecalang.rmc.corerebeca.ltl.gov.nasa.ltl.graph.Graph;
 import org.rebecalang.rmc.corerebeca.translator.BinaryExpressionTranslator;
 import org.rebecalang.rmc.corerebeca.translator.BlockStatementTranslator;
@@ -83,9 +82,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.stereotype.Component;
-
-import owl.ltl.LabelledFormula;
-import owl.ltl.parser.LtlParser;
 
 @Component
 public class CoreRebecaFileGenerator extends AbstractFileGenerator {

@@ -32,17 +32,18 @@ public class AdHocTests {
 	@Test
 //	@Disabled
 	public void AddHoc() {
-		File model = new File(MODEL_FILES_BASE + "publishsubscribe_newshift.rebeca");
+		File model = new File(MODEL_FILES_BASE + "EDF.rebeca");
 		File property = null;//new File(MODEL_FILES_BASE + "LBE.property");
 		Set<CompilerExtension> extension = new HashSet<CompilerExtension>();
 		extension.add(CompilerExtension.TIMED_REBECA);
 		
-		File output = new File("target/publishsubscribe_newshift");
+		File output = new File("target/EDF-FTTS");
 				
-		FileGeneratorProperties properties = new TimedRebecaFileGeneratorProperties();
+		TimedRebecaFileGeneratorProperties properties = new TimedRebecaFileGeneratorProperties();
 //		properties.setDebugTrace(true);
 //		properties.setDebugAll(true);
-
+		properties.setTTS(false);
+		properties.setExportStateSpaceTargetFile("statespace.txt");
 		properties.setCoreVersion(CoreVersion.CORE_2_3);
 		
 		modelCheckersFilesGenerator.generateFiles(model, property, output, extension, properties);
