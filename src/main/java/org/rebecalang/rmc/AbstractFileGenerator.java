@@ -2,6 +2,9 @@ package org.rebecalang.rmc;
 
 import java.io.File;
 import java.io.StringWriter;
+import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Set;
 
 import org.apache.velocity.Template;
@@ -13,11 +16,14 @@ import org.rebecalang.compiler.modelcompiler.corerebeca.CoreRebecaTypeSystem;
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.BlockStatement;
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.ConstructorDeclaration;
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.DotPrimary;
+import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.FieldDeclaration;
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.FormalParameterDeclaration;
+import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.InterfaceDeclaration;
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.MsgsrvDeclaration;
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.ParentSuffixPrimary;
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.ReactiveClassDeclaration;
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.RebecaModel;
+import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.SynchMethodDeclaration;
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.TermPrimary;
 import org.rebecalang.compiler.propertycompiler.generalrebeca.objectmodel.PropertyModel;
 import org.rebecalang.compiler.utils.CodeCompilationException;
@@ -99,7 +105,7 @@ public abstract class AbstractFileGenerator {
 		if(fileGenerationProperties.isSafeMode())
 			statementTranslatorContainer.TurnOnSafeMode();
 		
-		addDefaultMethodsToRebecaModel(rebecaModel, fileGenerationProperties.getCoreVersion());
+		decoratingRebecaModelToStandardForm(rebecaModel, fileGenerationProperties.getCoreVersion());
 		methodBodyConvertor.initilize(fileGenerationProperties);
 	}
 	
@@ -108,7 +114,7 @@ public abstract class AbstractFileGenerator {
 	 * For the case of CORE_2_0, default constructor is added to reactive class declarations which sends 
 	 * initial message to self to make the translation mechanism consistent with the other core versions.
 	 */
-	private void addDefaultMethodsToRebecaModel(RebecaModel rebecaModel, CoreVersion coreVersion) {
+	private void decoratingRebecaModelToStandardForm(RebecaModel rebecaModel, CoreVersion coreVersion) {
 		if (coreVersion == CoreVersion.CORE_2_0) {
 			for (ReactiveClassDeclaration rcd : rebecaModel.getRebecaCode().getReactiveClassDeclaration()) {
 				ConstructorDeclaration constructorDeclaration = new ConstructorDeclaration();
@@ -158,6 +164,40 @@ public abstract class AbstractFileGenerator {
 				rcd.getConstructors().add(constructorDeclaration);
 
 			}
-		}	
+		}
+		List<InterfaceDeclarationAdapter> declarations = new LinkedList<InterfaceDeclarationAdapter>();
+		
+		for(InterfaceDeclaration id : rebecaModel.getRebecaCode().getInterfaceDeclaration()) {
+			InterfaceDeclarationAdapter ida = new InterfaceDeclarationAdapter();
+			ida.getMsgsrvs().addAll(id.getMsgsrvs());
+			ida.getAnnotations().addAll(id.getAnnotations());
+			ida.getExtends().addAll(id.getExtends());
+			ida.setCharacter(id.getCharacter());
+			ida.setEndCharacter(id.getEndCharacter());
+			ida.setEndLineNumber(id.getLineNumber());
+			ida.setLineNumber(id.getLineNumber());
+			ida.setName(id.getName());
+			declarations.add(ida);
+		}
+		rebecaModel.getRebecaCode().getInterfaceDeclaration().clear();
+		rebecaModel.getRebecaCode().getInterfaceDeclaration().addAll(declarations);
+	}
+	
+	public class InterfaceDeclarationAdapter extends InterfaceDeclaration {
+	    public List<FieldDeclaration> getStatevars() {
+	        return new ArrayList<FieldDeclaration>();
+	    }
+
+	    public List<ConstructorDeclaration> getConstructors() {
+	        return new ArrayList<ConstructorDeclaration>();
+	    }
+
+	    public List<SynchMethodDeclaration> getSynchMethods() {
+	        return new ArrayList<SynchMethodDeclaration>();
+	    }
+
+	    public List<FieldDeclaration> getKnownRebecs() {
+	        return new ArrayList<FieldDeclaration>();
+	    }
 	}
 }

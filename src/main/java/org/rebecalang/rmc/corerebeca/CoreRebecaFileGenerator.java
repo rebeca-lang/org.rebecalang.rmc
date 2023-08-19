@@ -202,6 +202,8 @@ public class CoreRebecaFileGenerator extends AbstractFileGenerator {
 		context.put("fileGeneratorProperties", fileGeneratorProperties);
 		context.put("envVariables", rebecaModel.getRebecaCode()
 				.getEnvironmentVariables());
+		context.put("featureVariables", rebecaModel.getRebecaCode()
+				.getFeatureVariables());
 		context.put("translator", statementTranslatorContainer);
 
 		context.put("mainPatch", mainPatch);
@@ -223,6 +225,9 @@ public class CoreRebecaFileGenerator extends AbstractFileGenerator {
 		context.put("envVariables", 
 				getEnvironmentVariablesWithoutInitializer(
 						rebecaModel.getRebecaCode().getEnvironmentVariables()));
+		context.put("featureVariables", 
+				getFeatureVariablesWithoutInitializer(rebecaModel.getRebecaCode()
+				.getFeatureVariables()));
 		context.put("translator", statementTranslatorContainer);
 
 		context.put("configPatch", configPatch);
@@ -246,6 +251,22 @@ public class CoreRebecaFileGenerator extends AbstractFileGenerator {
 			}
 		}
 		return environmentVariablesWithoutInitilizer;
+	}
+
+	private Object getFeatureVariablesWithoutInitializer(List<FieldDeclaration> featureVariables) {
+		List<FieldDeclaration> featureVariablesWithoutInitilizer = new LinkedList<FieldDeclaration>();
+		for(FieldDeclaration fieldDeclaration : featureVariables) {
+			FieldDeclaration newFiledDeclaration = new FieldDeclaration();
+			newFiledDeclaration.setType(fieldDeclaration.getType());
+			newFiledDeclaration.getAnnotations().addAll(fieldDeclaration.getAnnotations());
+			featureVariablesWithoutInitilizer.add(newFiledDeclaration);
+			for(VariableDeclarator variableDeclarator : fieldDeclaration.getVariableDeclarators()) {
+				VariableDeclarator newVariableDeclarator = new VariableDeclarator();
+				newVariableDeclarator.setVariableName(variableDeclarator.getVariableName());
+				newFiledDeclaration.getVariableDeclarators().add(newVariableDeclarator);
+			}
+		}
+		return featureVariablesWithoutInitilizer;
 	}
 
 	protected void createAbstractActor(List<String> patches) throws IOException {

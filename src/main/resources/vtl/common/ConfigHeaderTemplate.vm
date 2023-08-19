@@ -30,6 +30,10 @@
 	 extern $translator.translate($fieldDeclaration, "") 
 #end
 
+#foreach ($fieldDeclaration in $featureVariables)
+	 extern $translator.translate($fieldDeclaration, "") 
+#end
+
 \#define NEW_STATE 1
 
 #parse ("$configPatch")

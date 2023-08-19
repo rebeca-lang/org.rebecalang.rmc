@@ -20,6 +20,10 @@ using namespace std;
 	 $translator.translate($fieldDeclaration, "") 
 #end
 
+#foreach ($fieldDeclaration in $featureVariables) 
+	 $translator.translate($fieldDeclaration, "") 
+#end
+
 #mainMacroPutInstanceReference()
 
 string operator+(const string left, const int right) {
