@@ -197,7 +197,14 @@ long TimedModelChecker::executeRebec(int rebecId) {
 		#endif
 	}
 	TIME_TYPE currentTime = rebecs[rebecId]->getNow();//(currentTime);
-	nonDetTrans = rebecs[rebecId]->execute();
+	
+	try {
+		nonDetTrans = rebecs[rebecId]->execute();
+	} catch (QueueOverflowException &e) {
+		e.setCausedBy(rebecs[rebecId]);
+		throw e;
+	}
+
 	#ifdef DEBUG
 	    out << "Message \"" << rebecs[rebecId]->getName() << "::" << rebecs[rebecId]->activeAction() << "\" is executed " 
 	    	<< "and the return value is \"" << (long)nonDetTrans << "\"." << endl;

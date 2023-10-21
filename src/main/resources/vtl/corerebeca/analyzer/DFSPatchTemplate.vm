@@ -281,7 +281,12 @@ void CoreRebecaModelChecker::doDFSModelChecking(string userSelectedPropertyName,
 			    label = rebecs[r]->messageNames[rebecs[r]->messageQueue[0]];
 			    sender = rebecs[rebecs[r]->senderQueue[0]]->getName();
 		    #endif
-            nonDetTrans = rebecs[r]->execute();	// The parameter should be removed actually I believe!
+			try {
+            	nonDetTrans = rebecs[r]->execute();	// The parameter should be removed actually I believe!
+            } catch (QueueOverflowException &e) {
+    			e.setCausedBy(rebecs[r]);
+    			throw e;
+    		}
  			/*
  			The next system state is returned in "sys"
  			Return value (nonDetTrans):
