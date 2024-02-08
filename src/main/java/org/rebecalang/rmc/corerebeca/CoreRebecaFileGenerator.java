@@ -350,6 +350,7 @@ public class CoreRebecaFileGenerator extends AbstractFileGenerator {
 		context.put("methodBodyConvertor", methodBodyConvertor);
 		context.put("translator", statementTranslatorContainer);
 		context.put("typeSystem", typeSystem);
+		
 
 		if (baseClassDeclaration instanceof ReactiveClassDeclaration) {
 			ReactiveClassDeclaration rcd = (ReactiveClassDeclaration) baseClassDeclaration;
