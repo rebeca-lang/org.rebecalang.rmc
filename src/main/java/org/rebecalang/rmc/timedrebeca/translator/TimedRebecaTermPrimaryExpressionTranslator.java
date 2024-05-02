@@ -58,9 +58,10 @@ public class TimedRebecaTermPrimaryExpressionTranslator extends CoreRebecaTermPr
 							termPrimary.getLineNumber(), termPrimary.getCharacter()));
 				}
 				return retValue;
-			} else
-				return "_ref_now += " + 
-				statementTranslatorContainer.translate(termPrimary.getParentSuffixPrimary().getArguments().get(0), "");
+			} else {
+				String delay = statementTranslatorContainer.translate(termPrimary.getParentSuffixPrimary().getArguments().get(0), "");
+				return "currentDelay += " + delay + ";\n_ref_now += " + delay;
+			}
 		} else {
 			if (termPrimary.getParentSuffixPrimary() == null &&
 					termPrimary.getLabel() == CoreRebecaLabelUtility.LOCAL_VARIABLE &&
@@ -90,7 +91,9 @@ public class TimedRebecaTermPrimaryExpressionTranslator extends CoreRebecaTermPr
 				} else {
 					retValue += "MAX_TIME";
 				}
-				retValue = retValue + ")";
+				retValue += ", currentDelay";
+				retValue = retValue + ");";
+				retValue += NEW_LINE + "this->currentDelay = 0";
 				return retValue;
 			} else {
 				return super.translate(termPrimary, tab);

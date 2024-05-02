@@ -1,0 +1,59 @@
+#ifndef __ORDER_SPEC_H_
+\#define __ORDER_SPEC_H_
+
+\#include "Config.h"
+\#include "AbstractActor.h"
+
+enum OrderCommand {
+    Swap,
+    NoSwap,
+    Skip
+};
+
+class AbstarctOrderSpec {
+public:
+    virtual OrderCommand order(int queueTail, TIME_TYPE *executionTime, TIME_TYPE *deadline, byte *messageQueue, byte *senderQueue, TIME_TYPE *delay, const vector<AbstractActor *> &rebecs) = 0;
+    virtual bool checkOrder(int a, int b, TIME_TYPE *executionTime, TIME_TYPE *deadline, byte *messageQueue, byte *senderQueue, TIME_TYPE *delay, const vector<AbstractActor *> &rebecs) = 0;
+};
+
+class SenderOrderSpec : public AbstarctOrderSpec {
+private:
+    string specialSender;
+
+public:
+    SenderOrderSpec(string special);
+    virtual OrderCommand order(int queueTail, TIME_TYPE *executionTime, TIME_TYPE *deadline, byte *messageQueue, byte *senderQueue,  TIME_TYPE *delay, const vector<AbstractActor *> &rebecs) override;
+        virtual bool checkOrder(int a, int b, TIME_TYPE *executionTime, TIME_TYPE *deadline, byte *messageQueue, byte *senderQueue, TIME_TYPE *delay, const vector<AbstractActor *> &rebecs) override;
+};
+
+class MessageNameOrderSpec : public AbstarctOrderSpec {
+private:
+    int specialMessage;
+
+public:
+    MessageNameOrderSpec(int special);
+    virtual OrderCommand order(int queueTail, TIME_TYPE *executionTime, TIME_TYPE *deadline, byte *messageQueue, byte *senderQueue, TIME_TYPE *delay, const vector<AbstractActor *> &rebecs) override;
+    virtual bool checkOrder(int a, int b, TIME_TYPE *executionTime, TIME_TYPE *deadline, byte *messageQueue, byte *senderQueue, TIME_TYPE *delay, const vector<AbstractActor *> &rebecs) override;
+};
+
+class DeadlineOrderSpec : public AbstarctOrderSpec {
+private:
+    bool isMin;
+
+public:
+    DeadlineOrderSpec(bool isMin);
+    virtual OrderCommand order(int queueTail, TIME_TYPE *executionTime, TIME_TYPE *deadline, byte *messageQueue, byte *senderQueue, TIME_TYPE *delay, const vector<AbstractActor *> &rebecs) override;
+    virtual bool checkOrder(int a, int b, TIME_TYPE *executionTime, TIME_TYPE *deadline, byte *messageQueue, byte *senderQueue, TIME_TYPE *delay, const vector<AbstractActor *> &rebecs) override;
+};
+
+class DelayOrderSpec : public AbstarctOrderSpec {
+private:
+    bool isMin;
+
+public:
+    DelayOrderSpec(bool isMin);
+    virtual OrderCommand order(int queueTail, TIME_TYPE *executionTime, TIME_TYPE *deadline, byte *messageQueue, byte *senderQueue, TIME_TYPE *delay, const vector<AbstractActor *> &rebecs) override;
+    virtual bool checkOrder(int a, int b, TIME_TYPE *executionTime, TIME_TYPE *deadline, byte *messageQueue, byte *senderQueue, TIME_TYPE *delay, const vector<AbstractActor *> &rebecs) override;
+};
+
+#[[#endif]]#

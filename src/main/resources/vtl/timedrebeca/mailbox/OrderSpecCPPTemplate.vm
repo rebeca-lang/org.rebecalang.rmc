@@ -1,0 +1,64 @@
+\#include "OrderSpec.h"
+
+SenderOrderSpec::SenderOrderSpec(string special) : specialSender(special) {}
+
+OrderCommand SenderOrderSpec::order(int queueTail, TIME_TYPE *executionTime, TIME_TYPE *deadline, byte *messageQueue, byte *senderQueue, TIME_TYPE *delay, const vector<AbstractActor *> &rebecs)
+    {
+    if (rebecs[senderQueue[queueTail]]->getName() == specialSender && rebecs[senderQueue[queueTail - 1]]->getName() != specialSender)
+        return OrderCommand::Swap;
+    if (rebecs[senderQueue[queueTail]]->getName() != specialSender && rebecs[senderQueue[queueTail - 1]]->getName() == specialSender)
+        return OrderCommand::NoSwap;
+    else
+        return OrderCommand::Skip;
+    }
+
+bool SenderOrderSpec::checkOrder(int a, int b, TIME_TYPE *executionTime, TIME_TYPE *deadline, byte *messageQueue, byte *senderQueue, TIME_TYPE *delay, const vector<AbstractActor *> &rebecs) {
+    return rebecs[senderQueue[a]]->getName() == specialSender && rebecs[senderQueue[b]]->getName() == specialSender ||
+        rebecs[senderQueue[a]]->getName() != specialSender && rebecs[senderQueue[b]]->getName() != specialSender;
+}
+
+MessageNameOrderSpec::MessageNameOrderSpec(int special) : specialMessage(special) {}
+
+OrderCommand MessageNameOrderSpec::order(int queueTail, TIME_TYPE *executionTime, TIME_TYPE *deadline, byte *messageQueue, byte *senderQueue, TIME_TYPE *delay, const vector<AbstractActor *> &rebecs) {
+    if (messageQueue[queueTail] == specialMessage && messageQueue[queueTail - 1] != specialMessage)
+        return OrderCommand::Swap;
+    if (messageQueue[queueTail] != specialMessage && messageQueue[queueTail - 1] == specialMessage)
+        return OrderCommand::NoSwap;
+    else
+        return OrderCommand::Skip;
+}
+
+bool MessageNameOrderSpec::checkOrder(int a, int b, TIME_TYPE *executionTime, TIME_TYPE *deadline, byte *messageQueue, byte *senderQueue, TIME_TYPE *delay, const vector<AbstractActor *> &rebecs) {
+    return messageQueue[a] == specialMessage && messageQueue[b] == specialMessage ||
+        messageQueue[a] != specialMessage && messageQueue[b] != specialMessage;
+}
+
+DeadlineOrderSpec::DeadlineOrderSpec(bool isMin) : isMin(isMin) {}
+
+OrderCommand DeadlineOrderSpec::order(int queueTail, TIME_TYPE *executionTime, TIME_TYPE *deadline, byte *messageQueue, byte *senderQueue, TIME_TYPE *delay, const vector<AbstractActor *> &rebecs) {
+    if ((int)deadline[queueTail] == (int)deadline[queueTail - 1])
+        return OrderCommand::Skip;
+    if (isMin ? (int)deadline[queueTail] < (int)deadline[queueTail - 1] : (int)deadline[queueTail] > (int)deadline[queueTail - 1])
+        return OrderCommand::Swap;
+
+    return OrderCommand::NoSwap;
+}
+
+bool DeadlineOrderSpec::checkOrder(int a, int b, TIME_TYPE *executionTime, TIME_TYPE *deadline, byte *messageQueue, byte *senderQueue, TIME_TYPE *delay, const vector<AbstractActor *> &rebecs) {
+        return deadline[a] == deadline[b];
+    }
+
+DelayOrderSpec::DelayOrderSpec(bool isMin) : isMin(isMin) {}
+
+OrderCommand DelayOrderSpec::order(int queueTail, TIME_TYPE *executionTime, TIME_TYPE *deadline, byte *messageQueue, byte *senderQueue, TIME_TYPE *delay, const vector<AbstractActor *> &rebecs) {
+    if (delay[queueTail] == delay[queueTail - 1])
+        return OrderCommand::Skip;
+    if (isMin ? delay[queueTail] < delay[queueTail - 1] : delay[queueTail] > delay[queueTail - 1])
+        return OrderCommand::Swap;
+
+    return OrderCommand::NoSwap;
+}
+
+bool DelayOrderSpec::checkOrder(int a, int b, TIME_TYPE *executionTime, TIME_TYPE *deadline, byte *messageQueue, byte *senderQueue, TIME_TYPE *delay, const vector<AbstractActor *> &rebecs) {
+    return delay[a] == delay[b];
+}

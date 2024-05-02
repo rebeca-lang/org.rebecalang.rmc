@@ -93,7 +93,7 @@ public class TimedRebecaFileGenerator extends CoreRebecaFileGenerator {
 			createTimedRebecaBFSHashmap();
 			
 			createAbstractCoreRebecaAnalyzer();
-			
+			createMailBox();
 			if (fileGenerationProperties.isTraceGenerator()) {
 				createTraceGenerator();
 			} else { 
@@ -138,6 +138,14 @@ public class TimedRebecaFileGenerator extends CoreRebecaFileGenerator {
 		mergeTemplat(context, FilesNames.TIMED_REBECA_BFS_HASHMAP_HEADER_TEMPLATE, FilesNames.TIMED_REBECA_BFS_HASHMAP_OUTPUT_HEADER);
 
 		mergeTemplat(context, FilesNames.TIMED_REBECA_BFS_HASHMAP_CPP_TEMPLATE, FilesNames.TIMED_REBECA_BFS_HASHMAP_OUTPUT_CPP);
+	}
+
+	protected void createMailBox() throws IOException {
+		VelocityContext context = new VelocityContext();
+
+		mergeTemplat(context, FilesNames.ORDER_SPEC_HEADER_TEMPLATE, FilesNames.ORDER_SPEC_OUTPUT_HEADER);
+
+		mergeTemplat(context, FilesNames.ORDER_SPEC_CPP_TEMPLATE, FilesNames.ORDER_SPEC_OUTPUT_CPP);
 	}
 
 	protected void createAbstractTimedActor(List<String> patches) throws IOException {
