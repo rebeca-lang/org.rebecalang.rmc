@@ -70,7 +70,7 @@ void AbstractTimedActor::timeEnqueue(TIME_TYPE *queue, TIME_TYPE value) {
 	queue[queueTail] = value;
 }
 
-OrderCommand AbstractTimedActor::applyMailBoxPlicy(int cnt)
+OrderCommand AbstractTimedActor::applyMailBoxPolicy(int cnt)
 {
 	for (auto spec : orderSpecs) {
 		OrderCommand res = spec->order(cnt, executionTime, deadline, messageQueue, senderQueue, delay, rebecs);
@@ -103,7 +103,7 @@ void AbstractTimedActor::applyPolicy(boolean isSendToSelf) {
 			|| __pc != -1 
 		#endif
 		))) {
-			OrderCommand res = applyMailBoxPlicy(cnt);
+			OrderCommand res = applyMailBoxPolicy(cnt);
 			if (res == OrderCommand::NoSwap)
 			break;
 			else if (res == OrderCommand::Skip) {

@@ -64,7 +64,7 @@ protected:
     void stopTimer(Timer &t);
     TIME_TYPE getTimerValue(Timer &t);
     vector<AbstarctOrderSpec*> orderSpecs;
-    OrderCommand applyMailBoxPlicy(int cnt);
+    OrderCommand applyMailBoxPolicy(int cnt);
     int currentDelay;
 
     #applyPatch($patches 'AdditionalSignatures' '')

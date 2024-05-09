@@ -24,6 +24,7 @@ import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.RebecaModel;
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.TermPrimary;
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.UnaryExpression;
 import org.rebecalang.compiler.modelcompiler.timedrebeca.PriorityType;
+import org.rebecalang.compiler.modelcompiler.timedrebeca.objectmodel.TimedRebecaCode;
 import org.rebecalang.compiler.propertycompiler.generalrebeca.objectmodel.AssertionDefinition;
 import org.rebecalang.compiler.propertycompiler.generalrebeca.objectmodel.Definition;
 import org.rebecalang.compiler.propertycompiler.generalrebeca.objectmodel.PropertyModel;
@@ -45,7 +46,7 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class TimedRebecaFileGenerator extends CoreRebecaFileGenerator {
-	
+
 	@Autowired
 	public TimedRebecaFileGenerator(@Qualifier("TIMED_REBECA") AbstractTypeSystem typeSystem, 
 			@Qualifier("TIMED_REBECA") CoreRebecaMethodBodyConvertor methodBodyConvertor,
@@ -141,8 +142,11 @@ public class TimedRebecaFileGenerator extends CoreRebecaFileGenerator {
 	}
 
 	protected void createMailBox() throws IOException {
+		TimedRebecaCode timedRebecaCode = (TimedRebecaCode) rebecaModel.getRebecaCode();
+		MailBoxBodyConvertor mailBoxBodyConvertor = new MailBoxBodyConvertor();
 		VelocityContext context = new VelocityContext();
-
+		context.put("mailboxDeclaration", timedRebecaCode.getMailboxDeclaration());
+		context.put("mailBoxBodyConvertor", mailBoxBodyConvertor);
 		mergeTemplat(context, FilesNames.ORDER_SPEC_HEADER_TEMPLATE, FilesNames.ORDER_SPEC_OUTPUT_HEADER);
 
 		mergeTemplat(context, FilesNames.ORDER_SPEC_CPP_TEMPLATE, FilesNames.ORDER_SPEC_OUTPUT_CPP);
