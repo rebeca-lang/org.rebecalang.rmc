@@ -38,7 +38,7 @@ public class MailBoxBodyConvertor {
         String aggregator = aggregationConditionPrimary.getName();
         String value = ((TermPrimary) aggregationConditionPrimary.getArgument()).getName();
         String isMin = "true";
-        if (aggregator == "max") {
+        if (aggregator.equals("max")) {
             isMin = "false";
         }
 
