@@ -194,6 +194,9 @@ void AbstractTimedRebecaAnalyzer::instantiationPart() {
         #set($counter = $counter + 1)
 	#end
 
+	#foreach($instance in $mainDefinition.getMainRebecDefinition())
+		$mailBoxBodyConvertor.AddOrderSpecsToAnActor($instance)
+	#end
 	numberOfStates = 0;
 	numberOfTransitions = 0;
     numberOfTimedBundles = 0;

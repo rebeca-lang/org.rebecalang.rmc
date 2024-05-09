@@ -3,33 +3,21 @@ package org.rebecalang.rmc.timedrebeca;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 import org.apache.velocity.VelocityContext;
 import org.rebecalang.compiler.modelcompiler.abstractrebeca.AbstractTypeSystem;
 import org.rebecalang.compiler.modelcompiler.corerebeca.CoreRebecaTypeSystem;
-import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.Annotation;
-import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.BaseClassDeclaration;
-import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.BinaryExpression;
-import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.Expression;
-import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.InterfaceDeclaration;
-import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.Literal;
-import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.MethodDeclaration;
-import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.NonDetExpression;
-import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.ReactiveClassDeclaration;
-import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.RebecaModel;
-import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.TermPrimary;
-import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.UnaryExpression;
+import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.*;
 import org.rebecalang.compiler.modelcompiler.timedrebeca.PriorityType;
+import org.rebecalang.compiler.modelcompiler.timedrebeca.objectmodel.TimedMainRebecDefinition;
 import org.rebecalang.compiler.modelcompiler.timedrebeca.objectmodel.TimedRebecaCode;
 import org.rebecalang.compiler.propertycompiler.generalrebeca.objectmodel.AssertionDefinition;
 import org.rebecalang.compiler.propertycompiler.generalrebeca.objectmodel.Definition;
 import org.rebecalang.compiler.propertycompiler.generalrebeca.objectmodel.PropertyModel;
 import org.rebecalang.compiler.propertycompiler.timedrebeca.objectmodel.TCTLDefinition;
 import org.rebecalang.compiler.utils.CompilerExtension;
+import org.rebecalang.compiler.utils.Pair;
 import org.rebecalang.rmc.AbstractStatementTranslator;
 import org.rebecalang.rmc.FileGeneratorProperties;
 import org.rebecalang.rmc.StatementTranslatorContainer;
@@ -178,9 +166,74 @@ public class TimedRebecaFileGenerator extends CoreRebecaFileGenerator {
 		return PriorityType.local;
 	}
 
-	protected void createAbstractCoreRebecaAnalyzer() throws IOException {
+	@Override
+	protected void createAbstractCoreRebecaAnalyzer(String headerTemplate, String headerOutput,
+													String cppTemplate, String cppOutput) throws IOException {
 
-		super.createAbstractCoreRebecaAnalyzer(
+		List<Definition> definitions = null;
+		List<AssertionDefinition> assertions = null;
+		if (propertyModel != null) {
+			definitions = propertyModel.getDefinitions();
+			assertions = propertyModel.getAssertionDefinitions();
+		}
+
+		Hashtable<String, Integer> reactiveClassTypeOrder = new Hashtable<String, Integer>();
+		Hashtable<String, Pair<Integer, Integer>> sizes= new Hashtable<String, Pair<Integer,Integer>>();
+		int order = 0;
+		for (ReactiveClassDeclaration reactiveClassDeclaration : rebecaModel
+				.getRebecaCode().getReactiveClassDeclaration()) {
+			String name = reactiveClassDeclaration.getName();
+			reactiveClassTypeOrder.put(name,
+					order++);
+			sizes.put(name, new Pair<Integer, Integer>
+					(reactiveClassDeclaration.getQueueSize(), getMaximumParametersSize(reactiveClassDeclaration)));
+		}
+
+		Hashtable<String, Integer> rebecInstanceOrder = new Hashtable<String, Integer>();
+		order = 0;
+		for (MainRebecDefinition mainRebecDefinition : rebecaModel
+				.getRebecaCode().getMainDeclaration().getMainRebecDefinition()) {
+			rebecInstanceOrder.put(mainRebecDefinition.getName(), order++);
+		}
+
+		VelocityContext context = new VelocityContext();
+		context.put("reactiveClassDeclarations", rebecaModel.getRebecaCode()
+				.getReactiveClassDeclaration());
+		context.put("mainDefinition", rebecaModel.getRebecaCode()
+				.getMainDeclaration());
+		context.put("reactiveClassTypeOrder", reactiveClassTypeOrder);
+		context.put("rebecInstanceOrder", rebecInstanceOrder);
+		context.put("translator", statementTranslatorContainer);
+		context.put("sizes", sizes);
+		context.put("propertyDefinitions", (definitions == null ? new LinkedList<Definition>() : definitions));
+		context.put("propertyAssertions", (assertions == null ? new LinkedList<AssertionDefinition>() : assertions));
+		context.put("fileGeneratorProperties", fileGeneratorProperties);
+		for(ReactiveClassDeclaration rd: rebecaModel.getRebecaCode()
+				.getReactiveClassDeclaration()){
+			context.put(rd.getName()+"StateSize", getStateSize(rd));
+
+		}
+		TimedRebecaCode timedRebecaCode = (TimedRebecaCode) rebecaModel.getRebecaCode();
+		MailBoxBodyConvertor mailBoxBodyConvertor = new MailBoxBodyConvertor();
+		mailBoxBodyConvertor.setTimedRebecaCode(timedRebecaCode);
+		context.put("mailBoxBodyConvertor", mailBoxBodyConvertor);
+//		TermPrimary mailboxTermPrimary = (TermPrimary) timedMainRebecDefinition.getMailbox();
+//		mailboxTermPrimary.getName();
+//		timedRebecaCode.getMailboxDeclaration().get(0).
+
+		if(fileGeneratorProperties.isSafeMode())
+			statementTranslatorContainer.TurnOffSafeMode();
+
+		mergeTemplat(context, headerTemplate, headerOutput);
+
+		mergeTemplat(context, cppTemplate, cppOutput);
+
+		if(fileGeneratorProperties.isSafeMode())
+			statementTranslatorContainer.TurnOnSafeMode();
+	}
+
+	protected void createAbstractCoreRebecaAnalyzer() throws IOException {
+		createAbstractCoreRebecaAnalyzer(
 				FilesNames.ABSTRACT_TIMED_REBECA_ANALYZER_HEADER_TEMPLATE,
 				FilesNames.ABSTRACT_TIMED_REBECA_ANALYZER_OUTPUT_HEADER,
 				FilesNames.ABSTRACT_TIMED_REBECA_ANALYZER_CPP_TEMPLATE,
