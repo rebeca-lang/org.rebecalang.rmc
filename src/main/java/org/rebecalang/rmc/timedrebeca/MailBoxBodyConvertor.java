@@ -73,7 +73,10 @@ public class MailBoxBodyConvertor {
     }
     public String AddOrderSpecsToAnActor(MainRebecDefinition mainRebecDefinition) {
         TimedMainRebecDefinition timedMainRebecDefinition = (TimedMainRebecDefinition) mainRebecDefinition;
-        String mailboxName = ((TermPrimary) timedMainRebecDefinition.getMailbox()).getName();
+        Expression mailBox = timedMainRebecDefinition.getMailbox();
+        if (mailBox == null)
+            return "";
+        String mailboxName = ((TermPrimary) mailBox).getName();
         List<MainMailboxDefinition> mainMailboxDefinitions = ((TimedMainDeclaration) timedRebecaCode.getMainDeclaration()).getMainMailboxDefinition();
         MainMailboxDefinition mainMailboxDefinition = getMailboxDefinition(mainMailboxDefinitions, mailboxName);
         MailboxDeclaration mailboxDeclaration = getMailboxDeclaration(mainMailboxDefinition);
