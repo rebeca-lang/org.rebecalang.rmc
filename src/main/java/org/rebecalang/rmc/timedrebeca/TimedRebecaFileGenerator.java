@@ -132,6 +132,7 @@ public class TimedRebecaFileGenerator extends CoreRebecaFileGenerator {
 	protected void createMailBox() throws IOException {
 		TimedRebecaCode timedRebecaCode = (TimedRebecaCode) rebecaModel.getRebecaCode();
 		MailBoxBodyConvertor mailBoxBodyConvertor = new MailBoxBodyConvertor();
+		mailBoxBodyConvertor.setTimedRebecaCode(timedRebecaCode);
 		VelocityContext context = new VelocityContext();
 		context.put("mailboxDeclaration", timedRebecaCode.getMailboxDeclaration());
 		context.put("mailBoxBodyConvertor", mailBoxBodyConvertor);
