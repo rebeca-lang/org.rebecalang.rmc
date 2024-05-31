@@ -1,22 +1,19 @@
 mailbox BMailbox {
     knownsenders {
         A a;
+        A aa;
     }
     orders {
         sender == a,
-        min(messageArrivalTime),
-        !(sender == a)
+        sender == bb,
+        messageServerName == foo
     }
 }
 
-mailbox AMailbox {
+mailbox BMailbox {
     knownsenders {
-        B b;
-    }
-    orders {
-        max(messageDeadline),
-        min(messageExecutionTime),
-        sender == b
+        A a;
+        A aa;
     }
 }
 
@@ -46,14 +43,11 @@ reactiveclass B (3) {
 	}
 
 	msgsrv m(A param1, int param2) {
-	    delay(5);
 		int value = now + currentMessageArrival + currentMessageDeadline + currentMessageWaitingTime;
 	}
 }
 
 main {
-    BMailbox tmbox(a);
-    AMailbox xbox(b);
-	A a<xbox>(b):();
-	B b<tmbox>():();
+	A a(b):();
+	B b<BMailbox>():();
 }
