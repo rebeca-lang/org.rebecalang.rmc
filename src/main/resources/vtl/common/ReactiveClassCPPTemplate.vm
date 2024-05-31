@@ -14,6 +14,16 @@
 #end
 #end
 
+// location counters (values stored in messageQueue[0])
+/* There can be more than one location counter for each msgsrv when we
+want to have non-atomic message servers.
+Notice that values 0 and 1 are reserved for EMPTY and INITIAL, respectively.*/
+#set ($cnt = $parentMSGSRVCount)
+#foreach ($methodDeclaration in $reactiveClassDeclaration.getMsgsrvs())
+\#define $methodDeclaration.getName().toUpperCase() $cnt
+#set ($cnt = $cnt + 1)
+#end
+
 // knownrebecs (those to whom message can be sent)
 // the following format allows to use them as variables --> the ID of the rebec
 \#define _ref_sender (rebecs[senderQueue[0]])
