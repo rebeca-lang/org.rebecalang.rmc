@@ -6,16 +6,16 @@
         #if ($expression.getClass().getSimpleName() == "BinaryExpression" || $expression.getClass().getSimpleName() == "UnaryExpression")
 ${instance.getName()}OrderSpec${counter}::${instance.getName()}OrderSpec${counter}(byte assignedRebecID) : assignedRebecID(assignedRebecID){}
 
-OrderCommand ${instance.getName()}OrderSpec${counter}::order(int queueTail, TIME_TYPE *executionTime, TIME_TYPE *deadline, byte *messageQueue, byte *senderQueue, TIME_TYPE *delay, const vector<AbstractActor *> &rebecs) {
-    if (($mailBoxBodyConvertor.ConvertConditionalOrderSpec($expression, "queueTail")) && !($mailBoxBodyConvertor.ConvertConditionalOrderSpec($expression, "queueTail - 1")))
+OrderCommand ${instance.getName()}OrderSpec${counter}::order(int queueTail, int executableId, TIME_TYPE *executionTime, TIME_TYPE *deadline, byte *messageQueue, byte *senderQueue, TIME_TYPE *delay, const vector<AbstractActor *> &rebecs, int now) {
+    if (($mailBoxBodyConvertor.ConvertConditionalOrderSpec($expression, "queueTail")) && !($mailBoxBodyConvertor.ConvertConditionalOrderSpec($expression, "executableId")))
         return OrderCommand::Swap;
-    if (!($mailBoxBodyConvertor.ConvertConditionalOrderSpec($expression, "queueTail")) && ($mailBoxBodyConvertor.ConvertConditionalOrderSpec($expression, "queueTail - 1")))
+    if (!($mailBoxBodyConvertor.ConvertConditionalOrderSpec($expression, "queueTail")) && ($mailBoxBodyConvertor.ConvertConditionalOrderSpec($expression, "executableId")))
         return OrderCommand::NoSwap;
     else
         return OrderCommand::Skip;
 }
 
-bool ${instance.getName()}OrderSpec${counter}::checkOrder(int a, int b, TIME_TYPE *executionTime, TIME_TYPE *deadline, byte *messageQueue, byte *senderQueue, TIME_TYPE *delay, const vector<AbstractActor *> &rebecs) {
+bool ${instance.getName()}OrderSpec${counter}::checkOrder(int a, int b, TIME_TYPE *executionTime, TIME_TYPE *deadline, byte *messageQueue, byte *senderQueue, TIME_TYPE *delay, const vector<AbstractActor *> &rebecs, int now) {
     return ($mailBoxBodyConvertor.ConvertConditionalOrderSpec($expression, "a")) && ($mailBoxBodyConvertor.ConvertConditionalOrderSpec($expression, "b")) ||
         !($mailBoxBodyConvertor.ConvertConditionalOrderSpec($expression, "a")) && !($mailBoxBodyConvertor.ConvertConditionalOrderSpec($expression, "b"));
 }
@@ -27,30 +27,67 @@ bool ${instance.getName()}OrderSpec${counter}::checkOrder(int a, int b, TIME_TYP
 
 DeadlineOrderSpec::DeadlineOrderSpec(bool isMin) : isMin(isMin) {}
 
-OrderCommand DeadlineOrderSpec::order(int queueTail, TIME_TYPE *executionTime, TIME_TYPE *deadline, byte *messageQueue, byte *senderQueue, TIME_TYPE *delay, const vector<AbstractActor *> &rebecs) {
-    if ((int)deadline[queueTail] == (int)deadline[queueTail - 1])
+OrderCommand DeadlineOrderSpec::order(int queueTail, int executableId, TIME_TYPE *executionTime, TIME_TYPE *deadline, byte *messageQueue, byte *senderQueue, TIME_TYPE *delay, const vector<AbstractActor *> &rebecs, int now) {
+    if ((int)deadline[queueTail] == (int)deadline[executableId])
         return OrderCommand::Skip;
-    if (isMin ? (int)deadline[queueTail] < (int)deadline[queueTail - 1] : (int)deadline[queueTail] > (int)deadline[queueTail - 1])
+    if (isMin ? (int)deadline[queueTail] < (int)deadline[executableId] : (int)deadline[queueTail] > (int)deadline[executableId])
         return OrderCommand::Swap;
 
     return OrderCommand::NoSwap;
 }
 
-bool DeadlineOrderSpec::checkOrder(int a, int b, TIME_TYPE *executionTime, TIME_TYPE *deadline, byte *messageQueue, byte *senderQueue, TIME_TYPE *delay, const vector<AbstractActor *> &rebecs) {
+bool DeadlineOrderSpec::checkOrder(int a, int b, TIME_TYPE *executionTime, TIME_TYPE *deadline, byte *messageQueue, byte *senderQueue, TIME_TYPE *delay, const vector<AbstractActor *> &rebecs, int now) {
         return deadline[a] == deadline[b];
     }
 
 DelayOrderSpec::DelayOrderSpec(bool isMin) : isMin(isMin) {}
 
-OrderCommand DelayOrderSpec::order(int queueTail, TIME_TYPE *executionTime, TIME_TYPE *deadline, byte *messageQueue, byte *senderQueue, TIME_TYPE *delay, const vector<AbstractActor *> &rebecs) {
-    if (delay[queueTail] == delay[queueTail - 1])
+OrderCommand DelayOrderSpec::order(int queueTail, int executableId, TIME_TYPE *executionTime, TIME_TYPE *deadline, byte *messageQueue, byte *senderQueue, TIME_TYPE *delay, const vector<AbstractActor *> &rebecs, int now) {
+    if (delay[queueTail] == delay[executableId])
         return OrderCommand::Skip;
-    if (isMin ? delay[queueTail] < delay[queueTail - 1] : delay[queueTail] > delay[queueTail - 1])
+    if (isMin ? delay[queueTail] < delay[executableId] : delay[queueTail] > delay[executableId])
         return OrderCommand::Swap;
 
     return OrderCommand::NoSwap;
 }
 
-bool DelayOrderSpec::checkOrder(int a, int b, TIME_TYPE *executionTime, TIME_TYPE *deadline, byte *messageQueue, byte *senderQueue, TIME_TYPE *delay, const vector<AbstractActor *> &rebecs) {
+bool DelayOrderSpec::checkOrder(int a, int b, TIME_TYPE *executionTime, TIME_TYPE *deadline, byte *messageQueue, byte *senderQueue, TIME_TYPE *delay, const vector<AbstractActor *> &rebecs, int now) {
     return delay[a] == delay[b];
+}
+
+ArrivalTimeOrderSpec::ArrivalTimeOrderSpec(OrderAggregator aggregator, byte assignedRebecID) : aggregator(aggregator), assignedRebecID(assignedRebecID) {}
+
+OrderCommand ArrivalTimeOrderSpec::order(int queueTail, int executableId, TIME_TYPE *executionTime, TIME_TYPE *deadline, byte *messageQueue, byte *senderQueue, TIME_TYPE *delay, const vector<AbstractActor *> &rebecs, int now)
+{
+    if (executionTime[queueTail] <= now && executionTime[executableId] <= now) {
+        if (aggregator == OrderAggregator::None)
+            return OrderCommand::Skip;
+        if (aggregator == OrderAggregator::Min) {
+            if(executionTime[queueTail] < executionTime[executableId])
+                return OrderCommand::Swap;
+            if (executionTime[queueTail] > executionTime[executableId])
+                return OrderCommand::NoSwap;
+            return OrderCommand::Skip;
+        }
+        if(executionTime[queueTail] > executionTime[executableId])
+            return OrderCommand::Swap;
+        if (executionTime[queueTail] < executionTime[executableId])
+            return OrderCommand::NoSwap;
+        return OrderCommand::Skip;
+    }
+    if (executionTime[queueTail] <= now)
+        return OrderCommand::Swap;
+    if (executionTime[executableId] <= now)
+        return OrderCommand::NoSwap;
+    if (executionTime[queueTail] < executionTime[executableId])
+        return OrderCommand::Swap;
+    else if (executionTime[queueTail] > executionTime[executableId])
+        return OrderCommand::NoSwap;
+    return OrderCommand::Skip;
+}
+
+bool ArrivalTimeOrderSpec::checkOrder(int a, int b, TIME_TYPE *executionTime, TIME_TYPE *deadline, byte *messageQueue, byte *senderQueue, TIME_TYPE *delay, const vector<AbstractActor *> &rebecs, int now)
+{
+    return aggregator == OrderAggregator::None && executionTime[a] < now && executionTime[b] < now ||
+        executionTime[a] == executionTime[b];
 }

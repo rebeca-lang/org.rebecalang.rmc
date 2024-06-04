@@ -99,10 +99,14 @@ void TimedModelChecker::doTimedModelChecking(string userSelectedPropertyName, st
                 continue;
             }
             long nonDetTrans;
-            int numberOfAlternatives = getNumberOfAlternatives(r, execTime);
-            for(int alternativesCounter = 0; alternativesCounter < numberOfAlternatives; alternativesCounter++) {
+			std::vector<int> alternatives;
+			if (!rebecs[r]->isMailBoxSet())
+				alternatives = getNumberOfAlternatives(r, execTime);
+			else
+				alternatives = getNumberOfAlternativeIds(r);
+            for(int alternativesCounter = 0; alternativesCounter < alternatives.size(); alternativesCounter++) {
 	            do {
-					changeOrder(r, alternativesCounter);
+					changeOrder(r, alternatives[alternativesCounter]);
 				    if (rebecs[r]->deadline[0] < currentTime) {
 				        throw DeadlineMissedException("Deadline missed.", rebecs[r]);
 				    }

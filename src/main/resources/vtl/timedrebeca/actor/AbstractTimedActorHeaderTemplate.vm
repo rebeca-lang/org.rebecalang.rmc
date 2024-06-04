@@ -52,7 +52,10 @@ public:
 	virtual void exportQueueContentInXML(ostream &out, string tab);
     void addOrderSpecs(AbstarctOrderSpec* orderSpec);
     bool checkAlternatives(int a, int b);
-	
+    void setMailBox();
+    bool isMailBoxSet();
+    void setArrivalTimeAggregator(OrderAggregator aggregator);
+    int getExecutableMessageId();
     
 protected:
 	void addTimedBundles(byte senderId, TIME_TYPE executionTime, TIME_TYPE deadline, TIME_TYPE delay);
@@ -64,8 +67,9 @@ protected:
     void stopTimer(Timer &t);
     TIME_TYPE getTimerValue(Timer &t);
     vector<AbstarctOrderSpec*> orderSpecs;
-    OrderCommand applyMailBoxPolicy(int cnt);
+    bool applyMailBoxPolicy(int cnt, int executableId);
     int currentDelay;
+    bool mailBoxStatus;
 
     #applyPatch($patches 'AdditionalSignatures' '')
 

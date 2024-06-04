@@ -128,19 +128,35 @@ void AbstractTimedRebecaAnalyzer::changeOrder(int rebecId, int alternativesCount
 	}
 }
 
-int AbstractTimedRebecaAnalyzer::getNumberOfAlternatives(int rebecId, TIME_TYPE executionTime) {
+std::vector<int> AbstractTimedRebecaAnalyzer::getNumberOfAlternatives(int rebecId, TIME_TYPE executionTime)
+	{
+	std::vector<int> alternatives;
+	alternatives.push_back(0);
 	int numberOfAlternatives = 1;
 	long baseTime = rebecs[rebecId]->executionTime[0];
 	int basePriority = rebecs[rebecId]->messagePriorities[rebecs[rebecId]->messageQueue[0]];
     while((numberOfAlternatives < rebecs[rebecId]->maxQueueLength) &&
-		(rebecs[rebecId]->messageQueue[numberOfAlternatives]) &&
-		(rebecs[rebecId]->executionTime[numberOfAlternatives] == baseTime) &&
-		(rebecs[rebecId]->checkAlternatives(0, numberOfAlternatives)) &&
-		(rebecs[rebecId]->messagePriorities[rebecs[rebecId]->messageQueue[numberOfAlternatives]] == basePriority)) {
-    	numberOfAlternatives++;
-    }
-    
-    return numberOfAlternatives;
+			(rebecs[rebecId]->messageQueue[numberOfAlternatives]) &&
+			(rebecs[rebecId]->executionTime[numberOfAlternatives] == baseTime) &&
+			(rebecs[rebecId]->messagePriorities[rebecs[rebecId]->messageQueue[numberOfAlternatives]] == basePriority))
+	{
+		alternatives.push_back(numberOfAlternatives++);
+	}
+
+	return alternatives;
+}
+
+std::vector<int> AbstractTimedRebecaAnalyzer::getNumberOfAlternativeIds(int rebecId) {
+	std::vector<int> alternatives;
+	int maxId = rebecs[rebecId]->getExecutableMessageId();
+	alternatives.push_back(maxId);
+	for (int i = 0; i < rebecs[rebecId]->maxQueueLength && rebecs[rebecId]->messageQueue[i]; i++) {
+		if (rebecs[rebecId]->checkAlternatives(i, maxId) && i != maxId) {
+			alternatives.push_back(i);
+		}
+	}
+
+	return alternatives;
 }
 
 TIME_TYPE AbstractTimedRebecaAnalyzer::prepareWithNewState() {

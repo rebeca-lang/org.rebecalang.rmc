@@ -10,10 +10,16 @@ enum OrderCommand {
     Skip
 };
 
+enum OrderAggregator {
+    Min,
+    Max,
+    None
+};
+
 class AbstarctOrderSpec {
 public:
-    virtual OrderCommand order(int queueTail, TIME_TYPE *executionTime, TIME_TYPE *deadline, byte *messageQueue, byte *senderQueue, TIME_TYPE *delay, const vector<AbstractActor *> &rebecs) = 0;
-    virtual bool checkOrder(int a, int b, TIME_TYPE *executionTime, TIME_TYPE *deadline, byte *messageQueue, byte *senderQueue, TIME_TYPE *delay, const vector<AbstractActor *> &rebecs) = 0;
+    virtual OrderCommand order(int queueTail, int executableId, TIME_TYPE *executionTime, TIME_TYPE *deadline, byte *messageQueue, byte *senderQueue, TIME_TYPE *delay, const vector<AbstractActor *> &rebecs, int now) = 0;
+    virtual bool checkOrder(int a, int b, TIME_TYPE *executionTime, TIME_TYPE *deadline, byte *messageQueue, byte *senderQueue, TIME_TYPE *delay, const vector<AbstractActor *> &rebecs, int now) = 0;
 };
 
 #foreach($instance in $mailboxDeclaration)
@@ -23,8 +29,8 @@ public:
 class ${instance.getName()}OrderSpec${counter} : public AbstarctOrderSpec {
 public:
     ${instance.getName()}OrderSpec${counter}(byte assignedRebecID);
-    virtual OrderCommand order(int queueTail, TIME_TYPE *executionTime, TIME_TYPE *deadline, byte *messageQueue, byte *senderQueue,  TIME_TYPE *delay, const vector<AbstractActor *> &rebecs) override;
-    virtual bool checkOrder(int a, int b, TIME_TYPE *executionTime, TIME_TYPE *deadline, byte *messageQueue, byte *senderQueue, TIME_TYPE *delay, const vector<AbstractActor *> &rebecs) override;
+    virtual OrderCommand order(int queueTail, int executableId, TIME_TYPE *executionTime, TIME_TYPE *deadline, byte *messageQueue, byte *senderQueue,  TIME_TYPE *delay, const vector<AbstractActor *> &rebecs, int now) override;
+    virtual bool checkOrder(int a, int b, TIME_TYPE *executionTime, TIME_TYPE *deadline, byte *messageQueue, byte *senderQueue, TIME_TYPE *delay, const vector<AbstractActor *> &rebecs, int now) override;
 private:
     byte assignedRebecID;
 };
@@ -40,8 +46,8 @@ private:
 
 public:
     DeadlineOrderSpec(bool isMin);
-    virtual OrderCommand order(int queueTail, TIME_TYPE *executionTime, TIME_TYPE *deadline, byte *messageQueue, byte *senderQueue, TIME_TYPE *delay, const vector<AbstractActor *> &rebecs) override;
-    virtual bool checkOrder(int a, int b, TIME_TYPE *executionTime, TIME_TYPE *deadline, byte *messageQueue, byte *senderQueue, TIME_TYPE *delay, const vector<AbstractActor *> &rebecs) override;
+    virtual OrderCommand order(int queueTail, int executableId, TIME_TYPE *executionTime, TIME_TYPE *deadline, byte *messageQueue, byte *senderQueue, TIME_TYPE *delay, const vector<AbstractActor *> &rebecs, int now) override;
+    virtual bool checkOrder(int a, int b, TIME_TYPE *executionTime, TIME_TYPE *deadline, byte *messageQueue, byte *senderQueue, TIME_TYPE *delay, const vector<AbstractActor *> &rebecs, int now) override;
 };
 
 class DelayOrderSpec : public AbstarctOrderSpec {
@@ -50,8 +56,18 @@ private:
 
 public:
     DelayOrderSpec(bool isMin);
-    virtual OrderCommand order(int queueTail, TIME_TYPE *executionTime, TIME_TYPE *deadline, byte *messageQueue, byte *senderQueue, TIME_TYPE *delay, const vector<AbstractActor *> &rebecs) override;
-    virtual bool checkOrder(int a, int b, TIME_TYPE *executionTime, TIME_TYPE *deadline, byte *messageQueue, byte *senderQueue, TIME_TYPE *delay, const vector<AbstractActor *> &rebecs) override;
+    virtual OrderCommand order(int queueTail, int executableId, TIME_TYPE *executionTime, TIME_TYPE *deadline, byte *messageQueue, byte *senderQueue, TIME_TYPE *delay, const vector<AbstractActor *> &rebecs, int now) override;
+    virtual bool checkOrder(int a, int b, TIME_TYPE *executionTime, TIME_TYPE *deadline, byte *messageQueue, byte *senderQueue, TIME_TYPE *delay, const vector<AbstractActor *> &rebecs, int now) override;
+};
+
+class ArrivalTimeOrderSpec : public AbstarctOrderSpec {
+private:
+    OrderAggregator aggregator;
+    byte assignedRebecID;
+public:
+    ArrivalTimeOrderSpec(OrderAggregator aggregator, byte assignedRebecID);
+    virtual OrderCommand order(int queueTail, int executableId, TIME_TYPE *executionTime, TIME_TYPE *deadline, byte *messageQueue, byte *senderQueue, TIME_TYPE *delay, const vector<AbstractActor *> &rebecs, int now) override;
+    virtual bool checkOrder(int a, int b, TIME_TYPE *executionTime, TIME_TYPE *deadline, byte *messageQueue, byte *senderQueue, TIME_TYPE *delay, const vector<AbstractActor *> &rebecs, int now) override;
 };
 
 #[[#endif]]#

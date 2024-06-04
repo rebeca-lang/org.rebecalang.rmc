@@ -14,6 +14,9 @@ public class MailBoxBodyConvertor {
 
     private TimedRebecaCode timedRebecaCode;
 
+    public static String maxMessageArrivalTime = "maxMessageArrivalTime";
+    public static String minMessageArrivalTime = "minMessageArrivalTime";
+
     public static String removeQuotes(String str) {
         if (str != null && str.length() >= 2 && str.startsWith("\"") && str.endsWith("\"")) {
             return str.substring(1, str.length() - 1);
@@ -21,15 +24,6 @@ public class MailBoxBodyConvertor {
         return str;
     }
 
-    private ReactiveClassDeclaration getReactiveClassDeclaration(String rebecName) {
-        for (ReactiveClassDeclaration reactiveClassDeclaration : timedRebecaCode.getReactiveClassDeclaration()) {
-            if (reactiveClassDeclaration.getName().equals(rebecName)) {
-                return reactiveClassDeclaration;
-            }
-        }
-
-        return null;
-    }
     private Map<Integer, Integer> getRebecMsgsvrID(String msgsrv) {
         msgsrv = removeQuotes(msgsrv);
         Map<Integer, Integer> rebecToMsgsrv = new HashMap<>();
@@ -105,6 +99,11 @@ public class MailBoxBodyConvertor {
                 return String.format("new DeadlineOrderSpec(%s)", isMin);
             case "messageExecutionTime":
                 return String.format("new DelayOrderSpec(%s)", isMin);
+            case "messageArrivalTime":
+                if (aggregator.equals("max")) {
+                    return maxMessageArrivalTime;
+                }
+                return minMessageArrivalTime;
             default:
                 return "";
         }
@@ -136,9 +135,11 @@ public class MailBoxBodyConvertor {
         String mailboxName = ((TermPrimary) mailBox).getName();
         List<MainMailboxDefinition> mainMailboxDefinitions = ((TimedMainDeclaration) timedRebecaCode.getMainDeclaration()).getMainMailboxDefinition();
         MainMailboxDefinition mainMailboxDefinition = getMailboxDefinition(mainMailboxDefinitions, mailboxName);
+        if (mainMailboxDefinition == null)
+            return "";
         MailboxDeclaration mailboxDeclaration = getMailboxDeclaration(mainMailboxDefinition);
-        String output = "";
         String rebecName = timedMainRebecDefinition.getName();
+        String output = String.format("_ref_%s->setMailBox();\n", rebecName);
         Integer counter = 1;
         for (Expression expression : mailboxDeclaration.getOrders()) {
             String orderSpec = "";
@@ -150,7 +151,15 @@ public class MailBoxBodyConvertor {
                 orderSpec = getAggregationOrderSpec(aggregationConditionPrimary);
             }
             if (!orderSpec.isEmpty()) {
-                output += String.format("_ref_%s->addOrderSpecs(%s);\n", rebecName, orderSpec);
+                if (orderSpec.equals(minMessageArrivalTime)) {
+                    output += String.format("_ref_%s->setArrivalTimeAggregator(OrderAggregator::Min);\n", rebecName);
+                }
+                else if (orderSpec.equals(maxMessageArrivalTime)) {
+                    output += String.format("_ref_%s->setArrivalTimeAggregator(OrderAggregator::Max);\n", rebecName);
+                }
+                else {
+                    output += String.format("_ref_%s->addOrderSpecs(%s);\n", rebecName, orderSpec);
+                }
             }
         }
         return output;

@@ -70,16 +70,16 @@ void AbstractTimedActor::timeEnqueue(TIME_TYPE *queue, TIME_TYPE value) {
 	queue[queueTail] = value;
 }
 
-OrderCommand AbstractTimedActor::applyMailBoxPolicy(int cnt)
+bool AbstractTimedActor::applyMailBoxPolicy(int cnt, int executableId)
 {
 	for (auto spec : orderSpecs) {
-		OrderCommand res = spec->order(cnt, executionTime, deadline, messageQueue, senderQueue, delay, rebecs);
+		OrderCommand res = spec->order(cnt, executableId, executionTime, deadline, messageQueue, senderQueue, delay, rebecs, _ref_now);
 		if (res == OrderCommand::Swap)
-			return OrderCommand::Swap;
+			return true;
 		if (res == OrderCommand::NoSwap)
-			return OrderCommand::NoSwap;
+			return false;
 	}
-	return OrderCommand::Skip;
+	return messagePriorities[messageQueue[cnt]] < messagePriorities[messageQueue[executableId]];
 }
 
 void AbstractTimedActor::applyPolicy(boolean isSendToSelf) {
@@ -103,21 +103,17 @@ void AbstractTimedActor::applyPolicy(boolean isSendToSelf) {
 			|| __pc != -1 
 		#endif
 		))) {
-			OrderCommand res = applyMailBoxPolicy(cnt);
-			if (res == OrderCommand::NoSwap)
-			break;
-			else if (res == OrderCommand::Skip) {
-				if (messagePriorities[messageQueue[cnt]] > messagePriorities[messageQueue[cnt - 1]]) break;
-				if (messagePriorities[messageQueue[cnt]] == messagePriorities[messageQueue[cnt - 1]]) {
-					if (messageQueue[cnt] > messageQueue[cnt - 1]) break;
-					if (messageQueue[cnt] == messageQueue[cnt - 1]) {
-						if (senderQueue[cnt] > senderQueue[cnt - 1]) break;
-						if (senderQueue[cnt] == senderQueue[cnt - 1]) {
-							if (deadline[cnt] > deadline[cnt - 1]) break;
-							if (deadline[cnt] == deadline[cnt - 1]) {
-								int memcmpResult = memcmp(paramQueue[cnt], paramQueue[cnt - 1], maxParamLength);
-								if (memcmpResult >= 0) break;
-							}
+
+			if (messagePriorities[messageQueue[cnt]] > messagePriorities[messageQueue[cnt - 1]]) break;
+			if (messagePriorities[messageQueue[cnt]] == messagePriorities[messageQueue[cnt - 1]]) {
+				if (messageQueue[cnt] > messageQueue[cnt - 1]) break;
+				if (messageQueue[cnt] == messageQueue[cnt - 1]) {
+					if (senderQueue[cnt] > senderQueue[cnt - 1]) break;
+					if (senderQueue[cnt] == senderQueue[cnt - 1]) {
+						if (deadline[cnt] > deadline[cnt - 1]) break;
+						if (deadline[cnt] == deadline[cnt - 1]) {
+							int memcmpResult = memcmp(paramQueue[cnt], paramQueue[cnt - 1], maxParamLength);
+							if (memcmpResult >= 0) break;
 						}
 					}
 				}
@@ -181,10 +177,42 @@ void AbstractTimedActor::addOrderSpecs(AbstarctOrderSpec* orderSpec) {
 
 bool AbstractTimedActor::checkAlternatives(int a, int b) {
 	for (auto spec : orderSpecs)
-		if (!spec->checkOrder(a, b, executionTime, deadline, messageQueue, senderQueue, delay, rebecs))
+		if (!spec->checkOrder(a, b, executionTime, deadline, messageQueue, senderQueue, delay, rebecs, _ref_now))
 			return false;
 
-	return true;
+	return messagePriorities[messageQueue[a]] == messagePriorities[messageQueue[b]];
+}
+
+void AbstractTimedActor::setMailBox()
+{
+	mailBoxStatus = true;
+	orderSpecs.push_back(new ArrivalTimeOrderSpec(OrderAggregator::None, myID));
+}
+
+void AbstractTimedActor::setArrivalTimeAggregator(OrderAggregator aggregator)
+{
+	if (!mailBoxStatus)
+		return;
+
+	orderSpecs[0] = new ArrivalTimeOrderSpec(aggregator, myID);
+}
+
+bool AbstractTimedActor::isMailBoxSet()
+{
+	return mailBoxStatus;
+}
+
+int AbstractTimedActor::getExecutableMessageId()
+{
+	int messageId = 0;
+	for (int i = 0; i <= queueTail; i++) {
+		if (messageQueue[i] == 0)
+			return messageId;
+
+		if (applyMailBoxPolicy(i, messageId))
+			messageId = i;
+	}
+	return messageId;
 }
 
 #applyPatch($patches 'AdditionalBodies' '')
