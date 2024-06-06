@@ -10,12 +10,6 @@ enum OrderCommand {
     Skip
 };
 
-enum OrderAggregator {
-    Min,
-    Max,
-    None
-};
-
 class AbstarctOrderSpec {
 public:
     virtual OrderCommand order(int queueTail, int executableId, TIME_TYPE *executionTime, TIME_TYPE *deadline, byte *messageQueue, byte *senderQueue, TIME_TYPE *delay, const vector<AbstractActor *> &rebecs, int now) = 0;
@@ -60,12 +54,19 @@ public:
     virtual bool checkOrder(int a, int b, TIME_TYPE *executionTime, TIME_TYPE *deadline, byte *messageQueue, byte *senderQueue, TIME_TYPE *delay, const vector<AbstractActor *> &rebecs, int now) override;
 };
 
+class TimeOrderSpec : public AbstarctOrderSpec {
+public:
+    TimeOrderSpec();
+    virtual OrderCommand order(int queueTail, int executableId, TIME_TYPE *executionTime, TIME_TYPE *deadline, byte *messageQueue, byte *senderQueue, TIME_TYPE *delay, const vector<AbstractActor *> &rebecs, int now) override;
+    virtual bool checkOrder(int a, int b, TIME_TYPE *executionTime, TIME_TYPE *deadline, byte *messageQueue, byte *senderQueue, TIME_TYPE *delay, const vector<AbstractActor *> &rebecs, int now) override;
+};
+
 class ArrivalTimeOrderSpec : public AbstarctOrderSpec {
 private:
-    OrderAggregator aggregator;
-    byte assignedRebecID;
+    bool isMin;
+
 public:
-    ArrivalTimeOrderSpec(OrderAggregator aggregator, byte assignedRebecID);
+    ArrivalTimeOrderSpec(bool isMin);
     virtual OrderCommand order(int queueTail, int executableId, TIME_TYPE *executionTime, TIME_TYPE *deadline, byte *messageQueue, byte *senderQueue, TIME_TYPE *delay, const vector<AbstractActor *> &rebecs, int now) override;
     virtual bool checkOrder(int a, int b, TIME_TYPE *executionTime, TIME_TYPE *deadline, byte *messageQueue, byte *senderQueue, TIME_TYPE *delay, const vector<AbstractActor *> &rebecs, int now) override;
 };

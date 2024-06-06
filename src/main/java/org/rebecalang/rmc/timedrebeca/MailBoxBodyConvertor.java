@@ -14,9 +14,6 @@ public class MailBoxBodyConvertor {
 
     private TimedRebecaCode timedRebecaCode;
 
-    public static String maxMessageArrivalTime = "maxMessageArrivalTime";
-    public static String minMessageArrivalTime = "minMessageArrivalTime";
-
     public static String removeQuotes(String str) {
         if (str != null && str.length() >= 2 && str.startsWith("\"") && str.endsWith("\"")) {
             return str.substring(1, str.length() - 1);
@@ -93,17 +90,13 @@ public class MailBoxBodyConvertor {
             isMin = "false";
         }
 
-        //TODO: support messageArrivalTime
         switch (value) {
             case "messageDeadline":
                 return String.format("new DeadlineOrderSpec(%s)", isMin);
             case "messageExecutionTime":
                 return String.format("new DelayOrderSpec(%s)", isMin);
             case "messageArrivalTime":
-                if (aggregator.equals("max")) {
-                    return maxMessageArrivalTime;
-                }
-                return minMessageArrivalTime;
+                return String.format("new ArrivalTimeOrderSpec(%s)", isMin);
             default:
                 return "";
         }
@@ -151,15 +144,7 @@ public class MailBoxBodyConvertor {
                 orderSpec = getAggregationOrderSpec(aggregationConditionPrimary);
             }
             if (!orderSpec.isEmpty()) {
-                if (orderSpec.equals(minMessageArrivalTime)) {
-                    output += String.format("_ref_%s->setArrivalTimeAggregator(OrderAggregator::Min);\n", rebecName);
-                }
-                else if (orderSpec.equals(maxMessageArrivalTime)) {
-                    output += String.format("_ref_%s->setArrivalTimeAggregator(OrderAggregator::Max);\n", rebecName);
-                }
-                else {
-                    output += String.format("_ref_%s->addOrderSpecs(%s);\n", rebecName, orderSpec);
-                }
+                output += String.format("_ref_%s->addOrderSpecs(%s);\n", rebecName, orderSpec);
             }
         }
         return output;

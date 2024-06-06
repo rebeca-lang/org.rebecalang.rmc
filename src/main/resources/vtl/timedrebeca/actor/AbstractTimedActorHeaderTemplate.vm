@@ -54,7 +54,6 @@ public:
     bool checkAlternatives(int a, int b);
     void setMailBox();
     bool isMailBoxSet();
-    void setArrivalTimeAggregator(OrderAggregator aggregator);
     int getExecutableMessageId();
     
 protected:

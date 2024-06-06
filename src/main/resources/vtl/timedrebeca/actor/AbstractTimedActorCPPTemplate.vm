@@ -186,15 +186,7 @@ bool AbstractTimedActor::checkAlternatives(int a, int b) {
 void AbstractTimedActor::setMailBox()
 {
 	mailBoxStatus = true;
-	orderSpecs.push_back(new ArrivalTimeOrderSpec(OrderAggregator::None, myID));
-}
-
-void AbstractTimedActor::setArrivalTimeAggregator(OrderAggregator aggregator)
-{
-	if (!mailBoxStatus)
-		return;
-
-	orderSpecs[0] = new ArrivalTimeOrderSpec(aggregator, myID);
+	orderSpecs.push_back(new TimeOrderSpec());
 }
 
 bool AbstractTimedActor::isMailBoxSet()
