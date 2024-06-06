@@ -4,7 +4,7 @@
     #set($counter = 1)
     #foreach($expression in $instance.getOrders())
         #if ($expression.getClass().getSimpleName() == "BinaryExpression" || $expression.getClass().getSimpleName() == "UnaryExpression")
-${instance.getName()}OrderSpec${counter}::${instance.getName()}OrderSpec${counter}(byte assignedRebecID) : assignedRebecID(assignedRebecID){}
+${instance.getName()}OrderSpec${counter}::${instance.getName()}OrderSpec${counter}(string rebecType#if (!$instance.getKnownSenders().isEmpty())#foreach($knownSender in $mailBoxBodyConvertor.GetKnownSenders($instance)), string $knownSender#end#end) : rebecType(rebecType)#if (!$instance.getKnownSenders().isEmpty())#foreach($knownSender in $mailBoxBodyConvertor.GetKnownSenders($instance)), $knownSender($knownSender)#end#end{}
 
 OrderCommand ${instance.getName()}OrderSpec${counter}::order(int queueTail, int executableId, TIME_TYPE *executionTime, TIME_TYPE *deadline, byte *messageQueue, byte *senderQueue, TIME_TYPE *delay, const vector<AbstractActor *> &rebecs, int now) {
     if (($mailBoxBodyConvertor.ConvertConditionalOrderSpec($expression, "queueTail")) && !($mailBoxBodyConvertor.ConvertConditionalOrderSpec($expression, "executableId")))

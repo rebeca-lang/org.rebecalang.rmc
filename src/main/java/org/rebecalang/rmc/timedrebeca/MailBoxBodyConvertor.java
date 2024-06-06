@@ -3,9 +3,7 @@ package org.rebecalang.rmc.timedrebeca;
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.*;
 import org.rebecalang.compiler.modelcompiler.timedrebeca.objectmodel.*;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class MailBoxBodyConvertor {
     public void setTimedRebecaCode(TimedRebecaCode timedRebecaCode) {
@@ -21,14 +19,13 @@ public class MailBoxBodyConvertor {
         return str;
     }
 
-    private Map<Integer, Integer> getRebecMsgsvrID(String msgsrv) {
+    private Map<String, Integer> getRebecMsgsvrID(String msgsrv) {
         msgsrv = removeQuotes(msgsrv);
-        Map<Integer, Integer> rebecToMsgsrv = new HashMap<>();
-        for (Integer i = 0; i < timedRebecaCode.getReactiveClassDeclaration().size(); i++) {
-            ReactiveClassDeclaration reactiveClassDeclaration = timedRebecaCode.getReactiveClassDeclaration().get(i);
+        Map<String, Integer> rebecToMsgsrv = new HashMap<>();
+        for (ReactiveClassDeclaration reactiveClassDeclaration : timedRebecaCode.getReactiveClassDeclaration()) {
             for (Integer j = 0; j < reactiveClassDeclaration.getMsgsrvs().size(); j++) {
                 if (reactiveClassDeclaration.getMsgsrvs().get(j).getName().equals(msgsrv)) {
-                    rebecToMsgsrv.put(i, j);
+                    rebecToMsgsrv.put(reactiveClassDeclaration.getName(), j);
                 }
             }
         }
@@ -37,19 +34,20 @@ public class MailBoxBodyConvertor {
     }
 
     private String getMessageServerNameCondition(String msgsrv, String operator, String index) {
-        Map<Integer, Integer> rebecMsgsvrID = getRebecMsgsvrID(msgsrv);
+        Map<String, Integer> rebecMsgsvrID = getRebecMsgsvrID(msgsrv);
         if (rebecMsgsvrID.isEmpty()) {
             return "";
         }
 
         String condition = "";
         Integer counter = 0;
-        for (Integer key : rebecMsgsvrID.keySet()) {
-            condition += String.format("assignedRebecID == %d && messageQueue[%s]", key, index);
+        for (String key : rebecMsgsvrID.keySet()) {
+            condition += String.format("rebecType == \"%s\" && messageQueue[%s]", key, index);
             condition += String.format(" %s %d", operator, rebecMsgsvrID.get(key));
             if (counter != rebecMsgsvrID.keySet().size() - 1) {
                 condition += " || ";
             }
+            counter++;
         }
         return condition;
     }
@@ -59,10 +57,8 @@ public class MailBoxBodyConvertor {
             if (name.equals("sender")) {
                 return String.format("rebecs[senderQueue[%s]]->getName()", index);
             }
-            if (name.equals("messageServerName")) {
-                return name;
-            }
-            return String.format("\"%s\"", name);
+
+            return name;
         }
         if (expression instanceof UnaryExpression unaryExpression) {
             return unaryExpression.getOperator() + "(" + ConvertConditionalOrderSpec(unaryExpression.getExpression(), index) + ")";
@@ -78,8 +74,30 @@ public class MailBoxBodyConvertor {
         return "";
     }
 
-    private String getConditionalOrderSpec(String name, Integer counter, Integer rebecId) {
-        return String.format("new %sOrderSpec%d(%d)", name, counter, rebecId);
+    public List<String> GetKnownSenders(MailboxDeclaration mailboxDeclaration) {
+        List<String> knownSenders = new ArrayList<>();
+        for (FieldDeclaration fieldDeclaration :  mailboxDeclaration.getKnownSenders()) {
+            for (VariableDeclarator variableDeclarator : fieldDeclaration.getVariableDeclarators()) {
+                knownSenders.add(variableDeclarator.getVariableName());
+            }
+        }
+
+        return knownSenders;
+    }
+
+    private String getBindingKnownSenders(MainMailboxDefinition mainMailboxDefinition) {
+        List<String> knownBindingSenders = new ArrayList<>();
+        for (Expression expression :  mainMailboxDefinition.getBindings()) {
+            knownBindingSenders.add(String.format("\"%s\"", ((TermPrimary) expression).getName()));
+        }
+        return String.join(", ", knownBindingSenders);
+    }
+
+    private String getConditionalOrderSpec(String name, Integer counter, Integer rebecId, String knownSenders) {
+        if (knownSenders.isEmpty())
+            return String.format("new %sOrderSpec%d(%d)", name, counter, rebecId);
+
+        return String.format("new %sOrderSpec%d(%d, %s)", name, counter, rebecId, knownSenders);
     }
 
     private String getAggregationOrderSpec(AggregationConditionPrimary aggregationConditionPrimary) {
@@ -120,6 +138,7 @@ public class MailBoxBodyConvertor {
         }
         return null;
     }
+
     public String AddOrderSpecsToAnActor(MainRebecDefinition mainRebecDefinition, Integer rebecID) {
         TimedMainRebecDefinition timedMainRebecDefinition = (TimedMainRebecDefinition) mainRebecDefinition;
         Expression mailBox = timedMainRebecDefinition.getMailbox();
@@ -137,7 +156,8 @@ public class MailBoxBodyConvertor {
         for (Expression expression : mailboxDeclaration.getOrders()) {
             String orderSpec = "";
             if (expression instanceof BinaryExpression || expression instanceof UnaryExpression) {
-                orderSpec = getConditionalOrderSpec(mailboxDeclaration.getName(), counter, rebecID);
+                String knownSenders = getBindingKnownSenders(mainMailboxDefinition);
+                orderSpec = getConditionalOrderSpec(mailboxDeclaration.getName(), counter, rebecID, knownSenders);
                 counter++;
             }
             else if (expression instanceof AggregationConditionPrimary aggregationConditionPrimary) {
