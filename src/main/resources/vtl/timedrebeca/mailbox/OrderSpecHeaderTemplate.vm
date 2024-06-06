@@ -22,14 +22,14 @@ public:
         #if ($expression.getClass().getSimpleName() == "BinaryExpression" || $expression.getClass().getSimpleName() == "UnaryExpression")
 class ${instance.getName()}OrderSpec${counter} : public AbstarctOrderSpec {
 public:
-    ${instance.getName()}OrderSpec${counter}(string rebecType#if (!$instance.getKnownSenders().isEmpty())#foreach($knownSender in $mailBoxBodyConvertor.GetKnownSenders($instance)), string $knownSender#end#end);
+    ${instance.getName()}OrderSpec${counter}(char *rebecType#if (!$instance.getKnownSenders().isEmpty())#foreach($knownSender in $mailBoxBodyConvertor.GetKnownSenders($instance)), char *$knownSender#end#end);
     virtual OrderCommand order(int queueTail, int executableId, TIME_TYPE *executionTime, TIME_TYPE *deadline, byte *messageQueue, byte *senderQueue,  TIME_TYPE *delay, const vector<AbstractActor *> &rebecs, int now) override;
     virtual bool checkOrder(int a, int b, TIME_TYPE *executionTime, TIME_TYPE *deadline, byte *messageQueue, byte *senderQueue, TIME_TYPE *delay, const vector<AbstractActor *> &rebecs, int now) override;
 private:
-    string rebecType;
+    char *rebecType;
     #if (!$instance.getKnownSenders().isEmpty())
         #foreach($knownSender in $mailBoxBodyConvertor.GetKnownSenders($instance))
-    string $knownSender;
+    char *$knownSender;
         #end
     #end
 };
