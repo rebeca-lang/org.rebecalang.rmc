@@ -28,11 +28,23 @@
 // knownrebecs (those to whom message can be sent)
 // the following format allows to use them as variables --> the ID of the rebec
 \#define _ref_sender (rebecs[senderQueue[0]])
-\#define _ref_self (dynamic_cast<${reactiveClassName}Actor*>(rebecs[myID]))
+\#define _ref_self (dynamic_cast<${reactiveClassName}Actor*>(rebecs[(int)((unsigned char)myID)]))
 #set($cnt = 1)
+#foreach($baseClass in $baseClasses)
+	#if (!($foreach.last))
+		#set($baseClassType = $typeSystem.getType($baseClass.substring(0, $baseClass.length() - 5)))
+		#foreach($fieldDec in $typeSystem.getMetaData($baseClassType).getKnownRebecs())
+		    #foreach ($varDec in $fieldDec.getVariableDeclarators())
+		    	\#define _ref_$varDec.getVariableName() (dynamic_cast<$fieldDec.getType().getTypeName()Actor*>(rebecs[(int)((unsigned char)known[$cnt])]))
+			    #set($cnt = $cnt + 1)
+		    #end
+		#end
+	#end
+#end
+
 #foreach($fieldDec in $reactiveClassDeclaration.getKnownRebecs())
     #foreach ($varDec in $fieldDec.getVariableDeclarators())
-    	\#define _ref_$varDec.getVariableName() (dynamic_cast<$fieldDec.getType().getTypeName()Actor*>(rebecs[known[$cnt]]))
+    	\#define _ref_$varDec.getVariableName() (dynamic_cast<$fieldDec.getType().getTypeName()Actor*>(rebecs[(int)((unsigned char)known[$cnt])]))
 	    #set($cnt = $cnt + 1)
     #end
 #end
