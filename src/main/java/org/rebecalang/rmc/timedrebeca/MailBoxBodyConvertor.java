@@ -51,14 +51,10 @@ public class MailBoxBodyConvertor {
         }
         return condition;
     }
+
     public String ConvertConditionalOrderSpec(Expression expression, String index) {
         if (expression instanceof TermPrimary termPrimary) {
-            String name = termPrimary.getName();
-            if (name.equals("sender")) {
-                return String.format("rebecs[senderQueue[%s]]->getName()", index);
-            }
-
-            return name;
+            return termPrimary.getName();
         }
         if (expression instanceof UnaryExpression unaryExpression) {
             return unaryExpression.getOperator() + "(" + ConvertConditionalOrderSpec(unaryExpression.getExpression(), index) + ")";
@@ -69,7 +65,11 @@ public class MailBoxBodyConvertor {
             if (left.equals("messageServerName")) {
                 return getMessageServerNameCondition(right, binaryExpression.getOperator(), index);
             }
-             return left + " " + binaryExpression.getOperator() + " " + right;
+            if (left.equals("sender")) {
+                return String.format("rebecs[senderQueue[%s]]->getName() %s this->%s", index, binaryExpression.getOperator(), right);
+            }
+
+            return left + " " + binaryExpression.getOperator() + " " + right;
         }
         return "";
     }
@@ -93,11 +93,11 @@ public class MailBoxBodyConvertor {
         return String.join(", ", knownBindingSenders);
     }
 
-    private String getConditionalOrderSpec(String name, Integer counter, Integer rebecId, String knownSenders) {
+    private String getConditionalOrderSpec(String name, Integer counter, String rebecName, String knownSenders) {
         if (knownSenders.isEmpty())
-            return String.format("new %sOrderSpec%d(%d)", name, counter, rebecId);
+            return String.format("new %sOrderSpec%d(_ref_%s->getClassName())", name, counter, rebecName);
 
-        return String.format("new %sOrderSpec%d(%d, %s)", name, counter, rebecId, knownSenders);
+        return String.format("new %sOrderSpec%d(_ref_%s->getClassName(), %s)", name, counter, rebecName, knownSenders);
     }
 
     private String getAggregationOrderSpec(AggregationConditionPrimary aggregationConditionPrimary) {
@@ -157,7 +157,7 @@ public class MailBoxBodyConvertor {
             String orderSpec = "";
             if (expression instanceof BinaryExpression || expression instanceof UnaryExpression) {
                 String knownSenders = getBindingKnownSenders(mainMailboxDefinition);
-                orderSpec = getConditionalOrderSpec(mailboxDeclaration.getName(), counter, rebecID, knownSenders);
+                orderSpec = getConditionalOrderSpec(mailboxDeclaration.getName(), counter, rebecName, knownSenders);
                 counter++;
             }
             else if (expression instanceof AggregationConditionPrimary aggregationConditionPrimary) {
