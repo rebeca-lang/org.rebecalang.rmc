@@ -23,6 +23,8 @@ import org.rebecalang.rmc.FileGeneratorProperties;
 import org.rebecalang.rmc.StatementTranslatorContainer;
 import org.rebecalang.rmc.corerebeca.CoreRebecaFileGenerator;
 import org.rebecalang.rmc.corerebeca.CoreRebecaMethodBodyConvertor;
+import org.rebecalang.rmc.timedrebeca.network.ConvertNetwork;
+import org.rebecalang.rmc.timedrebeca.network.RebecaModelNetworkDecorator;
 import org.rebecalang.rmc.timedrebeca.translator.TimedRebecaNondetExpressionTranslator;
 import org.rebecalang.rmc.timedrebeca.translator.TimedRebecaTermPrimaryExpressionTranslator;
 import org.rebecalang.rmc.utils.TypeAnalysisException;
@@ -57,7 +59,12 @@ public class TimedRebecaFileGenerator extends CoreRebecaFileGenerator {
 			File destinationLocation, Set<CompilerExtension> extension, FileGeneratorProperties fileGenerationProperties) {
 		
 		try {
-			
+			RebecaModelNetworkDecorator rebecaModelNetworkDecorator = new RebecaModelNetworkDecorator(rebecaModel);
+			rebecaModel = rebecaModelNetworkDecorator.decorate();
+
+			ConvertNetwork convertNetwork = new ConvertNetwork((TimedRebecaCode) rebecaModel.getRebecaCode(), rebecaModelNetworkDecorator);
+			convertNetwork.changeRebecaCode();
+
 			initilizeGeneratingFiles(rebecaModel, propertyModel, destinationLocation, extension, fileGenerationProperties);
 
 			super.createMain(FilesNames.MAIN_PATCH_TEMPLATE);
