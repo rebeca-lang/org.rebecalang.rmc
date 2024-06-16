@@ -361,27 +361,32 @@ public class ConvertNetwork {
 
     private void setReactiveRebecDefinition() {
         List<MainRebecDefinition> mainRebecDefinitions = new ArrayList<>();
+        Set<String> mainRebecDefinitionNames = new HashSet<>();
         for (MainRebecDefinition mainRebecDefinition : timedRebecaCode.getMainDeclaration().getMainRebecDefinition()) {
             List<Expression> newBindings = new ArrayList<>();
             for (Expression expression : mainRebecDefinition.getBindings()) {
                 TermPrimary termPrimary = ((TermPrimary) expression);
-                String bindingName = termPrimary.getType().getTypeName();
+                String bindingTypeName = termPrimary.getType().getTypeName();
                 if (termPrimary.getAnnotations().isEmpty()) {
-                    MainRebecDefinition wiredMainRebecDefinition = defineWiredReactiveClass(bindingName);
+                    if (mainRebecDefinitionNames.contains(bindingTypeName))
+                        continue;
+
+                    MainRebecDefinition wiredMainRebecDefinition = defineWiredReactiveClass(bindingTypeName);
                     mainRebecDefinitions.add(wiredMainRebecDefinition);
                     newBindings.add(getNewBinding(wiredMainRebecDefinition));
+                    mainRebecDefinitionNames.add(bindingTypeName);
 
                     continue;
                 }
 
                 String networkName = termPrimary.getAnnotations().get(0).getIdentifier();
+                newBindings.add(getNewBinding(mainRebecDefinitionMap.get(networkName)));
 
-
-                if (!checkNetworkImplementReactiveClass(networkName, bindingName, networkRebecs)) {
+                if (!checkNetworkImplementReactiveClass(networkName, bindingTypeName, networkRebecs)) {
                     continue;
                 }
 
-                ReactiveClassDeclaration reactiveClassDeclaration = reactiveClassDeclarationMap.get(bindingName);
+                ReactiveClassDeclaration reactiveClassDeclaration = reactiveClassDeclarationMap.get(bindingTypeName);
                 ReactiveClassDeclaration network = reactiveClassDeclarationMap.
                         get(mainRebecDefinitionMap.get(networkName).getType().getTypeName());
 
@@ -430,6 +435,7 @@ public class ConvertNetwork {
             type.setName((mainNetworkDefinition.getType().getTypeName()));
             mainRebecDefinition.setType(type);
             mainRebecDefinitions.add(mainRebecDefinition);
+            mainRebecDefinition.getBindings().addAll(mainNetworkDefinition.getBindings());
             mainNetworkDefinitionMap.put(mainNetworkDefinition.getName(), mainNetworkDefinition);
         }
 
