@@ -400,6 +400,58 @@ public class ConvertNetwork {
         timedRebecaCode.getMainDeclaration().getMainRebecDefinition().addAll(mainRebecDefinitions);
     }
 
+    private Integer findMaxReactiveDefinitionPriorities() {
+        Integer max = 0;
+        for (MainRebecDefinition mainRebecDefinition : timedRebecaCode.getMainDeclaration().getMainRebecDefinition()){
+            for (Annotation annotation : mainRebecDefinition.getAnnotations()) {
+                if (annotation.getIdentifier().equals("priority")) {
+                    if (annotation.getValue() instanceof Literal) {
+                        String value = ((Literal) annotation.getValue()).getLiteralValue();
+                        Integer intValue = 0;
+                        try {
+                            intValue = Integer.parseInt(value);
+                        } catch (NumberFormatException e) {
+                            intValue = 0;
+                        }
+
+                        if (intValue > max) {
+                            max = intValue;
+                        }
+                    }
+                }
+            }
+
+        }
+
+        return max;
+    }
+
+    private Annotation getReactiveDefinitionPriority(MainRebecDefinition mainRebecDefinition) {
+        for (Annotation annotation : mainRebecDefinition.getAnnotations()) {
+            if (annotation.getIdentifier().equals("priority")) {
+                return annotation;
+            }
+        }
+
+        return null;
+    }
+
+    private void applyNetworkReactiveDefinitionPriority() {
+        Integer maxRebecPriority = findMaxReactiveDefinitionPriorities();
+        for (MainRebecDefinition mainRebecDefinition : timedRebecaCode.getMainDeclaration().getMainRebecDefinition()){
+            Annotation annotation = getReactiveDefinitionPriority(mainRebecDefinition);
+            if (annotation == null) {
+                Annotation newAnnotation = new Annotation();
+                newAnnotation.setIdentifier("priority");
+                Literal literal = new Literal();
+                literal.setType(CoreRebecaTypeSystem.getINT_TYPE());
+                literal.setLiteralValue(String.valueOf(maxRebecPriority+1));
+                newAnnotation.setValue(literal);
+                mainRebecDefinition.getAnnotations().add(newAnnotation);
+            }
+        }
+    }
+
     public void changeRebecaCode() {
         for (NetworkDeclaration networkDeclaration : timedRebecaCode.getNetworkDeclaration()) {
             networkDeclarationMap.put(networkDeclaration.getName(), networkDeclaration);
@@ -425,6 +477,8 @@ public class ConvertNetwork {
         for (ReactiveClassDeclaration reactiveClassDeclaration : timedRebecaCode.getReactiveClassDeclaration()) {
             reactiveClassDeclarationMap.put(reactiveClassDeclaration.getName(), reactiveClassDeclaration);
         }
+
+        applyNetworkReactiveDefinitionPriority();
 
         List<MainRebecDefinition> mainRebecDefinitions = timedRebecaCode.getMainDeclaration().getMainRebecDefinition();
         for (MainNetworkDefinition mainNetworkDefinition : ((TimedMainDeclaration) timedRebecaCode.getMainDeclaration()).getMainNetworkDefinition()) {
