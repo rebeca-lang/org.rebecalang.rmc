@@ -4,6 +4,7 @@ import org.junit.jupiter.api.Test;
 import org.rebecalang.compiler.CompilerConfig;
 import org.rebecalang.compiler.modelcompiler.RebecaModelCompiler;
 import org.rebecalang.compiler.modelcompiler.SymbolTable;
+import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.ReactiveClassDeclaration;
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.RebecaModel;
 import org.rebecalang.compiler.utils.CompilerExtension;
 import org.rebecalang.compiler.utils.CoreVersion;
@@ -54,6 +55,6 @@ public class NetworkTest {
 //        }
 
         RebecaModelNetworkDecorator modelNetworkDecorator = new RebecaModelNetworkDecorator(result.getFirst());
-        modelNetworkDecorator.decorate();
+        var rebecaModel = modelNetworkDecorator.decorate();
     }
 }
