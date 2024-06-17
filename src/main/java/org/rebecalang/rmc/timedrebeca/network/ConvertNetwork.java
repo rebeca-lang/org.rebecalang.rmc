@@ -323,6 +323,7 @@ public class ConvertNetwork {
 
             networkMsgsrvs.add(networkMsgsrv);
         }
+        network.setQueueSize(network.getQueueSize()+rebec.getQueueSize());
     }
 
     private OrdinaryPrimitiveType getRebecType(String rebecTpyeName) {
