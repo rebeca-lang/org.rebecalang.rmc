@@ -5,6 +5,7 @@ import java.util.*;
 import com.oracle.truffle.regex.tregex.parser.ast.Term;
 import javassist.expr.Expr;
 import org.apache.logging.log4j.core.Core;
+import org.checkerframework.checker.units.qual.A;
 import org.rebecalang.compiler.modelcompiler.corerebeca.CoreRebecaLabelUtility;
 import org.rebecalang.compiler.modelcompiler.corerebeca.CoreRebecaTypeSystem;
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.*;
@@ -337,6 +338,16 @@ public class ConvertNetwork {
         return null;
     }
 
+    private void setWiredAnnotationInReactiveClass(ReactiveClassDeclaration wired) {
+        for (Annotation annotation : wired.getAnnotations()) {
+            if (annotation.getIdentifier().equals("wired")) {
+                return;
+            }
+        }
+        Annotation annotation = new Annotation();
+        annotation.setIdentifier("wired");
+        wired.getAnnotations().add(annotation);
+    }
     private MainRebecDefinition defineWiredReactiveClass(String name) {
         Optional<ReactiveClassDeclaration> wired = this.rebecaModelNetworkDecorator.findWiredReactiveClassOf(name);
         if (wired.isEmpty()) {
@@ -348,7 +359,7 @@ public class ConvertNetwork {
         OrdinaryPrimitiveType type = new OrdinaryPrimitiveType();
         type.setName((wired.get().getName()));
         mainRebecDefinition.setType(type);
-
+        setWiredAnnotationInReactiveClass(wired.get());
         return mainRebecDefinition;
     }
 

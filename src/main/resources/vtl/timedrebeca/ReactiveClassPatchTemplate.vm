@@ -51,6 +51,11 @@ public:
         	#end	
         		;
     #end
+	#foreach($annotation in $reactiveClassDeclaration.getAnnotations())
+		#if ($annotation.getIdentifier() == "wired")
+	virtual void exportStateInXML(ostream &out, string tab);
+		#end
+	#end
     virtual void setNow(TIME_TYPE now);
     
 #end
@@ -96,6 +101,10 @@ public:
     		#end
 		#end
 		AbstractTimedActor::setNow(now);
-	}	
-	
+	}
+	#foreach($annotation in $reactiveClassDeclaration.getAnnotations())
+		#if ($annotation.getIdentifier() == "wired")
+	void ${reactiveClassDeclaration.getName()}Actor::exportStateInXML(ostream &out, string tab) {}
+		#end
+	#end
 #end
