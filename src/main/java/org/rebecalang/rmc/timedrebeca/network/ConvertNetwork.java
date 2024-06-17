@@ -343,7 +343,7 @@ public class ConvertNetwork {
         }
 
         TimedMainRebecDefinition mainRebecDefinition = new TimedMainRebecDefinition();
-        mainRebecDefinition.setName(rebecaModelNetworkDecorator.generateNameForWiredRebecOf(wired.get().getName()));
+        mainRebecDefinition.setName("_" + wired.get().getName());
         OrdinaryPrimitiveType type = new OrdinaryPrimitiveType();
         type.setName((wired.get().getName()));
         mainRebecDefinition.setType(type);
@@ -361,20 +361,22 @@ public class ConvertNetwork {
 
     private void setReactiveRebecDefinition() {
         List<MainRebecDefinition> mainRebecDefinitions = new ArrayList<>();
-        Set<String> mainRebecDefinitionNames = new HashSet<>();
+        Map<String, MainRebecDefinition> mainRebecDefinitionNames = new HashMap<>();
         for (MainRebecDefinition mainRebecDefinition : timedRebecaCode.getMainDeclaration().getMainRebecDefinition()) {
             List<Expression> newBindings = new ArrayList<>();
             for (Expression expression : mainRebecDefinition.getBindings()) {
                 TermPrimary termPrimary = ((TermPrimary) expression);
                 String bindingTypeName = termPrimary.getType().getTypeName();
                 if (termPrimary.getAnnotations().isEmpty()) {
-                    if (mainRebecDefinitionNames.contains(bindingTypeName))
+                    if (mainRebecDefinitionNames.get(bindingTypeName) != null) {
+                        newBindings.add(getNewBinding(mainRebecDefinitionNames.get(bindingTypeName)));
                         continue;
+                    }
 
                     MainRebecDefinition wiredMainRebecDefinition = defineWiredReactiveClass(bindingTypeName);
                     mainRebecDefinitions.add(wiredMainRebecDefinition);
                     newBindings.add(getNewBinding(wiredMainRebecDefinition));
-                    mainRebecDefinitionNames.add(bindingTypeName);
+                    mainRebecDefinitionNames.put(bindingTypeName, wiredMainRebecDefinition);
 
                     continue;
                 }
