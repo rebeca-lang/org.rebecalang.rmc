@@ -333,6 +333,7 @@ long ${reactiveClassName}Actor::methodSelectorAndExecutor() {
     long ${reactiveClassName}Actor::constructor$reactiveClassName (byte creatorId 
     	#putParameters($methodDeclaration.getFormalParameters() true)
     ) {
+		byte messageSenderID = myID;
     	$methodBodyConvertor.convertConstructorBody($reactiveClassDeclaration, $methodDeclaration)
 	}
 #end
@@ -376,6 +377,12 @@ long ${reactiveClassName}Actor::methodSelectorAndExecutor() {
 	    long ${reactiveClassName}Actor::msgsrv$methodDeclaration.getName() (
     	#putParameters($methodDeclaration.getFormalParameters() false)
     ) {
+		byte messageSenderID = myID;
+		#foreach($annotation in $reactiveClassDeclaration.getAnnotations())
+			#if ($annotation.getIdentifier() == "network")
+		messageSenderID = senderQueue[0];
+			#end
+		#end
     	$methodBodyConvertor.convertMsgsrvBody($reactiveClassDeclaration, $methodDeclaration)
 }
 		#end

@@ -2,6 +2,7 @@ package org.rebecalang.rmc.timedrebeca.network;
 
 import java.util.*;
 
+import com.oracle.truffle.js.builtins.math.AbsNode;
 import com.oracle.truffle.regex.tregex.parser.ast.Term;
 import javassist.expr.Expr;
 import org.apache.logging.log4j.core.Core;
@@ -466,6 +467,11 @@ public class ConvertNetwork {
         }
     }
 
+    private void setNetowrkAnnotation(ReactiveClassDeclaration network) {
+        Annotation annotation = new Annotation();
+        annotation.setIdentifier("network");
+        network.getAnnotations().add(annotation);
+    }
     public void changeRebecaCode() {
         for (NetworkDeclaration networkDeclaration : timedRebecaCode.getNetworkDeclaration()) {
             networkDeclarationMap.put(networkDeclaration.getName(), networkDeclaration);
@@ -484,6 +490,7 @@ public class ConvertNetwork {
                 knownRebecs.add(knownNodes);
             }
             reactiveClassDeclaration.setQueueSize(0);
+            setNetowrkAnnotation(reactiveClassDeclaration);
 
             reactiveClassDeclarations.add(reactiveClassDeclaration);
         }

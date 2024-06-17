@@ -74,7 +74,7 @@ public class TimedRebecaTermPrimaryExpressionTranslator extends CoreRebecaTermPr
 
 			if (termPrimary.getParentSuffixPrimary() != null && 
 					termPrimary.getLabel() == CoreRebecaLabelUtility.MSGSRV) {
-				retValue += "_timed_msg_" + termPrimary.getName() + "(myID";
+				retValue += "_timed_msg_" + termPrimary.getName() + "(messageSenderID";
 				for (Expression expression : termPrimary.getParentSuffixPrimary().getArguments()) {
 					retValue += ", " + statementTranslatorContainer.translate(expression, "");
 				}
