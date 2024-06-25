@@ -125,9 +125,11 @@
 	    newFrame.deadline = new TIME_TYPE[maxQueueLength];
 	    memcpy(newFrame.executionTime, &executionTime[shift], (maxQueueLength - shift) * sizeof (TIME_TYPE));
 	    memcpy(newFrame.deadline, &deadline[shift], (maxQueueLength - shift)  * sizeof (TIME_TYPE));
+		memcpy(newFrame.delay, &delay[shift], (maxQueueLength - shift)  * sizeof (TIME_TYPE));
 	    if (shift) {
 	    	newFrame.executionTime[maxQueueLength - 1] = 0;
 	    	newFrame.deadline[maxQueueLength - 1] = MAX_TIME;
+			newFrame.delay[maxQueueLength - 1] = 0;
 	    }
 	    newFrame.now = _ref_now;
 	    #ifdef TTS
