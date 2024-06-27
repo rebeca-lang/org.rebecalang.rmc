@@ -59,11 +59,13 @@ public class TimedRebecaFileGenerator extends CoreRebecaFileGenerator {
 			File destinationLocation, Set<CompilerExtension> extension, FileGeneratorProperties fileGenerationProperties) {
 		
 		try {
-			RebecaModelNetworkDecorator rebecaModelNetworkDecorator = new RebecaModelNetworkDecorator(rebecaModel);
-			rebecaModel = rebecaModelNetworkDecorator.decorate();
+			if (!((TimedRebecaCode) rebecaModel.getRebecaCode()).getNetworkDeclaration().isEmpty()) {
+				RebecaModelNetworkDecorator rebecaModelNetworkDecorator = new RebecaModelNetworkDecorator(rebecaModel);
+				rebecaModel = rebecaModelNetworkDecorator.decorate();
 
-			ConvertNetwork convertNetwork = new ConvertNetwork((TimedRebecaCode) rebecaModel.getRebecaCode(), rebecaModelNetworkDecorator);
-			convertNetwork.changeRebecaCode();
+				ConvertNetwork convertNetwork = new ConvertNetwork((TimedRebecaCode) rebecaModel.getRebecaCode(), rebecaModelNetworkDecorator);
+				convertNetwork.changeRebecaCode();
+			}
 
 			initilizeGeneratingFiles(rebecaModel, propertyModel, destinationLocation, extension, fileGenerationProperties);
 
