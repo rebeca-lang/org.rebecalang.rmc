@@ -2,24 +2,28 @@ package org.rebecalang.rmc.timedrebeca.network;
 
 import java.util.*;
 
-import com.oracle.truffle.js.builtins.math.AbsNode;
-import com.oracle.truffle.regex.tregex.parser.ast.Term;
-import javassist.expr.Expr;
-import org.apache.logging.log4j.core.Core;
-import org.checkerframework.checker.units.qual.A;
 import org.rebecalang.compiler.modelcompiler.corerebeca.CoreRebecaLabelUtility;
 import org.rebecalang.compiler.modelcompiler.corerebeca.CoreRebecaTypeSystem;
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.*;
-import org.rebecalang.compiler.modelcompiler.timedrebeca.TimedRebecaTypeSystem;
-import org.rebecalang.compiler.modelcompiler.timedrebeca.network.NetworkNameUtility;
 import org.rebecalang.compiler.modelcompiler.timedrebeca.objectmodel.*;
-
-import javax.swing.plaf.nimbus.State;
 
 import static org.rebecalang.compiler.modelcompiler.timedrebeca.network.NetworkNameUtility.generateMsgSrvName;
 import static org.rebecalang.compiler.modelcompiler.timedrebeca.network.NetworkNameUtility.generateReceiverParameterName;
 
 public class ConvertNetwork {
+    private static final String REACTIVE_CLASS_NETWORK_ANNOTATION = "network";
+    private static final String REACTIVE_CLASS_WIRED_ANNOTATION = "wired";
+    private static final String REACTIVE_CLASS_PRIORITY_ANNOTATION = "priority";
+    private static final String DELAY_KEYWORD = "delay";
+    private static final String NETWORK_LOSS_VARIABLE_NAME = "loss";
+    private static final String REACTIVE_CLASS_SENDER_KEYWORD = "sender";
+    private static final String EQUALITY_OPERATOR = "==";
+    private static final String AND_OPERATOR = "&&";
+    private static final String ASSIGN_OPERATOR = "=";
+    private static final String FALSE = "false";
+    private static final String TRUE = "true";
+    private static final String PUBLIC_ACCESS_LEVEL = "public";
+
 
     private TimedRebecaCode timedRebecaCode;
     private RebecaModelNetworkDecorator rebecaModelNetworkDecorator;
@@ -55,7 +59,13 @@ public class ConvertNetwork {
         return false;
     }
 
-    private BinaryExpression getNetworkCondition(ReactiveClassDeclaration sender, ReactiveClassDeclaration receiver, ReactiveClassDeclaration rebec, String senderDefinitionName, String receiverDefinitionName) {
+    private BinaryExpression getNetworkCondition(
+            ReactiveClassDeclaration sender,
+            ReactiveClassDeclaration receiver,
+            ReactiveClassDeclaration rebec,
+            String senderDefinitionName,
+            String receiverDefinitionName
+    ) {
         BinaryExpression binaryExpression = new BinaryExpression();
 
         BinaryExpression leftBinaryExpression = new BinaryExpression();
@@ -72,7 +82,7 @@ public class ConvertNetwork {
         leftRightTermPrimary.setType(getRebecType(receiver.getName()));
         leftBinaryExpression.setRight(leftRightTermPrimary);
 
-        leftBinaryExpression.setOperator("==");
+        leftBinaryExpression.setOperator(EQUALITY_OPERATOR);
         leftBinaryExpression.setType(CoreRebecaTypeSystem.getBOOLEAN_TYPE());
 
 
@@ -85,17 +95,17 @@ public class ConvertNetwork {
         rightBinaryExpression.setLeft(rightLeftTermPrimary);
 
         TermPrimary rightRightTermPrimary = new TermPrimary();
-        rightRightTermPrimary.setName("sender");
+        rightRightTermPrimary.setName(REACTIVE_CLASS_SENDER_KEYWORD);
         rightRightTermPrimary.setLabel(CoreRebecaLabelUtility.RESERVED_WORD);
         rightRightTermPrimary.setType(CoreRebecaTypeSystem.REACTIVE_CLASS_TYPE);
         rightBinaryExpression.setRight(rightRightTermPrimary);
 
-        rightBinaryExpression.setOperator("==");
+        rightBinaryExpression.setOperator(EQUALITY_OPERATOR);
         rightBinaryExpression.setType(CoreRebecaTypeSystem.getBOOLEAN_TYPE());
 
         binaryExpression.setLeft(leftBinaryExpression);
         binaryExpression.setRight(rightBinaryExpression);
-        binaryExpression.setOperator("&&");
+        binaryExpression.setOperator(AND_OPERATOR);
         binaryExpression.setType(CoreRebecaTypeSystem.getBOOLEAN_TYPE());
 
         return binaryExpression;
@@ -105,12 +115,12 @@ public class ConvertNetwork {
         FieldDeclaration fieldDeclaration = new FieldDeclaration();
         List<VariableDeclarator> variableDeclarators = fieldDeclaration.getVariableDeclarators();
         VariableDeclarator variableDeclarator = new VariableDeclarator();
-        variableDeclarator.setVariableName("loss");
+        variableDeclarator.setVariableName(NETWORK_LOSS_VARIABLE_NAME);
         OrdinaryVariableInitializer variableInitializer = new OrdinaryVariableInitializer();
         variableInitializer.setType(CoreRebecaTypeSystem.getBOOLEAN_TYPE());
         Literal literal = new Literal();
         literal.setType(CoreRebecaTypeSystem.getBOOLEAN_TYPE());
-        literal.setLiteralValue("false");
+        literal.setLiteralValue(FALSE);
         variableInitializer.setValue(literal);
         variableDeclarator.setVariableInitializer(variableInitializer);
         variableDeclarators.add(variableDeclarator);
@@ -122,7 +132,7 @@ public class ConvertNetwork {
         FieldDeclaration fieldDeclaration = new FieldDeclaration();
         List<VariableDeclarator> variableDeclarators = fieldDeclaration.getVariableDeclarators();
         VariableDeclarator variableDeclarator = new VariableDeclarator();
-        variableDeclarator.setVariableName("delay");
+        variableDeclarator.setVariableName(DELAY_KEYWORD);
         OrdinaryVariableInitializer variableInitializer = new OrdinaryVariableInitializer();
         variableInitializer.setType(CoreRebecaTypeSystem.getBYTE_TYPE());
         Literal literal = new Literal();
@@ -141,18 +151,18 @@ public class ConvertNetwork {
         BinaryExpression binaryExpression = new BinaryExpression();
 
         TermPrimary left = new TermPrimary();
-        left.setName("loss");
+        left.setName(NETWORK_LOSS_VARIABLE_NAME);
         left.setType(CoreRebecaTypeSystem.getBOOLEAN_TYPE());
         left.setLabel(CoreRebecaLabelUtility.LOCAL_VARIABLE);
         binaryExpression.setLeft(left);
 
         Literal right = new Literal();
-        right.setLiteralValue("true");
+        right.setLiteralValue(TRUE);
         right.setType(CoreRebecaTypeSystem.getBOOLEAN_TYPE());
 
         binaryExpression.setLeft(left);
         binaryExpression.setRight(right);
-        binaryExpression.setOperator("=");
+        binaryExpression.setOperator(ASSIGN_OPERATOR);
 
         statements.add(binaryExpression);
         return blockStatement;
@@ -164,14 +174,14 @@ public class ConvertNetwork {
         BinaryExpression binaryExpression = new BinaryExpression();
 
         TermPrimary left = new TermPrimary();
-        left.setName("delay");
+        left.setName(DELAY_KEYWORD);
         left.setType(CoreRebecaTypeSystem.getINT_TYPE());
         left.setLabel(CoreRebecaLabelUtility.LOCAL_VARIABLE);
         binaryExpression.setLeft(left);
 
         binaryExpression.setLeft(left);
         binaryExpression.setRight(delay);
-        binaryExpression.setOperator("=");
+        binaryExpression.setOperator(ASSIGN_OPERATOR);
         binaryExpression.setType(CoreRebecaTypeSystem.getINT_TYPE());
         statements.add(binaryExpression);
         return blockStatement;
@@ -205,7 +215,7 @@ public class ConvertNetwork {
         TimedRebecaParentSuffixPrimary timedRebecaParentSuffixPrimary = new TimedRebecaParentSuffixPrimary();
         TermPrimary afterExpression = new TermPrimary();
         afterExpression.setLabel(CoreRebecaLabelUtility.LOCAL_VARIABLE);
-        afterExpression.setName("delay");
+        afterExpression.setName(DELAY_KEYWORD);
         afterExpression.setType(CoreRebecaTypeSystem.getINT_TYPE());
         timedRebecaParentSuffixPrimary.setAfterExpression(afterExpression);
         List<Expression> arguments = timedRebecaParentSuffixPrimary.getArguments();
@@ -228,7 +238,7 @@ public class ConvertNetwork {
     private ConditionalStatement getConditionalDotPrimaryStatement(ReactiveClassDeclaration rebec, MsgsrvDeclaration msgsrvDeclaration) {
         ConditionalStatement conditionalStatement = new ConditionalStatement();
         TermPrimary termPrimary = new TermPrimary();
-        termPrimary.setName("loss");
+        termPrimary.setName(NETWORK_LOSS_VARIABLE_NAME);
         termPrimary.setLabel(CoreRebecaLabelUtility.LOCAL_VARIABLE);
         termPrimary.setType(CoreRebecaTypeSystem.getBOOLEAN_TYPE());
 
@@ -239,12 +249,12 @@ public class ConvertNetwork {
         NonDetExpression nonDetExpression = new NonDetExpression();
         List<Expression> choices = nonDetExpression.getChoices();
         Literal trueChoice = new Literal();
-        trueChoice.setLiteralValue("true");
+        trueChoice.setLiteralValue(TRUE);
         trueChoice.setType(CoreRebecaTypeSystem.getBOOLEAN_TYPE());
         choices.add(trueChoice);
 
         Literal falseChoice = new Literal();
-        falseChoice.setLiteralValue("false");
+        falseChoice.setLiteralValue(FALSE);
         falseChoice.setType(CoreRebecaTypeSystem.getBOOLEAN_TYPE());
         choices.add(falseChoice);
 
@@ -268,12 +278,7 @@ public class ConvertNetwork {
         conditionalStatement.setElseStatement(elseBlockStatement);
         return conditionalStatement;
     }
-
-    private BlockStatement createBlockToMsgsrv(ReactiveClassDeclaration network, NetworkDeclaration networkDeclaration, ReactiveClassDeclaration rebec, MsgsrvDeclaration msgsrvDeclaration) {
-        BlockStatement blockStatement = new BlockStatement();
-        List<Statement> statements = blockStatement.getStatements();
-        statements.add(getLossFieldDeclaration());
-        statements.add(getDelayFieldDeclaration());
+    private void addNetworkConditionalDelayStatementToMsgsrv(ReactiveClassDeclaration network, NetworkDeclaration networkDeclaration, ReactiveClassDeclaration rebec, List<Statement> statements) {
         for (DelayExpression delayExpression : networkDeclaration.getDelays()) {
             ReactiveClassDeclaration sender = getKnownNode(delayExpression.getSenderName(), network);
             ReactiveClassDeclaration receiver = getKnownNode(delayExpression.getReceiverName(), network);
@@ -286,6 +291,8 @@ public class ConvertNetwork {
             conditionalStatement.setStatement(getNetworkConditionalDelayStatement(delayExpression.getAmount()));
             statements.add(conditionalStatement);
         }
+    }
+    private void addNetworkConditionalLossStatementToMsgsrv(ReactiveClassDeclaration network, NetworkDeclaration networkDeclaration, ReactiveClassDeclaration rebec, List<Statement> statements) {
         for (LossExpression lossExpression : networkDeclaration.getLosses()) {
             ReactiveClassDeclaration sender = getKnownNode(lossExpression.getSenderName(), network);
             ReactiveClassDeclaration receiver = getKnownNode(lossExpression.getReceiverName(), network);
@@ -298,6 +305,16 @@ public class ConvertNetwork {
             conditionalStatement.setStatement(getNetworkConditionalLossStatement());
             statements.add(conditionalStatement);
         }
+    }
+    private BlockStatement createBlockToMsgsrv(ReactiveClassDeclaration network, NetworkDeclaration networkDeclaration, ReactiveClassDeclaration rebec, MsgsrvDeclaration msgsrvDeclaration) {
+        BlockStatement blockStatement = new BlockStatement();
+        List<Statement> statements = blockStatement.getStatements();
+        statements.add(getLossFieldDeclaration());
+        statements.add(getDelayFieldDeclaration());
+
+        addNetworkConditionalDelayStatementToMsgsrv(network, networkDeclaration, rebec, statements);
+        addNetworkConditionalLossStatementToMsgsrv(network, networkDeclaration, rebec, statements);
+
         statements.add(getConditionalDotPrimaryStatement(rebec, msgsrvDeclaration));
         return blockStatement;
     }
@@ -314,7 +331,7 @@ public class ConvertNetwork {
             formalParameterDeclaration.setType(getRebecType(rebec.getName()));
             formalParameters.add(formalParameterDeclaration);
             AccessModifier accessModifier = new AccessModifier();
-            accessModifier.setName("public");
+            accessModifier.setName(PUBLIC_ACCESS_LEVEL);
             networkMsgsrv.setAccessModifier(accessModifier);
 
             for (FormalParameterDeclaration rebecParameterDeclaration : msgsrvDeclaration.getFormalParameters()) {
@@ -341,12 +358,12 @@ public class ConvertNetwork {
 
     private void setWiredAnnotationInReactiveClass(ReactiveClassDeclaration wired) {
         for (Annotation annotation : wired.getAnnotations()) {
-            if (annotation.getIdentifier().equals("wired")) {
+            if (annotation.getIdentifier().equals(REACTIVE_CLASS_WIRED_ANNOTATION)) {
                 return;
             }
         }
         Annotation annotation = new Annotation();
-        annotation.setIdentifier("wired");
+        annotation.setIdentifier(REACTIVE_CLASS_WIRED_ANNOTATION);
         wired.getAnnotations().add(annotation);
     }
     private MainRebecDefinition defineWiredReactiveClass(String name) {
@@ -372,7 +389,7 @@ public class ConvertNetwork {
         return termPrimary;
     }
 
-    private void setReactiveRebecDefinition() {
+    private void bindNetworkReactiveClassToReactiveClassesBasedOnRebecDefinition() {
         List<MainRebecDefinition> mainRebecDefinitions = new ArrayList<>();
         Map<String, MainRebecDefinition> mainRebecDefinitionNames = new HashMap<>();
         for (MainRebecDefinition mainRebecDefinition : timedRebecaCode.getMainDeclaration().getMainRebecDefinition()) {
@@ -419,7 +436,7 @@ public class ConvertNetwork {
         Integer max = 0;
         for (MainRebecDefinition mainRebecDefinition : timedRebecaCode.getMainDeclaration().getMainRebecDefinition()){
             for (Annotation annotation : mainRebecDefinition.getAnnotations()) {
-                if (annotation.getIdentifier().equals("priority")) {
+                if (annotation.getIdentifier().equals(REACTIVE_CLASS_PRIORITY_ANNOTATION)) {
                     if (annotation.getValue() instanceof Literal) {
                         String value = ((Literal) annotation.getValue()).getLiteralValue();
                         Integer intValue = 0;
@@ -443,7 +460,7 @@ public class ConvertNetwork {
 
     private Annotation getReactiveDefinitionPriority(MainRebecDefinition mainRebecDefinition) {
         for (Annotation annotation : mainRebecDefinition.getAnnotations()) {
-            if (annotation.getIdentifier().equals("priority")) {
+            if (annotation.getIdentifier().equals(REACTIVE_CLASS_PRIORITY_ANNOTATION)) {
                 return annotation;
             }
         }
@@ -457,7 +474,7 @@ public class ConvertNetwork {
             Annotation annotation = getReactiveDefinitionPriority(mainRebecDefinition);
             if (annotation == null) {
                 Annotation newAnnotation = new Annotation();
-                newAnnotation.setIdentifier("priority");
+                newAnnotation.setIdentifier(REACTIVE_CLASS_PRIORITY_ANNOTATION);
                 Literal literal = new Literal();
                 literal.setType(CoreRebecaTypeSystem.getINT_TYPE());
                 literal.setLiteralValue(String.valueOf(maxRebecPriority+1));
@@ -467,16 +484,12 @@ public class ConvertNetwork {
         }
     }
 
-    private void setNetowrkAnnotation(ReactiveClassDeclaration network) {
+    private void setNetworkAnnotation(ReactiveClassDeclaration network) {
         Annotation annotation = new Annotation();
-        annotation.setIdentifier("network");
+        annotation.setIdentifier(REACTIVE_CLASS_NETWORK_ANNOTATION);
         network.getAnnotations().add(annotation);
     }
-    public void changeRebecaCode() {
-        for (NetworkDeclaration networkDeclaration : timedRebecaCode.getNetworkDeclaration()) {
-            networkDeclarationMap.put(networkDeclaration.getName(), networkDeclaration);
-        }
-
+    private void addCreatedReactiveClassDeclarationForNetworkDeclarationToDeclarations() {
         List<ReactiveClassDeclaration> reactiveClassDeclarations = timedRebecaCode.getReactiveClassDeclaration();
         for (NetworkDeclaration networkDeclaration : timedRebecaCode.getNetworkDeclaration()) {
             ReactiveClassDeclaration reactiveClassDeclaration = new ReactiveClassDeclaration();
@@ -490,17 +503,13 @@ public class ConvertNetwork {
                 knownRebecs.add(knownNodes);
             }
             reactiveClassDeclaration.setQueueSize(0);
-            setNetowrkAnnotation(reactiveClassDeclaration);
+            setNetworkAnnotation(reactiveClassDeclaration);
 
             reactiveClassDeclarations.add(reactiveClassDeclaration);
         }
+    }
 
-        for (ReactiveClassDeclaration reactiveClassDeclaration : timedRebecaCode.getReactiveClassDeclaration()) {
-            reactiveClassDeclarationMap.put(reactiveClassDeclaration.getName(), reactiveClassDeclaration);
-        }
-
-        applyNetworkReactiveDefinitionPriority();
-
+    private void addCreatedRebecDefinitionForNetworkDefinitionToDefinitions() {
         List<MainRebecDefinition> mainRebecDefinitions = timedRebecaCode.getMainDeclaration().getMainRebecDefinition();
         for (MainNetworkDefinition mainNetworkDefinition : ((TimedMainDeclaration) timedRebecaCode.getMainDeclaration()).getMainNetworkDefinition()) {
             TimedMainRebecDefinition mainRebecDefinition = new TimedMainRebecDefinition();
@@ -513,11 +522,27 @@ public class ConvertNetwork {
             mainRebecDefinition.getBindings().addAll(mainNetworkDefinition.getBindings());
             mainNetworkDefinitionMap.put(mainNetworkDefinition.getName(), mainNetworkDefinition);
         }
+    }
+
+    public void changeRebecaCode() {
+        for (NetworkDeclaration networkDeclaration : timedRebecaCode.getNetworkDeclaration()) {
+            networkDeclarationMap.put(networkDeclaration.getName(), networkDeclaration);
+        }
+
+        addCreatedReactiveClassDeclarationForNetworkDeclarationToDeclarations();
+
+        for (ReactiveClassDeclaration reactiveClassDeclaration : timedRebecaCode.getReactiveClassDeclaration()) {
+            reactiveClassDeclarationMap.put(reactiveClassDeclaration.getName(), reactiveClassDeclaration);
+        }
+
+        applyNetworkReactiveDefinitionPriority();
+
+        addCreatedRebecDefinitionForNetworkDefinitionToDefinitions();
 
         for (MainRebecDefinition mainRebecDefinition : timedRebecaCode.getMainDeclaration().getMainRebecDefinition()){
             mainRebecDefinitionMap.put(mainRebecDefinition.getName(), (TimedMainRebecDefinition) mainRebecDefinition);
         }
 
-        setReactiveRebecDefinition();
+        bindNetworkReactiveClassToReactiveClassesBasedOnRebecDefinition();
     }
 }
