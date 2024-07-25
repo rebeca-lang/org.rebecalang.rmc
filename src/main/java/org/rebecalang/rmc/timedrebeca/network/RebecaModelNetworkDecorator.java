@@ -22,6 +22,21 @@ public class RebecaModelNetworkDecorator {
         fillNetworkTypes();
     }
 
+    /**
+     * Decorates the Rebeca model by declaring wired reactive classes, adding them to `knownRebecs`,
+     * and modifying reactive classes annotated with the network.
+     * <p>
+     * This method iterates through all reactive class declarations in the Rebeca model. For each reactive class:
+     * <ul>
+     *     <li>Generates and adds network known Rebecs to the `knownRebecs` list.</li>
+     *     <li>Modifies the message server declarations to replace direct calls with network wrapper calls.</li>
+     * </ul>
+     * The wired reactive classes are declared and added to `knownRebecs` to ensure proper handling
+     * of network interfaces. Reactive classes are also modified to incorporate network-specific
+     * behaviors and annotations.
+     *
+     * @return the decorated Rebeca model with network and wired reactive class modifications
+     */
     public RebecaModel decorate() {
         for (ReactiveClassDeclaration rd : rebecaModel.getRebecaCode().getReactiveClassDeclaration()) {
             rd.getKnownRebecs().addAll(generateNetworkKnownRebecsFor(rd));
@@ -57,12 +72,38 @@ public class RebecaModelNetworkDecorator {
         return variableDeclarators;
     }
 
+    /**
+     * Modifies the message server declarations of a reactive class to replace direct calls
+     * to the callee Rebec message server with a network wrapper.
+     * <p>
+     * This method iterates through all message server declarations of the given reactive class.
+     * For each message server declaration, it updates the body of the message server to replace direct calls
+     * to the callee Rebec message server with a network wrapper. This network wrapper checks whether
+     * the call should be made directly or over the bind network, ensuring appropriate handling of
+     * network-related interactions.
+     *
+     * @param rd the reactive class declaration whose message server declarations are to be modified
+     */
     public void changeMsgServersDeclarationBody(ReactiveClassDeclaration rd) {
         for (MsgsrvDeclaration msgSrvDecl : rd.getMsgsrvs()) {
             msgSrvDecl.setBlock(changeDirectMsgSrvCallsInBody(msgSrvDecl.getBlock()));
         }
     }
 
+    /**
+     * Recursively modifies the statements within a block to replace direct message server calls
+     * with network wrapper calls.
+     * <p>
+     * This method processes the provided statement block, identifying and replacing direct message
+     * server calls with network wrapper calls. It handles various types of statements, such as
+     * conditional statements, loops, and switch statements, ensuring that message server calls
+     * are correctly wrapped regardless of their nesting level. The network wrapper checks whether
+     * the call should be made directly or over the bind network, facilitating appropriate handling
+     * of network-related interactions.
+     *
+     * @param inputStatement the input statement block to be modified
+     * @return a modified block statement with direct message server calls replaced by network wrapper calls
+     */
     public BlockStatement changeDirectMsgSrvCallsInBody(Statement inputStatement) {
         BlockStatement modifiedBlock = new BlockStatement();
         List<Statement> modifiedStatements = modifiedBlock.getStatements();
