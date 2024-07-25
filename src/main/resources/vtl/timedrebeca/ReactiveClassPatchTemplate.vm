@@ -45,12 +45,17 @@ public:
         #end
       	  void _timed_msg_${method.getName()}(byte senderId
         	    #putParameters($method.getFormalParameters() true)
-        	, TIME_TYPE executionTime, TIME_TYPE deadline)
+        	, TIME_TYPE executionTime, TIME_TYPE deadline, TIME_TYPE delay)
         	#if ($method.isAbstract())
         		=0
         	#end	
         		;
     #end
+	#foreach($annotation in $reactiveClassDeclaration.getAnnotations())
+		#if ($annotation.getIdentifier() == "wired")
+	virtual void exportStateInXML(ostream &out, string tab);
+		#end
+	#end
     virtual void setNow(TIME_TYPE now);
     
 #end
@@ -60,10 +65,10 @@ public:
 	#foreach ($methodDeclaration in $reactiveClassDeclaration.getMsgsrvs())
 		#if (!$methodDeclaration.isAbstract())
 	    void ${reactiveClassDeclaration.getName()}Actor::_timed_msg_$methodDeclaration.getName() (byte senderId
-	        #putParameters($methodDeclaration.getFormalParameters() true), TIME_TYPE executionTime, TIME_TYPE deadline){
+	        #putParameters($methodDeclaration.getFormalParameters() true), TIME_TYPE executionTime, TIME_TYPE deadline, TIME_TYPE delay){
 	    _msg_$methodDeclaration.getName() (senderId
 	        #putParametersValues($methodDeclaration.getFormalParameters() true));
-	    addTimedBundles(senderId, executionTime, deadline);
+	    addTimedBundles(senderId, executionTime, deadline, delay);
 		}
 		#end
 	#end
@@ -96,6 +101,10 @@ public:
     		#end
 		#end
 		AbstractTimedActor::setNow(now);
-	}	
-	
+	}
+	#foreach($annotation in $reactiveClassDeclaration.getAnnotations())
+		#if ($annotation.getIdentifier() == "wired")
+	void ${reactiveClassDeclaration.getName()}Actor::exportStateInXML(ostream &out, string tab) {}
+		#end
+	#end
 #end
