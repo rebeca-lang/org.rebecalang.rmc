@@ -98,8 +98,8 @@
 	            	#set($index = "")
 					#foreach($dimension in $type.getDimensions())
 						#if( $foreach.hasNext )
-							for (int cnt$velocityCount = 0; cnt$velocityCount < $dimension; cnt$velocityCount++) {
-							#set($index = $index + "[cnt$velocityCount]")
+							for (int cnt$foreach.count = 0; cnt$foreach.count < $dimension; cnt$foreach.count++) {
+							#set($index = $index + "[cnt$foreach.count]")
 						#else
 							#set($size = $TypesAnalysisUtilities.getInstance().getTypeSizeLabel($type.getOrdinaryPrimitiveType()) + " * $dimension")
 						#end
@@ -175,8 +175,8 @@
 	            	#set($index = "")
 					#foreach($dimension in $type.getDimensions())
 						#if( $foreach.hasNext )
-							for (int cnt$velocityCount = 0; cnt$velocityCount < $dimension; cnt$velocityCount++) {
-							#set($index = $index + "[cnt$velocityCount]")
+							for (int cnt$foreach.count = 0; cnt$foreach.count < $dimension; cnt$foreach.count++) {
+							#set($index = $index + "[cnt$foreach.count]")
 						#else
 							#set($size = $TypesAnalysisUtilities.getInstance().getTypeSizeLabel($type.getOrdinaryPrimitiveType()) + " * $dimension")
 						#end

@@ -1,5 +1,6 @@
 package org.rebecalang.rmc.corerebeca.translator;
 
+import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.Expression;
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.ReturnStatement;
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.Statement;
 import org.rebecalang.rmc.AbstractStatementTranslator;
@@ -21,7 +22,11 @@ public class ReturnStatementTranslator extends AbstractStatementTranslator {
 
 	public String translate(Statement statement, String tab)
 			throws StatementTranslationException {
-		return tab + "return " + statementTranslatorContainer.translate(
-				((ReturnStatement)statement).getExpression(), "") + ";" + NEW_LINE;
+		String result = tab + "return "; 
+		Expression returnValueExpression = ((ReturnStatement)statement).getExpression();
+		if(returnValueExpression != null)
+			result += statementTranslatorContainer.translate(returnValueExpression, "");
+		result += ";" + NEW_LINE;
+		return result;
 	}
 }
