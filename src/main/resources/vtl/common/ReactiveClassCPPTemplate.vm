@@ -329,7 +329,7 @@ long ${reactiveClassName}Actor::methodSelectorAndExecutor() {
 	#end
 }
 
-
+\#define _RETURN_ return 0
 #foreach ($methodDeclaration in $reactiveClassDeclaration.getConstructors())
     long ${reactiveClassName}Actor::constructor$reactiveClassName (byte creatorId 
     	#putParameters($methodDeclaration.getFormalParameters() true)
@@ -338,6 +338,7 @@ long ${reactiveClassName}Actor::methodSelectorAndExecutor() {
 	}
 #end
 
+\#define _RETURN_ return
 #foreach ($methodDeclaration in $reactiveClassDeclaration.getSynchMethods())
  
 	#if (!$methodDeclaration.isAbstract())      
@@ -374,10 +375,11 @@ long ${reactiveClassName}Actor::methodSelectorAndExecutor() {
 
 #foreach ($methodDeclaration in $reactiveClassDeclaration.getMsgsrvs())
 	#if (!$methodDeclaration.isAbstract())      
+	\#define _RETURN_ goto _RETURN_POINT_$methodDeclaration.getName().toUpperCase()
 	    long ${reactiveClassName}Actor::msgsrv$methodDeclaration.getName() (
     	#putParameters($methodDeclaration.getFormalParameters() false)
     ) {
     	$methodBodyConvertor.convertMsgsrvBody($reactiveClassDeclaration, $methodDeclaration)
 }
-		#end
+	#end
 #end

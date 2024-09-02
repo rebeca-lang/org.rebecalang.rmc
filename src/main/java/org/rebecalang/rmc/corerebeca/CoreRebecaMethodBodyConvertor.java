@@ -66,6 +66,7 @@ public class CoreRebecaMethodBodyConvertor {
 			MethodDeclaration methodDeclaration) throws StatementTranslationException {
 		statementTranslatorContainer.initialize(fileGenerationProperties);
 		String retValue = NEW_LINE + statementTranslatorContainer.translate(methodDeclaration.getBlock(), TAB + TAB);
+		retValue += TAB + "_RETURN_POINT_" + methodDeclaration.getName().toUpperCase() + ":" + NEW_LINE;
 		retValue = attachInitiativePart(reactiveClassDeclaration, methodDeclaration, retValue);
 		retValue += TAB + TAB + "return 0;" + NEW_LINE;
 		return retValue;

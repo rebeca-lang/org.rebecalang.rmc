@@ -22,7 +22,7 @@ public class ReturnStatementTranslator extends AbstractStatementTranslator {
 
 	public String translate(Statement statement, String tab)
 			throws StatementTranslationException {
-		String result = tab + "return "; 
+		String result = tab + "_RETURN_ "; 
 		Expression returnValueExpression = ((ReturnStatement)statement).getExpression();
 		if(returnValueExpression != null)
 			result += statementTranslatorContainer.translate(returnValueExpression, "");
