@@ -60,7 +60,8 @@ protected:
     virtual void unmarshalRebecs(TimedRebecStateIndexType* node, TIME_TYPE *shift);
 
 	void changeOrder(int rebecId, int alternativesCounter);
-	int getNumberOfAlternatives(int rebecId, TIME_TYPE executionTime);
+	std::vector<int> getNumberOfAlternatives(int rebecId, TIME_TYPE executionTime);
+	std::vector<int> getNumberOfAlternativeIds(int rebecId);
 	TIME_TYPE prepareWithNewState();
 	
     #putDefinitionsAndAssertionsSignatures($propertyDefinitions $propertyAssertions)

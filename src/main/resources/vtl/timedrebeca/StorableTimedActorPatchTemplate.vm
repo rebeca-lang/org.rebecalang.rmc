@@ -18,6 +18,7 @@
 	struct __attribute__((__packed__)) TimeFrame {
 	    TIME_TYPE* executionTime;
 	    TIME_TYPE* deadline;
+		TIME_TYPE *delay;
 	    TIME_TYPE now;
 	    #ifdef TTS
 	    	TIME_TYPE res;
