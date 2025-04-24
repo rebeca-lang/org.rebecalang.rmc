@@ -114,18 +114,18 @@ public class TimedRebecaFileGenerator extends CoreRebecaFileGenerator {
 
 		for (ReactiveClassDeclaration reactiveClassDeclaration : rebecaModel
 				.getRebecaCode().getReactiveClassDeclaration()) {
-			Set<String> constructorCallClasses = new HashSet<String>();
+			List<String> constructorCallClasses = new LinkedList<String>();
 			constructorCallClasses.add("AbstractActor");
-			Set<String> baseClasses = new HashSet<String>();
+			List<String> baseClasses = new LinkedList<String>();
 			baseClasses.add("AbstractTimedActor");
 
 			super.createAnActor(reactiveClassDeclaration, baseClasses, constructorCallClasses, patches);
 
 		}
 		for (InterfaceDeclaration intd : rebecaModel.getRebecaCode().getInterfaceDeclaration()) {
-			Set<String> constructorCallClasses = new HashSet<String>();
+			List<String> constructorCallClasses = new LinkedList<String>();
 			constructorCallClasses.add("AbstractActor");
-			Set<String> baseClasses = new HashSet<String>();
+			List<String> baseClasses = new LinkedList<String>();
 			baseClasses.add("AbstractTimedActor");
 
 			super.createAnActor(intd, baseClasses, constructorCallClasses, patches);

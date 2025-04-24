@@ -312,18 +312,18 @@ public class CoreRebecaFileGenerator extends AbstractFileGenerator {
 
 	protected void createActors(List<String> patches) throws IOException {
 
-		Set<String> constructorCallClasses = new HashSet<String>();
+		List<String> constructorCallClasses = new LinkedList<String>();
 
 		for (ReactiveClassDeclaration reactiveClassDeclaration : rebecaModel
 				.getRebecaCode().getReactiveClassDeclaration()) {
-			Set<String> baseClasses = new HashSet<String>();
+			List<String> baseClasses = new LinkedList<String>();
 			baseClasses.add("AbstractActor");
 
 			createAnActor(reactiveClassDeclaration, baseClasses, constructorCallClasses, patches);
 
 		}
 		for (InterfaceDeclaration intd : rebecaModel.getRebecaCode().getInterfaceDeclaration()) {
-			Set<String> baseClasses = new HashSet<String>();
+			List<String> baseClasses = new LinkedList<String>();
 			baseClasses.add("AbstractActor");
 
 			createAnActor(intd, baseClasses, constructorCallClasses, patches);
@@ -331,7 +331,7 @@ public class CoreRebecaFileGenerator extends AbstractFileGenerator {
 	}
 	
 	protected void createAnActor(BaseClassDeclaration baseClassDeclaration, 
-			Set<String> baseClasses, Set<String> constructorCallClasses, List<String> patches) throws IOException
+			List<String> baseClasses, List<String> constructorCallClasses, List<String> patches) throws IOException
 	{
 
 		String fileName = baseClassDeclaration.getName();
@@ -395,7 +395,7 @@ public class CoreRebecaFileGenerator extends AbstractFileGenerator {
 		
 	}
 	
-	private void getAllConstructorCallNames(BaseClassDeclaration baseClassDeclaration , Set<String> constructorNames) {
+	private void getAllConstructorCallNames(BaseClassDeclaration baseClassDeclaration , List<String> constructorNames) {
 
 		if (baseClassDeclaration instanceof ReactiveClassDeclaration) {
 			ReactiveClassDeclaration rcd = (ReactiveClassDeclaration) baseClassDeclaration;
