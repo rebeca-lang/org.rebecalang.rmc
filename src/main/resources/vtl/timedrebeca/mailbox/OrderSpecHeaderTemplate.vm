@@ -1,0 +1,79 @@
+#ifndef __ORDER_SPEC_H_
+\#define __ORDER_SPEC_H_
+
+\#include "Config.h"
+\#include "AbstractActor.h"
+
+enum OrderCommand {
+    Swap,
+    NoSwap,
+    Skip
+};
+
+class AbstarctOrderSpec {
+public:
+    virtual OrderCommand order(int queueTail, int executableId, TIME_TYPE *executionTime, TIME_TYPE *deadline, byte *messageQueue, byte *senderQueue, TIME_TYPE *delay, const vector<AbstractActor *> &rebecs, int now) = 0;
+    virtual bool checkOrder(int a, int b, TIME_TYPE *executionTime, TIME_TYPE *deadline, byte *messageQueue, byte *senderQueue, TIME_TYPE *delay, const vector<AbstractActor *> &rebecs, int now) = 0;
+};
+
+#foreach($instance in $mailboxDeclaration)
+    #set($counter = 1)
+    #foreach($expression in $instance.getOrders())
+        #if ($expression.getClass().getSimpleName() == "BinaryExpression" || $expression.getClass().getSimpleName() == "UnaryExpression")
+class ${instance.getName()}OrderSpec${counter} : public AbstarctOrderSpec {
+public:
+    ${instance.getName()}OrderSpec${counter}(char *rebecType#if (!$instance.getKnownSenders().isEmpty())#foreach($knownSender in $mailBoxBodyConvertor.GetKnownSenders($instance)), char *$knownSender#end#end);
+    virtual OrderCommand order(int queueTail, int executableId, TIME_TYPE *executionTime, TIME_TYPE *deadline, byte *messageQueue, byte *senderQueue,  TIME_TYPE *delay, const vector<AbstractActor *> &rebecs, int now) override;
+    virtual bool checkOrder(int a, int b, TIME_TYPE *executionTime, TIME_TYPE *deadline, byte *messageQueue, byte *senderQueue, TIME_TYPE *delay, const vector<AbstractActor *> &rebecs, int now) override;
+private:
+    char *rebecType;
+    #if (!$instance.getKnownSenders().isEmpty())
+        #foreach($knownSender in $mailBoxBodyConvertor.GetKnownSenders($instance))
+    char *$knownSender;
+        #end
+    #end
+};
+
+            #set($counter = $counter + 1)
+        #end
+    #end
+#end
+
+class DeadlineOrderSpec : public AbstarctOrderSpec {
+private:
+    bool isMin;
+
+public:
+    DeadlineOrderSpec(bool isMin);
+    virtual OrderCommand order(int queueTail, int executableId, TIME_TYPE *executionTime, TIME_TYPE *deadline, byte *messageQueue, byte *senderQueue, TIME_TYPE *delay, const vector<AbstractActor *> &rebecs, int now) override;
+    virtual bool checkOrder(int a, int b, TIME_TYPE *executionTime, TIME_TYPE *deadline, byte *messageQueue, byte *senderQueue, TIME_TYPE *delay, const vector<AbstractActor *> &rebecs, int now) override;
+};
+
+class DelayOrderSpec : public AbstarctOrderSpec {
+private:
+    bool isMin;
+
+public:
+    DelayOrderSpec(bool isMin);
+    virtual OrderCommand order(int queueTail, int executableId, TIME_TYPE *executionTime, TIME_TYPE *deadline, byte *messageQueue, byte *senderQueue, TIME_TYPE *delay, const vector<AbstractActor *> &rebecs, int now) override;
+    virtual bool checkOrder(int a, int b, TIME_TYPE *executionTime, TIME_TYPE *deadline, byte *messageQueue, byte *senderQueue, TIME_TYPE *delay, const vector<AbstractActor *> &rebecs, int now) override;
+};
+
+class TimeOrderSpec : public AbstarctOrderSpec {
+public:
+    TimeOrderSpec();
+    virtual OrderCommand order(int queueTail, int executableId, TIME_TYPE *executionTime, TIME_TYPE *deadline, byte *messageQueue, byte *senderQueue, TIME_TYPE *delay, const vector<AbstractActor *> &rebecs, int now) override;
+    virtual bool checkOrder(int a, int b, TIME_TYPE *executionTime, TIME_TYPE *deadline, byte *messageQueue, byte *senderQueue, TIME_TYPE *delay, const vector<AbstractActor *> &rebecs, int now) override;
+};
+
+class ArrivalTimeOrderSpec : public AbstarctOrderSpec {
+private:
+    bool isMin;
+
+public:
+    ArrivalTimeOrderSpec(bool isMin);
+    virtual OrderCommand order(int queueTail, int executableId, TIME_TYPE *executionTime, TIME_TYPE *deadline, byte *messageQueue, byte *senderQueue, TIME_TYPE *delay, const vector<AbstractActor *> &rebecs, int now) override;
+    virtual bool checkOrder(int a, int b, TIME_TYPE *executionTime, TIME_TYPE *deadline, byte *messageQueue, byte *senderQueue, TIME_TYPE *delay, const vector<AbstractActor *> &rebecs, int now) override;
+};
+
+#[[#endif]]#
