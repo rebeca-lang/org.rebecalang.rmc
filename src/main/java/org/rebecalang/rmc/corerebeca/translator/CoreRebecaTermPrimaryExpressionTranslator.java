@@ -48,16 +48,17 @@ public class CoreRebecaTermPrimaryExpressionTranslator extends AbstractStatement
 		}
 		
 		int indexCounter = 0;
+		
 		for (Expression expression : termPrimary.getIndices()) {
-			if (statementTranslatorContainer.isSafeMode()) {
-				retValue += "[(arrayIndexChecker=" + statementTranslatorContainer.translate(expression, "") + 
-						", assertion(arrayIndexChecker >= 0 && arrayIndexChecker <" +
-						((ArrayType)termPrimary.getType()).getDimensions().get(indexCounter) +
-						", string(\"Array index out of bound: \") + to_string((long long)arrayIndexChecker)" +
-						" + \", method \\\"\" + reactiveClassName + \".\" + methodName + \"\\\" line " +
-						expression.getLineNumber() +  "\") " +
-						", arrayIndexChecker)]";
-			} else
+//			if (statementTranslatorContainer.isSafeMode()) {
+//				retValue += "[(arrayIndexChecker=" + statementTranslatorContainer.translate(expression, "") + 
+//						", assertion(arrayIndexChecker >= 0 && arrayIndexChecker <" +
+//						((ArrayType)termPrimary.getType()).getDimensions().get(indexCounter) +
+//						", string(\"Array index out of bound: \") + to_string((long long)arrayIndexChecker)" +
+//						" + \", method \\\"\" + reactiveClassName + \".\" + methodName + \"\\\" line " +
+//						expression.getLineNumber() +  "\") " +
+//						", arrayIndexChecker)]";
+//			} else
 				retValue += "[" + statementTranslatorContainer.translate(expression, "") + "]";
 			indexCounter++;
 		}
