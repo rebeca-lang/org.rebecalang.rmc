@@ -1,0 +1,60 @@
+mailbox BMailbox {
+    knownsenders {
+        A a;
+    }
+    orders {
+        sender == a,
+        min(messageArrivalTime),
+        messageServerName == m
+    }
+}
+
+mailbox AMailbox {
+    knownsenders {
+        B b;
+    }
+    orders {
+        max(messageDeadline),
+        min(messageExecutionTime),
+        sender == b,
+        messageServerName == m2
+    }
+}
+
+reactiveclass A (3) {
+	knownrebecs {
+		B bb;
+	}
+
+	statevars {
+		Timer t;
+	}
+	A() {
+	}
+
+	msgsrv m2() {
+		startTimer(t);
+		stopTimer(t);
+		int v = getTimerValue(t);
+		bb.m(self, 2) after(v = 4) deadline (3 + 9);
+	}
+}
+
+reactiveclass B (3) {
+	statevars {
+	}
+	B() {
+	}
+
+	msgsrv m(A param1, int param2) {
+	    delay(5);
+		int value = now + currentMessageArrival + currentMessageDeadline + currentMessageWaitingTime;
+	}
+}
+
+main {
+    BMailbox tmbox(a);
+    AMailbox xbox(b);
+	A a<xbox>(b):();
+	B b<tmbox>():();
+}

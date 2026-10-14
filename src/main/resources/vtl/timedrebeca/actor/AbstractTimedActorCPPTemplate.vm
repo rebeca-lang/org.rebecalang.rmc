@@ -20,7 +20,10 @@ AbstractTimedActor::AbstractTimedActor(byte myID, char* myName, int maxQueueLeng
 	memset (deadline, 0, sizeof(TIME_TYPE) * maxQueueLength);
     executionTime  = new TIME_TYPE[maxQueueLength];
 	memset (executionTime,  0, sizeof(TIME_TYPE) * maxQueueLength);
+	delay = new TIME_TYPE[maxQueueLength];
+	memset(delay, 0, sizeof(TIME_TYPE) * maxQueueLength);
 	_ref_now = 0;
+	currentDelay = 0;
     #ifdef TTS
         __pc = -1;
         __res = 0;
@@ -32,6 +35,7 @@ void AbstractTimedActor::preMessageExecutionInitialization() {
 
 	_ref_currentMessageArrival = executionTime[0];
 	_ref_currentMessageDeadline = deadline[0];
+	_ref_currentMessageDelay = delay[0];
 	_ref_currentMessageWaitingTime = _ref_now - _ref_currentMessageArrival;
 	
 }
@@ -55,14 +59,27 @@ TIME_TYPE AbstractTimedActor::getNow() {
     return this->_ref_now;
 }
 
-void AbstractTimedActor::addTimedBundles(byte senderId, TIME_TYPE executionTime, TIME_TYPE deadline) {
+void AbstractTimedActor::addTimedBundles(byte senderId, TIME_TYPE executionTime, TIME_TYPE deadline, TIME_TYPE delay) {
     timeEnqueue(this->executionTime, executionTime);
     timeEnqueue(this->deadline, deadline);
+	timeEnqueue(this->delay, delay);
     applyPolicy(senderId == myID);
 }
 
 void AbstractTimedActor::timeEnqueue(TIME_TYPE *queue, TIME_TYPE value) {
 	queue[queueTail] = value;
+}
+
+bool AbstractTimedActor::applyMailBoxPolicy(int cnt, int executableId)
+{
+	for (auto spec : orderSpecs) {
+		OrderCommand res = spec->order(cnt, executableId, executionTime, deadline, messageQueue, senderQueue, delay, rebecs, _ref_now);
+		if (res == OrderCommand::Swap)
+			return true;
+		if (res == OrderCommand::NoSwap)
+			return false;
+	}
+	return messagePriorities[messageQueue[cnt]] < messagePriorities[messageQueue[executableId]];
 }
 
 void AbstractTimedActor::applyPolicy(boolean isSendToSelf) {
@@ -74,6 +91,7 @@ void AbstractTimedActor::applyPolicy(boolean isSendToSelf) {
 			typedSwap(messageQueue[cnt], messageQueue[cnt - 1], byte)
 			typedSwap(senderQueue[cnt], senderQueue[cnt - 1], byte)
 			typedSwap(paramQueue[cnt], paramQueue[cnt - 1], byte*)
+			typedSwap(delay[cnt], delay[cnt - 1], TIME_TYPE)
 		} else {
 			break;
 		}
@@ -85,6 +103,7 @@ void AbstractTimedActor::applyPolicy(boolean isSendToSelf) {
 			|| __pc != -1 
 		#endif
 		))) {
+
 			if (messagePriorities[messageQueue[cnt]] > messagePriorities[messageQueue[cnt - 1]]) break;
 			if (messagePriorities[messageQueue[cnt]] == messagePriorities[messageQueue[cnt - 1]]) {
 				if (messageQueue[cnt] > messageQueue[cnt - 1]) break;
@@ -95,16 +114,16 @@ void AbstractTimedActor::applyPolicy(boolean isSendToSelf) {
 						if (deadline[cnt] == deadline[cnt - 1]) {
 							int memcmpResult = memcmp(paramQueue[cnt], paramQueue[cnt - 1], maxParamLength);
 							if (memcmpResult >= 0) break;
-						}					
+						}
 					}
 				}
 			}
-			
 			typedSwap(executionTime[cnt], executionTime[cnt - 1], TIME_TYPE)
 			typedSwap(deadline[cnt], deadline[cnt - 1], TIME_TYPE)
 			typedSwap(messageQueue[cnt], messageQueue[cnt - 1], byte)
 			typedSwap(senderQueue[cnt], senderQueue[cnt - 1], byte)
 			typedSwap(paramQueue[cnt], paramQueue[cnt - 1], byte*)
+			typedSwap(delay[cnt], delay[cnt - 1], TIME_TYPE)
 			cnt--;
 		}
 	}
@@ -150,6 +169,42 @@ void AbstractTimedActor::stopTimer(Timer &t) {
 }
 TIME_TYPE AbstractTimedActor::getTimerValue(Timer &t) {
 	return t;
+}
+
+void AbstractTimedActor::addOrderSpecs(AbstarctOrderSpec* orderSpec) {
+	orderSpecs.push_back(orderSpec);
+}
+
+bool AbstractTimedActor::checkAlternatives(int a, int b) {
+	for (auto spec : orderSpecs)
+		if (!spec->checkOrder(a, b, executionTime, deadline, messageQueue, senderQueue, delay, rebecs, _ref_now))
+			return false;
+
+	return messagePriorities[messageQueue[a]] == messagePriorities[messageQueue[b]];
+}
+
+void AbstractTimedActor::setMailBox()
+{
+	mailBoxStatus = true;
+	orderSpecs.push_back(new TimeOrderSpec());
+}
+
+bool AbstractTimedActor::isMailBoxSet()
+{
+	return mailBoxStatus;
+}
+
+int AbstractTimedActor::getExecutableMessageId()
+{
+	int messageId = 0;
+	for (int i = 0; i <= queueTail; i++) {
+		if (messageQueue[i] == 0)
+			return messageId;
+
+		if (applyMailBoxPolicy(i, messageId))
+			messageId = i;
+	}
+	return messageId;
 }
 
 #applyPatch($patches 'AdditionalBodies' '')

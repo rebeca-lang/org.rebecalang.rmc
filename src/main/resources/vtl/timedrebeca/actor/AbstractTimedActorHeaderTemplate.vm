@@ -8,6 +8,7 @@
 \#include <stdio.h>
 \#include <string.h>
 \#include <limits>
+\#include "OrderSpec.h"
 
 using namespace std;
 
@@ -41,17 +42,22 @@ public:
 
     TIME_TYPE* executionTime;
     TIME_TYPE* deadline;
+    TIME_TYPE* delay;
     TIME_TYPE _ref_now;
     
     void preMessageExecutionInitialization();
-    TIME_TYPE _ref_currentMessageArrival, _ref_currentMessageDeadline, _ref_currentMessageWaitingTime;
+    TIME_TYPE _ref_currentMessageArrival, _ref_currentMessageDeadline, _ref_currentMessageWaitingTime, _ref_currentMessageDelay;
 
 	virtual void exportStateInXML(ostream &out, string tab);
 	virtual void exportQueueContentInXML(ostream &out, string tab);
-	
+    void addOrderSpecs(AbstarctOrderSpec* orderSpec);
+    bool checkAlternatives(int a, int b);
+    void setMailBox();
+    bool isMailBoxSet();
+    int getExecutableMessageId();
     
 protected:
-	void addTimedBundles(byte senderId, TIME_TYPE executionTime, TIME_TYPE deadline);
+	void addTimedBundles(byte senderId, TIME_TYPE executionTime, TIME_TYPE deadline, TIME_TYPE delay);
 
     void timeEnqueue(TIME_TYPE *queue, TIME_TYPE value);
     virtual void applyPolicy(boolean isSendToSelf);
@@ -59,8 +65,12 @@ protected:
     void startTimer(Timer &t);
     void stopTimer(Timer &t);
     TIME_TYPE getTimerValue(Timer &t);
+    vector<AbstarctOrderSpec*> orderSpecs;
+    bool applyMailBoxPolicy(int cnt, int executableId);
+    int currentDelay;
+    bool mailBoxStatus;
 
-#applyPatch($patches 'AdditionalSignatures' '')
+    #applyPatch($patches 'AdditionalSignatures' '')
 
 };
 

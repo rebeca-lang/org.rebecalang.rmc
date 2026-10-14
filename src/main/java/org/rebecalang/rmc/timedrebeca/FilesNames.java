@@ -11,6 +11,7 @@ public interface FilesNames {
 	public final static String BASE = "vtl/timedrebeca/";
 	public final static String ACTOR_BASE = BASE +"actor/";
 	public final static String ANALYZER_BASE = BASE + "analyzer/";
+	public final static String MAILBOX_BASE = BASE + "mailbox/";
 	public final static String COMMON = org.rebecalang.rmc.corerebeca.FilesNames.COMMON;
 
     public final static  String STORABLE_ACTOR_PATCH_TEMPLATE = BASE + "StorableTimedActorPatchTemplate.vm";
@@ -45,6 +46,11 @@ public interface FilesNames {
 	public static final String ABSTRACT_TIMED_TRACE_GENERATOR_OUTPUT_HEADER = "AbstractTimedTraceGenerator.h";
 	public static final String ABSTRACT_TIMED_TRACE_GENERATOR_CPP_TEMPLATE = ANALYZER_BASE + "AbstractTimedTraceGeneratorCPPTemplate.vm";
 	public static final String ABSTRACT_TIMED_TRACE_GENERATOR_OUTPUT_CPP = "AbstractTimedTraceGenerator.cpp";
+	public static final String ORDER_SPEC_HEADER_TEMPLATE = MAILBOX_BASE + "OrderSpecHeaderTemplate.vm";
+	public static final String ORDER_SPEC_CPP_TEMPLATE = MAILBOX_BASE + "OrderSpecCPPTemplate.vm";
+	public static final String ORDER_SPEC_OUTPUT_HEADER = "OrderSpec.h";
+	public static final String ORDER_SPEC_OUTPUT_CPP = "OrderSpec.cpp";
+
 
 	public static final String MAIN_PATCH_TEMPLATE = BASE + "MainPatch.vm";
 	public static final String CONFIG_PATCH_TEMPLATE = BASE + "ConfigPatchTemplate.vm";
